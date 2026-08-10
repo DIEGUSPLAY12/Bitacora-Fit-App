@@ -1,9 +1,11 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
 import { colors } from '../theme/colors';
+import { AuthProvider, useAuth } from '../hooks/useAuth';
+import { View, ActivityIndicator } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -17,6 +19,42 @@ const theme = {
     error: colors.destructive,
   },
 };
+
+function RootLayoutNav() {
+  const { session, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)' || segments[0] === 'bienvenida';
+
+    if (session && inAuthGroup) {
+      // Redirigir a tabs si hay sesión y está en bienvenida/auth
+      router.replace('/(tabs)');
+    } else if (!session && !inAuthGroup) {
+      // Redirigir a bienvenida si no hay sesión
+      router.replace('/bienvenida');
+    }
+  }, [session, isLoading, segments]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+      <Stack.Screen name="bienvenida" options={{ headerShown: false, animation: 'fade' }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -37,10 +75,9 @@ export default function RootLayout() {
 
   return (
     <PaperProvider theme={theme}>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
     </PaperProvider>
   );
 }
