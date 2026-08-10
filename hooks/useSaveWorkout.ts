@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 import { WorkoutExercise } from '../store/workout-store';
+import * as Haptics from 'expo-haptics';
 
 export function useSaveWorkout() {
   const { user } = useAuth();
@@ -83,6 +84,7 @@ export function useSaveWorkout() {
       return true;
     },
     onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       queryClient.invalidateQueries({ queryKey: ['workouts'] });
       queryClient.invalidateQueries({ queryKey: ['streak'] });
     }

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useWorkouts } from '../../hooks/useWorkouts';
+import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { Clock, Weight, ChevronRight } from 'lucide-react-native';
+import { MotiView } from 'moti';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -26,9 +28,10 @@ export default function HistorialScreen() {
     isFetchingNextPage 
   } = useWorkouts();
 
+  const reduceMotion = useReduceMotion();
   const workouts = data?.pages.flat() || [];
 
-  const renderItem = ({ item }: { item: any }) => {
+  const renderItem = useCallback(({ item, index }: { item: any, index: number }) => {
     let totalVolume = 0;
     let exerciseCount = item.workout_exercises?.length || 0;
     let muscleGroups = new Set<string>();
@@ -48,48 +51,54 @@ export default function HistorialScreen() {
     const durationMin = Math.max(1, Math.floor(durationMs / 60000));
 
     return (
-      <TouchableOpacity 
-        style={styles.card} 
-        activeOpacity={0.7}
-        onPress={() => router.push(`/entrenos/${item.id}`)}
+      <MotiView
+        from={{ opacity: 0, translateY: reduceMotion ? 0 : 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 400, delay: reduceMotion ? 0 : index * 100 }}
       >
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{item.name}</Text>
-          <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
-        </View>
+        <TouchableOpacity 
+          style={styles.card} 
+          activeOpacity={0.7}
+          onPress={() => router.push(`/entrenos/${item.id}`)}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
+          </View>
 
-        <View style={styles.tagsContainer}>
-          {tags.map(tag => (
-            <View key={tag} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+          <View style={styles.tagsContainer}>
+            {tags.map(tag => (
+              <View key={tag} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+            {muscleGroups.size > 3 && (
+              <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+            )}
+          </View>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.stat}>
+              <Clock color={colors.textSecondary} size={16} />
+              <Text style={styles.statText}>{durationMin} min</Text>
             </View>
-          ))}
-          {muscleGroups.size > 3 && (
-            <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-          )}
-        </View>
-
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Clock color={colors.textSecondary} size={16} />
-            <Text style={styles.statText}>{durationMin} min</Text>
+            <View style={styles.stat}>
+              <Weight color={colors.textSecondary} size={16} />
+              <Text style={styles.statText}>{totalVolume} kg</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
+              <Text style={styles.statText}>ejercicios</Text>
+            </View>
           </View>
-          <View style={styles.stat}>
-            <Weight color={colors.textSecondary} size={16} />
-            <Text style={styles.statText}>{totalVolume} kg</Text>
+          
+          <View style={styles.chevronContainer}>
+            <ChevronRight color={colors.textSecondary} size={20} />
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
-            <Text style={styles.statText}>ejercicios</Text>
-          </View>
-        </View>
-        
-        <View style={styles.chevronContainer}>
-          <ChevronRight color={colors.textSecondary} size={20} />
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </MotiView>
     );
-  };
+  }, [router, reduceMotion]);
 
   return (
     <View style={styles.container}>

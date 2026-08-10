@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useExercises } from '../../hooks/useExercises';
 import { useWorkoutStore, Exercise } from '../../store/workout-store';
+import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Search, ArrowLeft, Plus } from 'lucide-react-native';
+import { MotiView } from 'moti';
 
 const FILTERS = ['Todos', 'Pecho', 'Espalda', 'Piernas', 'Hombro', 'Brazo', 'Core'];
 
@@ -16,40 +18,47 @@ export default function ExerciseSelectorScreen() {
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
   
+  const reduceMotion = useReduceMotion();
   const { data: exercises, isLoading } = useExercises(search, selectedFilter);
   const addExercise = useWorkoutStore(state => state.addExercise);
 
-  const handleAdd = (exercise: Exercise) => {
+  const handleAdd = useCallback((exercise: Exercise) => {
     addExercise(exercise);
-  };
+  }, [addExercise]);
 
-  const renderItem = ({ item }: { item: Exercise }) => (
-    <TouchableOpacity 
-      style={styles.card} 
-      activeOpacity={0.7}
-      onPress={() => router.push(`/ejercicios/${item.id}`)}
+  const renderItem = useCallback(({ item, index }: { item: Exercise, index: number }) => (
+    <MotiView
+      from={{ opacity: 0, translateY: reduceMotion ? 0 : 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 400, delay: reduceMotion ? 0 : index * 50 }}
     >
-      <Image 
-        source={item.image_url} 
-        style={styles.image} 
-        contentFit="cover" 
-        transition={200}
-      />
-      <View style={styles.cardContent}>
-        <Text style={styles.cardName} numberOfLines={2}>{item.name}</Text>
-        <View style={styles.tagsContainer}>
-          <View style={styles.tag}><Text style={styles.tagText}>{item.muscle_group}</Text></View>
-          <View style={styles.tag}><Text style={styles.tagText}>{item.equipment}</Text></View>
-        </View>
-      </View>
       <TouchableOpacity 
-        style={styles.addButton}
-        onPress={() => handleAdd(item)}
+        style={styles.card} 
+        activeOpacity={0.7}
+        onPress={() => router.push(`/ejercicios/${item.id}`)}
       >
-        <Plus color={colors.background} size={20} />
+        <Image 
+          source={item.image_url} 
+          style={styles.image} 
+          contentFit="cover" 
+          transition={200}
+        />
+        <View style={styles.cardContent}>
+          <Text style={styles.cardName} numberOfLines={2}>{item.name}</Text>
+          <View style={styles.tagsContainer}>
+            <View style={styles.tag}><Text style={styles.tagText}>{item.muscle_group}</Text></View>
+            <View style={styles.tag}><Text style={styles.tagText}>{item.equipment}</Text></View>
+          </View>
+        </View>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => handleAdd(item)}
+        >
+          <Plus color={colors.background} size={20} />
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    </MotiView>
+  ), [router, handleAdd, reduceMotion]);
 
   return (
     <View style={styles.container}>

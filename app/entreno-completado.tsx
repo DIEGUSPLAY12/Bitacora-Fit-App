@@ -1,18 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { CheckCircle2, Flame, Clock, Weight, Hash } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
+import { useReduceMotion } from '../hooks/useReduceMotion';
+import { MotiView } from 'moti';
 
 export default function WorkoutCompletedScreen() {
   const router = useRouter();
   const { volume, sets, duration } = useLocalSearchParams<{ volume: string, sets: string, duration: string }>();
 
-  // Racha real
   const { data: streakData } = useStreak();
   const streak = streakData?.current || 0;
+  
+  const reduceMotion = useReduceMotion();
 
   const handleHome = () => {
     router.replace('/(tabs)');
@@ -21,7 +23,13 @@ export default function WorkoutCompletedScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <CheckCircle2 color={colors.accent} size={120} style={styles.icon} />
+        <MotiView
+          from={{ scale: reduceMotion ? 1 : 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 100 }}
+        >
+          <CheckCircle2 color={colors.accent} size={120} style={styles.icon} />
+        </MotiView>
         <Text style={styles.title}>¡Entreno completado!</Text>
         <Text style={styles.subtitle}>Gran trabajo hoy, sigue así.</Text>
 

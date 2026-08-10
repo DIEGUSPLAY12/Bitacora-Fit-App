@@ -8,6 +8,8 @@ import { Plus, Minus, Check, Clock, Trash2, X } from 'lucide-react-native';
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
 import { useSaveWorkout } from '../hooks/useSaveWorkout';
+import { useReduceMotion } from '../hooks/useReduceMotion';
+import { MotiView } from 'moti';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -44,6 +46,7 @@ export default function EntrenarScreen() {
 
   const [timeLeft, setTimeLeft] = useState(0);
   const notifiedRef = useRef(false);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
     if (!isActive) {
@@ -197,9 +200,20 @@ export default function EntrenarScreen() {
 
                   <TouchableOpacity 
                     style={[styles.checkbox, set.completed && styles.checkboxActive]} 
-                    onPress={() => toggleSetComplete(ex.exercise.id, set.id)}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      toggleSetComplete(ex.exercise.id, set.id);
+                    }}
                   >
-                    {set.completed && <Check color={colors.background} size={16} />}
+                    {set.completed && (
+                      <MotiView
+                        from={{ scale: reduceMotion ? 1 : 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                      >
+                        <Check color={colors.background} size={16} />
+                      </MotiView>
+                    )}
                   </TouchableOpacity>
                 </View>
               ))}
