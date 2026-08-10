@@ -52,6 +52,7 @@ function RootLayoutNav() {
       <Stack.Screen name="bienvenida" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+      <Stack.Screen name="entrenar" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }
