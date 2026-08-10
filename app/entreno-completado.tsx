@@ -11,8 +11,8 @@ export default function WorkoutCompletedScreen() {
   const { volume, sets, duration } = useLocalSearchParams<{ volume: string, sets: string, duration: string }>();
 
   // Racha real
-  const { data: realStreak } = useStreak();
-  const streak = realStreak || 0;
+  const { data: streakData } = useStreak();
+  const streak = streakData?.current || 0;
 
   const handleHome = () => {
     router.replace('/(tabs)');

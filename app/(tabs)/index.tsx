@@ -10,8 +10,8 @@ export default function HomeScreen() {
   const router = useRouter();
 
   // Datos reales de racha
-  const { data: realStreak, isLoading: isStreakLoading } = useStreak();
-  const streak = realStreak || 0;
+  const { data: streakData, isLoading: isStreakLoading } = useStreak();
+  const streak = streakData?.current || 0;
 
   // Datos estáticos para último entreno (se conectarán después)
     name: 'Pecho y Tríceps',

@@ -8,9 +8,9 @@ export function useStreak() {
   return useQuery({
     queryKey: ['streak', user?.id],
     queryFn: async () => {
-      if (!user) return 0;
+      const defaultStats = { current: 0, longest: 0, total: 0 };
+      if (!user) return defaultStats;
 
-      // Obtenemos solo la columna started_at para eficiencia
       const { data, error } = await supabase
         .from('workouts')
         .select('started_at')
@@ -18,9 +18,10 @@ export function useStreak() {
         .order('started_at', { ascending: false });
 
       if (error) throw error;
-      if (!data || data.length === 0) return 0;
+      if (!data || data.length === 0) return defaultStats;
 
-      // Usar en-CA da el formato YYYY-MM-DD en la zona horaria local
+      const total = data.length;
+
       const dates = Array.from(new Set(data.map(w => {
         return new Date(w.started_at).toLocaleDateString('en-CA');
       })));
@@ -32,30 +33,46 @@ export function useStreak() {
       const todayStr = today.toLocaleDateString('en-CA');
       const yesterdayStr = yesterday.toLocaleDateString('en-CA');
 
-      // Si no entrenó hoy ni ayer, la racha es 0
-      if (dates[0] !== todayStr && dates[0] !== yesterdayStr) {
-        return 0;
-      }
+      let current = 0;
+      let longest = 0;
 
-      let streak = 1;
-      let currentDate = new Date(dates[0]);
-      // Asegurar que lidiamos con la zona horaria local estableciendo hora cero
-      currentDate.setHours(0,0,0,0);
+      let tempStreak = 1;
+      let currentDateObj = new Date(dates[0]);
+      currentDateObj.setHours(0,0,0,0);
+
+      const firstDateIsActive = (dates[0] === todayStr || dates[0] === yesterdayStr);
 
       for (let i = 1; i < dates.length; i++) {
-        const prevDate = new Date(currentDate);
+        const prevDate = new Date(currentDateObj);
         prevDate.setDate(prevDate.getDate() - 1);
         const prevDateStr = prevDate.toLocaleDateString('en-CA');
 
         if (dates[i] === prevDateStr) {
-          streak++;
-          currentDate = prevDate;
+          tempStreak++;
+          currentDateObj = prevDate;
         } else {
-          break;
+          // Evaluar si esta era la actual
+          if (i === tempStreak && firstDateIsActive) {
+            current = tempStreak;
+          }
+          if (tempStreak > longest) longest = tempStreak;
+          
+          tempStreak = 1;
+          currentDateObj = new Date(dates[i]);
+          currentDateObj.setHours(0,0,0,0);
         }
       }
 
-      return streak;
+      if (dates.length === tempStreak && firstDateIsActive) {
+         current = tempStreak;
+      }
+      if (tempStreak > longest) longest = tempStreak;
+
+      if (current === 0 && firstDateIsActive) {
+        current = 1;
+      }
+
+      return { current, longest, total };
     },
     enabled: !!user,
   });
