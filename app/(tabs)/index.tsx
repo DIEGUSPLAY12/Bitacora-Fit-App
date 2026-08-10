@@ -4,13 +4,16 @@ import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Flame, User, Play, ChevronRight, Dumbbell } from 'lucide-react-native';
+import { useStreak } from '../../hooks/useStreak';
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  // Datos estáticos
-  const streak = 4;
-  const lastWorkout = {
+  // Datos reales de racha
+  const { data: realStreak, isLoading: isStreakLoading } = useStreak();
+  const streak = realStreak || 0;
+
+  // Datos estáticos para último entreno (se conectarán después)
     name: 'Pecho y Tríceps',
     duration: '1h 15m',
     date: 'Ayer',
@@ -34,7 +37,7 @@ export default function HomeScreen() {
         {/* Streak Counter */}
         <View style={styles.streakContainer}>
           <Flame color={colors.accent} size={64} />
-          <Text style={styles.streakNumber}>{streak}</Text>
+          <Text style={styles.streakNumber}>{isStreakLoading ? '-' : streak}</Text>
           <Text style={styles.streakLabel}>CURRENT STREAK</Text>
         </View>
 

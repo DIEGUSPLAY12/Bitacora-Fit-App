@@ -4,13 +4,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { CheckCircle2, Flame, Clock, Weight, Hash } from 'lucide-react-native';
+import { useStreak } from '../hooks/useStreak';
 
 export default function WorkoutCompletedScreen() {
   const router = useRouter();
   const { volume, sets, duration } = useLocalSearchParams<{ volume: string, sets: string, duration: string }>();
 
-  // Racha simulada (podría venir de backend)
-  const streak = 5;
+  // Racha real
+  const { data: realStreak } = useStreak();
+  const streak = realStreak || 0;
 
   const handleHome = () => {
     router.replace('/(tabs)');
