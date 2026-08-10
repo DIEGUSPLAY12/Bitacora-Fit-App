@@ -53,9 +53,15 @@ function RootLayoutNav() {
       <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="entrenar" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="ejercicios/index" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="ejercicios/[id]" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -75,10 +81,12 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
-    </PaperProvider>
+    <QueryClientProvider client={queryClient}>
+      <PaperProvider theme={theme}>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </PaperProvider>
+    </QueryClientProvider>
   );
 }
