@@ -7,6 +7,7 @@ import { useWorkoutStore } from '../store/workout-store';
 import { Plus, Minus, Check, Clock, Trash2, X } from 'lucide-react-native';
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
+import { useSaveWorkout } from '../hooks/useSaveWorkout';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -29,7 +30,9 @@ export default function EntrenarScreen() {
   const { 
     exercises, 
     isActive, 
+    startedAt,
     startWorkout, 
+    endWorkout,
     addSet, 
     updateSet, 
     toggleSetComplete, 
@@ -89,10 +92,43 @@ export default function EntrenarScreen() {
     return () => clearInterval(interval);
   }, [restTimerEndsAt, clearRestTimer]);
 
-  const handleFinish = () => {
-    // Navigate to summary (to be implemented in next step)
-    Alert.alert('Fin del Entreno', 'Redirigiendo al resumen... (Siguiente paso)');
-    // router.push('/resumen');
+  const { mutateAsync: saveWorkout, isPending: isSaving } = useSaveWorkout();
+
+  const handleFinish = async () => {
+    try {
+      const finishedAt = Date.now();
+      const st = startedAt || Date.now();
+      
+      await saveWorkout({
+        name: 'Entrenamiento Libre',
+        startedAt: st,
+        finishedAt,
+        exercises
+      });
+      
+      const totalVolume = exercises.reduce((acc, ex) => 
+        acc + ex.sets.filter(s => s.completed).reduce((sAcc, s) => sAcc + (s.weight * s.reps), 0)
+      , 0);
+
+      const totalSets = exercises.reduce((acc, ex) => 
+        acc + ex.sets.filter(s => s.completed).length
+      , 0);
+
+      const durationMs = finishedAt - st;
+      const m = Math.floor(durationMs / 60000);
+      
+      router.replace({
+        pathname: '/entreno-completado',
+        params: { volume: totalVolume.toString(), sets: totalSets.toString(), duration: m.toString() }
+      });
+
+      setTimeout(() => {
+        endWorkout();
+      }, 500);
+
+    } catch (error: any) {
+      Alert.alert('Error', 'No se pudo guardar el entreno: ' + error.message);
+    }
   };
 
   return (
@@ -186,8 +222,14 @@ export default function EntrenarScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
-          <Text style={styles.finishButtonText}>Finish Workout</Text>
+        <TouchableOpacity 
+          style={[styles.finishButton, isSaving && { opacity: 0.7 }]} 
+          onPress={handleFinish}
+          disabled={isSaving}
+        >
+          <Text style={styles.finishButtonText}>
+            {isSaving ? 'Guardando...' : 'Finish Workout'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
