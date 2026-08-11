@@ -5,19 +5,10 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useWorkoutStore } from '../store/workout-store';
 import { Plus, Minus, Check, Clock, Trash2, X } from 'lucide-react-native';
-import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
 import { useSaveWorkout } from '../hooks/useSaveWorkout';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
 
 function formatTime(ms: number) {
   if (ms < 0) return '00:00';
@@ -55,15 +46,6 @@ export default function EntrenarScreen() {
   }, [isActive, startWorkout]);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== 'granted') {
-        await Notifications.requestPermissionsAsync();
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
     let interval: NodeJS.Timeout;
     if (restTimerEndsAt) {
       notifiedRef.current = false;
@@ -76,14 +58,9 @@ export default function EntrenarScreen() {
           clearRestTimer();
           if (!notifiedRef.current) {
             notifiedRef.current = true;
+            // Vibración haptic al terminar el descanso (funciona en Expo Go)
+            // Para notificaciones push usa un development build (SDK 53+)
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Notifications.scheduleNotificationAsync({
-              content: {
-                title: "¡Descanso terminado!",
-                body: "Es hora de tu siguiente serie. ¡A darle!",
-              },
-              trigger: null,
-            });
           }
         } else {
           setTimeLeft(remaining);

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { typography } from '../theme/typography';
+import { colors } from '../theme/colors';
 import { CheckCircle2, Flame, Clock, Weight, Hash } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
 import { useReduceMotion } from '../hooks/useReduceMotion';
