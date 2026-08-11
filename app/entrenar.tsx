@@ -231,7 +231,7 @@ export default function EntrenarScreen() {
           onPress={() => router.push('/ejercicios')}
         >
           <Plus color={colors.accent} size={24} />
-          <Text style={styles.addExerciseText}>Add Exercise</Text>
+          <Text style={styles.addExerciseText}>Añadir ejercicio</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -242,7 +242,7 @@ export default function EntrenarScreen() {
           disabled={isSaving}
         >
           <Text style={styles.finishButtonText}>
-            {isSaving ? 'Guardando...' : 'Finish Workout'}
+            {isSaving ? 'Guardando...' : 'Finalizar entreno'}
           </Text>
         </TouchableOpacity>
       </View>

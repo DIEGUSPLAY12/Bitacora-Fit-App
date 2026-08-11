@@ -14,6 +14,7 @@ export default function HomeScreen() {
   const streak = streakData?.current || 0;
 
   // Datos estáticos para último entreno (se conectarán después)
+  const lastWorkout = {
     name: 'Pecho y Tríceps',
     duration: '1h 15m',
     date: 'Ayer',
