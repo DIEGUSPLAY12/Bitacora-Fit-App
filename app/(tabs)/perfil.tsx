@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useAuth } from '../../hooks/useAuth';
 import { useStreak } from '../../hooks/useStreak';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
-import { User, LogOut, Edit3, Bell, X } from 'lucide-react-native';
+import { User, LogOut, Edit3, Bell, X, TrendingUp } from 'lucide-react-native';
 import { Image } from 'expo-image';
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useStreak();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -81,6 +83,10 @@ export default function PerfilScreen() {
         </View>
 
         <View style={styles.optionsList}>
+          <TouchableOpacity style={styles.optionRow} onPress={() => router.push('/progreso')}>
+            <TrendingUp color={colors.textPrimary} size={24} />
+            <Text style={styles.optionText}>Mi Progreso</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.optionRow} onPress={handleEditProfile}>
             <Edit3 color={colors.textPrimary} size={24} />
             <Text style={styles.optionText}>Editar perfil</Text>
