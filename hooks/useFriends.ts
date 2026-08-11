@@ -133,3 +133,49 @@ export function useRejectFriendRequest() {
     }
   });
 }
+
+export function useFriendsFeed() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['friendsFeed', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('No auth');
+
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          id,
+          name,
+          started_at,
+          finished_at,
+          profiles!workouts_user_id_fkey (
+            id,
+            username,
+            avatar_url
+          ),
+          workout_exercises (
+            id,
+            exercises (
+              id,
+              name,
+              muscle_group
+            ),
+            sets (
+              id,
+              weight_kg,
+              reps,
+              completed
+            )
+          )
+        `)
+        .order('started_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}
+
