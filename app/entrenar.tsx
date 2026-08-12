@@ -86,6 +86,25 @@ export default function EntrenarScreen() {
         acc + ex.sets.filter(s => s.completed).length
       , 0);
 
+      if (totalSets === 0) {
+        Alert.alert(
+          'Entrenamiento vacío',
+          'No has completado ninguna serie. ¿Qué quieres hacer?',
+          [
+            { text: 'Seguir entrenando', style: 'cancel' },
+            { 
+              text: 'Descartar entreno', 
+              style: 'destructive', 
+              onPress: () => {
+                endWorkout();
+                router.back();
+              }
+            }
+          ]
+        );
+        return;
+      }
+
       const durationMs = finishedAt - st;
       const m = Math.floor(durationMs / 60000);
       
