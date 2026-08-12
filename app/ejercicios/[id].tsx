@@ -18,7 +18,7 @@ export default function ExerciseDetailScreen() {
   const handleAdd = () => {
     if (exercise) {
       addExercise(exercise);
-      router.push('/entrenar');
+      router.navigate('/entrenar');
     }
   };
 

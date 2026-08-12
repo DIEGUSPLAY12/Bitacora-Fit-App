@@ -24,7 +24,8 @@ export default function ExerciseSelectorScreen() {
 
   const handleAdd = useCallback((exercise: Exercise) => {
     addExercise(exercise);
-  }, [addExercise]);
+    router.navigate('/entrenar');
+  }, [addExercise, router]);
 
   const renderItem = useCallback(({ item, index }: { item: Exercise, index: number }) => (
     <MotiView
