@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
-export type Timeframe = '1M' | '3M' | '6M' | 'Todo';
+export type Timeframe = 'Semana' | 'Mes' | 'Año';
 
 export interface ProgressDataPoint {
   date: Date;
@@ -63,9 +63,9 @@ export function useExerciseProgress(exerciseId: string | null, timeframe: Timefr
       const now = new Date();
       return points.filter(p => {
         const diffDays = (now.getTime() - p.date.getTime()) / (1000 * 60 * 60 * 24);
-        if (timeframe === '1M') return diffDays <= 30;
-        if (timeframe === '3M') return diffDays <= 90;
-        if (timeframe === '6M') return diffDays <= 180;
+        if (timeframe === 'Semana') return diffDays <= 7;
+        if (timeframe === 'Mes') return diffDays <= 30;
+        if (timeframe === 'Año') return diffDays <= 365;
         return true;
       });
     },
