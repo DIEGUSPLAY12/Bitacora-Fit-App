@@ -178,8 +178,7 @@ export function useFriendsFeed() {
             sets (
               id,
               weight_kg,
-              reps,
-              completed
+              reps
             )
           )
         `)

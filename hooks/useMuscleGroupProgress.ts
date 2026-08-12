@@ -35,8 +35,7 @@ export function useMuscleGroupProgress(timeframe: Timeframe) {
             ),
             sets (
               weight_kg,
-              reps,
-              completed
+              reps
             )
           )
         `)
@@ -62,7 +61,7 @@ export function useMuscleGroupProgress(timeframe: Timeframe) {
           
           let weVolume = 0;
           we.sets?.forEach((set: any) => {
-            if (set.completed && set.weight_kg && set.reps) {
+            if (set.weight_kg && set.reps) {
               weVolume += (Number(set.weight_kg) * Number(set.reps));
             }
           });

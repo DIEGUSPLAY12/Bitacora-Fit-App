@@ -27,8 +27,7 @@ export function useExerciseProgress(exerciseId: string | null, timeframe: Timefr
             exercise_id,
             sets (
               weight_kg,
-              reps,
-              completed
+              reps
             )
           )
         `)
