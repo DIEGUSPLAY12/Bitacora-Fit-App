@@ -6,7 +6,6 @@ import { typography } from '../theme/typography';
 import { useWorkoutStore } from '../store/workout-store';
 import { Plus, Minus, Check, Clock, Trash2, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useSaveWorkout } from '../hooks/useSaveWorkout';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -74,19 +73,10 @@ export default function EntrenarScreen() {
     return () => clearInterval(interval);
   }, [restTimerEndsAt, clearRestTimer]);
 
-  const { mutateAsync: saveWorkout, isPending: isSaving } = useSaveWorkout();
-
   const handleFinish = async () => {
     try {
       const finishedAt = Date.now();
       const st = startedAt || Date.now();
-      
-      await saveWorkout({
-        name: 'Entrenamiento Libre',
-        startedAt: st,
-        finishedAt,
-        exercises
-      });
       
       const totalVolume = exercises.reduce((acc, ex) => 
         acc + ex.sets.filter(s => s.completed).reduce((sAcc, s) => sAcc + (s.weight * s.reps), 0)
@@ -104,12 +94,8 @@ export default function EntrenarScreen() {
         params: { volume: totalVolume.toString(), sets: totalSets.toString(), duration: m.toString() }
       });
 
-      setTimeout(() => {
-        endWorkout();
-      }, 500);
-
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo guardar el entreno: ' + error.message);
+      Alert.alert('Error', 'No se pudo finalizar el entreno: ' + error.message);
     }
   };
 
@@ -216,12 +202,11 @@ export default function EntrenarScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity 
-          style={[styles.finishButton, isSaving && { opacity: 0.7 }]} 
+          style={styles.finishButton} 
           onPress={handleFinish}
-          disabled={isSaving}
         >
           <Text style={styles.finishButtonText}>
-            {isSaving ? 'Guardando...' : 'Finalizar entreno'}
+            Finalizar entreno
           </Text>
         </TouchableOpacity>
       </View>
