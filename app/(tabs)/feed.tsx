@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { UserPlus, User, Users } from 'lucide-react-native';
+import { UserPlus, User, Users, Weight } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
@@ -35,12 +35,19 @@ export default function FeedScreen() {
   const hasFriends = friends && friends.length > 0;
 
   const renderItem = useCallback(({ item, index }: { item: any, index: number }) => {
+    let totalVolume = 0;
+    let totalSets = 0;
+    let exerciseCount = item.workout_exercises?.length || 0;
     let muscleGroups = new Set<string>();
 
     item.workout_exercises?.forEach((we: any) => {
       if (we.exercises?.muscle_group) {
         muscleGroups.add(we.exercises.muscle_group);
       }
+      we.sets?.forEach((s: any) => {
+        totalVolume += (Number(s.weight_kg) * Number(s.reps));
+        totalSets += 1;
+      });
     });
 
     const tags = Array.from(muscleGroups).slice(0, 3);
@@ -55,7 +62,7 @@ export default function FeedScreen() {
           <View style={styles.authorHeader}>
             <View style={styles.avatarContainer}>
               {item.profiles?.avatar_url ? (
-                <Image source={item.profiles.avatar_url} style={styles.avatar} />
+                <Image source={{ uri: item.profiles.avatar_url }} style={styles.avatar} contentFit="cover" />
               ) : (
                 <User color={colors.background} size={16} />
               )}
@@ -66,40 +73,38 @@ export default function FeedScreen() {
             </View>
           </View>
 
-          <Text style={styles.cardTitle}>{item.name}</Text>
+          <TouchableOpacity 
+            activeOpacity={0.7}
+            onPress={() => router.push(`/entrenos/${item.id}`)}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
 
-          <View style={styles.tagsContainer}>
-            {tags.map(tag => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-            {muscleGroups.size > 3 && (
-              <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-            )}
-          </View>
-
-          <View style={styles.detailsContainer}>
-            {item.workout_exercises?.map((we: any, weIndex: number) => (
-              <View key={we.id} style={styles.exerciseBlock}>
-                <Text style={styles.exerciseTitle}>{weIndex + 1}. {we.exercises?.name}</Text>
-                
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.columnHeader, styles.colSet]}>SET</Text>
-                  <Text style={[styles.columnHeader, styles.colKg]}>KG</Text>
-                  <Text style={[styles.columnHeader, styles.colReps]}>REPS</Text>
+            <View style={styles.tagsContainer}>
+              {tags.map(tag => (
+                <View key={tag} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
                 </View>
+              ))}
+              {muscleGroups.size > 3 && (
+                <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+              )}
+            </View>
 
-                {we.sets?.map((set: any, setIndex: number) => (
-                  <View key={set.id} style={styles.setRow}>
-                    <Text style={styles.setIndex}>{setIndex + 1}</Text>
-                    <Text style={styles.controlValue}>{set.weight_kg}</Text>
-                    <Text style={styles.controlValue}>{set.reps}</Text>
-                  </View>
-                ))}
+            <View style={styles.statsContainer}>
+              <View style={styles.stat}>
+                <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
+                <Text style={styles.statText}>ejercicios</Text>
               </View>
-            ))}
-          </View>
+              <View style={styles.stat}>
+                <Text style={styles.statTextHighlight}>{totalSets}</Text>
+                <Text style={styles.statText}>series</Text>
+              </View>
+              <View style={styles.stat}>
+                <Weight color={colors.textSecondary} size={16} />
+                <Text style={styles.statText}>{totalVolume} kg</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         </View>
       </MotiView>
     );
@@ -163,17 +168,10 @@ const styles = StyleSheet.create({
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   tag: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
   tagText: { fontFamily: typography.fontFamily.medium, fontSize: 10, color: colors.textSecondary, textTransform: 'uppercase' },
-  detailsContainer: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingTop: 16 },
-  exerciseBlock: { marginBottom: 16 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary, textTransform: 'capitalize', marginBottom: 12 },
-  tableHeader: { flexDirection: 'row', marginBottom: 8, paddingHorizontal: 8 },
-  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center' },
-  colSet: { width: 40 },
-  colKg: { flex: 1 },
-  colReps: { flex: 1 },
-  setRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 8, borderRadius: 8, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.02)' },
-  setIndex: { width: 40, fontFamily: typography.fontFamily.bold, color: colors.textSecondary, textAlign: 'center' },
-  controlValue: { flex: 1, textAlign: 'center', fontFamily: typography.fontFamily.bold, color: colors.textPrimary },
+  statsContainer: { flexDirection: 'row', gap: 24, marginTop: 4 },
+  stat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statText: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
+  statTextHighlight: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.accent },
   emptyState: { padding: 40, alignItems: 'center', marginTop: 40 },
   emptyIcon: { marginBottom: 16 },
   emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16 },
