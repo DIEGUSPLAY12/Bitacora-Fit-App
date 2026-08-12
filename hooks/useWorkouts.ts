@@ -69,3 +69,35 @@ export function useWorkoutDetail(id: string) {
     enabled: !!id,
   });
 }
+
+export function useLastWorkout() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['last-workout', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          id,
+          name,
+          started_at,
+          finished_at,
+          workout_exercises (
+            order_index,
+            exercises ( name )
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}

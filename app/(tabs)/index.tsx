@@ -5,6 +5,26 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Flame, User, Play, ChevronRight, Dumbbell } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
+import { useLastWorkout } from '../../hooks/useWorkouts';
+
+function getRelativeTime(dateString: string) {
+  const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
+  if (diffInDays === 0) return 'Hoy';
+  if (diffInDays === 1) return 'Ayer';
+  if (diffInDays < 7) return `Hace ${diffInDays} días`;
+  if (diffInDays < 30) return `Hace ${Math.floor(diffInDays/7)} semanas`;
+  return new Date(dateString).toLocaleDateString('es-ES');
+}
+
+function formatDuration(start: string, end: string) {
+  if (!start || !end) return '';
+  const diffMs = new Date(end).getTime() - new Date(start).getTime();
+  const diffMins = Math.max(1, Math.floor(diffMs / 60000));
+  const h = Math.floor(diffMins / 60);
+  const m = diffMins % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -13,13 +33,23 @@ export default function HomeScreen() {
   const { data: streakData, isLoading: isStreakLoading } = useStreak();
   const streak = streakData?.current || 0;
 
-  // Datos estáticos para último entreno (se conectarán después)
-  const lastWorkout = {
-    name: 'Pecho y Tríceps',
-    duration: '1h 15m',
-    date: 'Ayer',
-    exercises: 'Press banca, Fondos, Extensiones...',
-  };
+  const { data: lastWorkoutData, isLoading: isLastWorkoutLoading } = useLastWorkout();
+
+  let lastWorkout = null;
+  if (lastWorkoutData) {
+    const exercisesText = (lastWorkoutData.workout_exercises || [])
+      .sort((a: any, b: any) => a.order_index - b.order_index)
+      .map((we: any) => we.exercises?.name)
+      .filter(Boolean)
+      .join(', ');
+
+    lastWorkout = {
+      name: lastWorkoutData.name,
+      duration: formatDuration(lastWorkoutData.started_at, lastWorkoutData.finished_at),
+      date: getRelativeTime(lastWorkoutData.started_at),
+      exercises: exercisesText.length > 35 ? exercisesText.substring(0, 35) + '...' : exercisesText,
+    };
+  }
 
   return (
     <View style={styles.container}>
@@ -56,18 +86,36 @@ export default function HomeScreen() {
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Último entreno</Text>
-            <Text style={styles.cardDate}>{lastWorkout.date}</Text>
+            {lastWorkout && <Text style={styles.cardDate}>{lastWorkout.date}</Text>}
           </View>
-          <Text style={styles.workoutName}>{lastWorkout.name}</Text>
-          <Text style={styles.workoutDetails}>{lastWorkout.duration} • {lastWorkout.exercises}</Text>
           
-          <TouchableOpacity 
-            style={styles.cardButton}
-            onPress={() => router.push('/(tabs)/historial')}
-          >
-            <Text style={styles.cardButtonText}>Ver historial completo</Text>
-            <ChevronRight color={colors.accent} size={20} />
-          </TouchableOpacity>
+          {isLastWorkoutLoading ? (
+            <Text style={styles.emptyText}>Cargando...</Text>
+          ) : lastWorkout ? (
+            <>
+              <Text style={styles.workoutName}>{lastWorkout.name}</Text>
+              <Text style={styles.workoutDetails}>{lastWorkout.duration} • {lastWorkout.exercises}</Text>
+              
+              <TouchableOpacity 
+                style={styles.cardButton}
+                onPress={() => router.push('/(tabs)/historial')}
+              >
+                <Text style={styles.cardButtonText}>Ver historial completo</Text>
+                <ChevronRight color={colors.accent} size={20} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Aún no has registrado ningún entreno</Text>
+              <TouchableOpacity 
+                style={[styles.cardButton, { borderTopWidth: 0, paddingTop: 12 }]}
+                onPress={() => router.push('/entrenar')}
+              >
+                <Text style={styles.cardButtonText}>Empezar uno ahora</Text>
+                <ChevronRight color={colors.accent} size={20} />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -182,4 +230,13 @@ const styles = StyleSheet.create({
     ...typography.scale.body,
     color: colors.accent,
   },
+  emptyState: {
+    paddingVertical: 12,
+  },
+  emptyText: {
+    fontFamily: typography.fontFamily.regular,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  }
 });
