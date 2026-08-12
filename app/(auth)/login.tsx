@@ -6,6 +6,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,17 +20,25 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [emailError, setEmailError] = useState(false);
 
   const handleLogin = async () => {
+    setEmailError(false);
     setErrorMsg('');
-    if (!email || !email.includes('@')) {
-      setErrorMsg('Por favor, ingresa un correo electrónico válido.');
-      return;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    if (!email || !emailRegex.test(email)) {
+      setEmailError(true);
+      hasError = true;
     }
     if (!password) {
       setErrorMsg('Por favor, ingresa tu contraseña.');
-      return;
+      hasError = true;
     }
+
+    if (hasError) return;
 
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -51,7 +60,7 @@ export default function LoginScreen() {
     setGoogleLoading(true);
     setErrorMsg('');
     try {
-      const redirectUrl = makeRedirectUri();
+      const redirectUrl = makeRedirectUri({ scheme: 'bitacorafitapp' });
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -61,7 +70,18 @@ export default function LoginScreen() {
 
       if (error) throw error;
       if (data?.url) {
-        await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        const res = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        if (res?.type === 'success' && res.url) {
+          const { params, errorCode } = QueryParams.getQueryParams(res.url);
+          if (errorCode) throw new Error(errorCode);
+          
+          if (params?.access_token && params?.refresh_token) {
+            await supabase.auth.setSession({
+              access_token: params.access_token,
+              refresh_token: params.refresh_token,
+            });
+          }
+        }
       }
     } catch (e) {
       setErrorMsg('Ocurrió un error con Google.');
@@ -88,10 +108,12 @@ export default function LoginScreen() {
           placeholder="Correo electrónico"
           placeholderTextColor={colors.textSecondary}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(val) => { setEmail(val); setEmailError(false); }}
           autoCapitalize="none"
           keyboardType="email-address"
         />
+        {emailError ? <Text style={styles.validationErrorText}>Introduce un correo electrónico válido</Text> : null}
+        
         <TextInput
           style={styles.input}
           placeholder="Contraseña"
@@ -215,5 +237,11 @@ const styles = StyleSheet.create({
     color: colors.destructive,
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.caption,
+  },
+  validationErrorText: {
+    color: colors.destructive,
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    marginTop: -8,
   },
 });

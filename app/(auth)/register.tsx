@@ -6,6 +6,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,17 +20,37 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [emailError, setEmailError] = useState(false);
+  const [passwordSubmitted, setPasswordSubmitted] = useState(false);
+
+  const passwordReqs = [
+    { id: 'length', text: 'Mínimo 7 caracteres', regex: /.{7,}/ },
+    { id: 'uppercase', text: 'Una mayúscula', regex: /[A-Z]/ },
+    { id: 'lowercase', text: 'Una minúscula', regex: /[a-z]/ },
+    { id: 'number', text: 'Un número', regex: /[0-9]/ },
+    { id: 'special', text: 'Un símbolo especial', regex: /[^A-Za-z0-9]/ },
+  ];
 
   const handleRegister = async () => {
+    setEmailError(false);
     setErrorMsg('');
-    if (!email || !email.includes('@')) {
-      setErrorMsg('Por favor, ingresa un correo electrónico válido.');
-      return;
+    setPasswordSubmitted(true);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    if (!email || !emailRegex.test(email)) {
+      setEmailError(true);
+      hasError = true;
     }
-    if (!password || password.length < 6) {
-      setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
-      return;
+
+    const isPasswordValid = passwordReqs.every(req => req.regex.test(password));
+    if (!isPasswordValid) {
+      setErrorMsg('La contraseña no cumple los requisitos.');
+      hasError = true;
     }
+
+    if (hasError) return;
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -57,7 +78,7 @@ export default function RegisterScreen() {
     setGoogleLoading(true);
     setErrorMsg('');
     try {
-      const redirectUrl = makeRedirectUri();
+      const redirectUrl = makeRedirectUri({ scheme: 'bitacorafitapp' });
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -67,7 +88,18 @@ export default function RegisterScreen() {
 
       if (error) throw error;
       if (data?.url) {
-        await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        const res = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        if (res?.type === 'success' && res.url) {
+          const { params, errorCode } = QueryParams.getQueryParams(res.url);
+          if (errorCode) throw new Error(errorCode);
+          
+          if (params?.access_token && params?.refresh_token) {
+            await supabase.auth.setSession({
+              access_token: params.access_token,
+              refresh_token: params.refresh_token,
+            });
+          }
+        }
       }
     } catch (e) {
       setErrorMsg('Ocurrió un error con Google.');
@@ -94,18 +126,31 @@ export default function RegisterScreen() {
           placeholder="Correo electrónico"
           placeholderTextColor={colors.textSecondary}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(val) => { setEmail(val); setEmailError(false); }}
           autoCapitalize="none"
           keyboardType="email-address"
         />
+        {emailError ? <Text style={styles.validationErrorText}>Introduce un correo electrónico válido</Text> : null}
+
         <TextInput
           style={styles.input}
-          placeholder="Contraseña (mínimo 6 caracteres)"
+          placeholder="Contraseña"
           placeholderTextColor={colors.textSecondary}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(val) => { setPassword(val); setPasswordSubmitted(false); setErrorMsg(''); }}
           secureTextEntry
         />
+        
+        <View style={styles.reqsContainer}>
+          {passwordReqs.map(req => {
+            const isMet = req.regex.test(password);
+            return (
+              <Text key={req.id} style={[styles.reqText, isMet ? styles.reqMet : (passwordSubmitted && !isMet ? styles.reqUnmetError : styles.reqUnmet)]}>
+                {isMet ? '✓' : '•'} {req.text}
+              </Text>
+            );
+          })}
+        </View>
 
         {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
 
@@ -221,5 +266,29 @@ const styles = StyleSheet.create({
     color: colors.destructive,
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.caption,
+  },
+  validationErrorText: {
+    color: colors.destructive,
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    marginTop: -8,
+  },
+  reqsContainer: {
+    marginTop: -8,
+    gap: 4,
+    paddingHorizontal: 4,
+  },
+  reqText: {
+    fontFamily: typography.fontFamily.regular,
+    ...typography.scale.caption,
+  },
+  reqMet: {
+    color: '#10b981',
+  },
+  reqUnmet: {
+    color: colors.textSecondary,
+  },
+  reqUnmetError: {
+    color: colors.destructive,
   },
 });
