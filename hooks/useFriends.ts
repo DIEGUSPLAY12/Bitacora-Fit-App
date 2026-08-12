@@ -191,13 +191,13 @@ export function useFriends() {
 
       const { data, error } = await supabase
         .from('friendships')
-        .select(\
+        .select(`
           user_id,
           friend_id,
           requester:profiles!friendships_user_id_fkey(id, username, avatar_url),
           addressee:profiles!friendships_friend_id_fkey(id, username, avatar_url)
-        \)
-        .or(\user_id.eq.\,friend_id.eq.\\)
+        `)
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
         .eq('status', 'accepted');
 
       if (error) throw error;

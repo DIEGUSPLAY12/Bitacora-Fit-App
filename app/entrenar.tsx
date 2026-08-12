@@ -46,7 +46,7 @@ export default function EntrenarScreen() {
   }, [isActive, startWorkout]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (restTimerEndsAt) {
       notifiedRef.current = false;
       interval = setInterval(() => {
