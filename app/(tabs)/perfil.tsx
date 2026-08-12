@@ -7,7 +7,7 @@ import { typography } from '../../theme/typography';
 import { useAuth } from '../../hooks/useAuth';
 import { useStreak } from '../../hooks/useStreak';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
-import { User, LogOut, Edit3, Bell, X, TrendingUp } from 'lucide-react-native';
+import { User, LogOut, Edit3, Edit2, Bell, X, TrendingUp } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,6 +20,7 @@ export default function PerfilScreen() {
   const { mutateAsync: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newAvatarUrl, setNewAvatarUrl] = useState('');
 
@@ -34,18 +35,28 @@ export default function PerfilScreen() {
 
   const handleEditProfile = () => {
     setNewUsername(profile?.username || '');
-    setNewAvatarUrl(profile?.avatar_url || '');
     setEditModalVisible(true);
   };
 
   const saveProfile = async () => {
     if (!newUsername.trim()) return;
     try {
-      await updateProfile({ 
-        username: newUsername.trim(),
-        avatar_url: newAvatarUrl || null
-      });
+      await updateProfile({ username: newUsername.trim() });
       setEditModalVisible(false);
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    }
+  };
+
+  const handleEditAvatar = () => {
+    setNewAvatarUrl(profile?.avatar_url || '');
+    setAvatarModalVisible(true);
+  };
+
+  const saveAvatar = async () => {
+    try {
+      await updateProfile({ avatar_url: newAvatarUrl || null });
+      setAvatarModalVisible(false);
     } catch (e: any) {
       Alert.alert('Error', e.message);
     }
@@ -67,12 +78,17 @@ export default function PerfilScreen() {
 
       <View style={styles.content}>
         <View style={styles.userSection}>
-          <View style={styles.avatarContainer}>
-            {profile?.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
-            ) : (
-              <User color={colors.background} size={48} />
-            )}
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatarContainer}>
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+              ) : (
+                <User color={colors.background} size={48} />
+              )}
+            </View>
+            <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar}>
+              <Edit2 color={colors.background} size={16} />
+            </TouchableOpacity>
           </View>
           <Text style={styles.username}>
             {profileLoading ? 'Cargando...' : profile?.username || user?.email}
@@ -135,7 +151,27 @@ export default function PerfilScreen() {
               autoCorrect={false}
             />
 
-            <Text style={styles.inputLabel}>Avatar</Text>
+            <TouchableOpacity 
+              style={styles.saveButton} 
+              onPress={saveProfile}
+              disabled={isUpdating}
+            >
+              {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar</Text>}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal visible={avatarModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Cambiar Avatar</Text>
+              <TouchableOpacity onPress={() => setAvatarModalVisible(false)}>
+                <X color={colors.textPrimary} size={24} />
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.avatarGrid}>
               {AVATAR_SEEDS.map((seed) => {
                 const url = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}`;
@@ -154,13 +190,13 @@ export default function PerfilScreen() {
             
             <TouchableOpacity 
               style={styles.saveButton} 
-              onPress={saveProfile}
+              onPress={saveAvatar}
               disabled={isUpdating}
             >
-              {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar</Text>}
+              {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar avatar</Text>}
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </ScrollView>
   );
@@ -172,7 +208,9 @@ const styles = StyleSheet.create({
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
   content: { padding: 24, flexGrow: 1 },
   userSection: { alignItems: 'center', marginBottom: 40 },
-  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden' },
+  avatarWrapper: { position: 'relative', marginBottom: 16 },
+  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  editAvatarButton: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.accent, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: colors.background },
   avatar: { width: '100%', height: '100%' },
   username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 4 },
   email: { fontFamily: typography.fontFamily.regular, ...typography.scale.body, color: colors.textSecondary },
