@@ -142,6 +142,20 @@ export function useFriendsFeed() {
     queryFn: async () => {
       if (!user) throw new Error('No auth');
 
+      // 1. Obtener los IDs de los amigos del usuario (status='accepted')
+      const { data: friendships, error: friendError } = await supabase
+        .from('friendships')
+        .select('user_id, friend_id')
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq('status', 'accepted');
+
+      if (friendError) throw friendError;
+
+      const friendIds = friendships.map(f => f.user_id === user.id ? f.friend_id : f.user_id);
+
+      if (friendIds.length === 0) return [];
+
+      // 2. Obtener los workouts de esos amigos
       const { data, error } = await supabase
         .from('workouts')
         .select(`
@@ -169,6 +183,7 @@ export function useFriendsFeed() {
             )
           )
         `)
+        .in('user_id', friendIds)
         .order('started_at', { ascending: false })
         .limit(20);
 
