@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { ArrowLeft, User, Search, Check, X as XIcon } from 'lucide-react-native';
-import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest } from '../hooks/useFriends';
+import { ArrowLeft, User, Search, Check, X as XIcon, UserPlus } from 'lucide-react-native';
+import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends } from '../hooks/useFriends';
 import { Image } from 'expo-image';
 
 export default function AmigosScreen() {
   const router = useRouter();
+  const searchInputRef = useRef<TextInput>(null);
+  
+  const [activeTab, setActiveTab] = useState<'amigos' | 'solicitudes'>('amigos');
   const [searchQuery, setSearchQuery] = useState('');
   
   const { data: searchResults, isLoading: isSearching } = useSearchUsers(searchQuery);
   const { data: requests, isLoading: isRequestsLoading } = useFriendRequests();
+  const { data: friends, isLoading: isFriendsLoading } = useFriends();
   
   const { mutateAsync: sendRequest, isPending: isSending } = useSendFriendRequest();
   const { mutateAsync: acceptRequest, isPending: isAccepting } = useAcceptFriendRequest();
@@ -91,73 +95,145 @@ export default function AmigosScreen() {
       </View>
     );
   };
+  
+  const renderFriendCard = ({ item }: { item: any }) => {
+    return (
+      <View style={styles.card}>
+        <View style={styles.userInfo}>
+          <View style={styles.avatarContainer}>
+            {item.avatar_url ? (
+              <Image source={item.avatar_url} style={styles.avatar} />
+            ) : (
+              <User color={colors.background} size={24} />
+            )}
+          </View>
+          <Text style={styles.username}>{item.username}</Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft color={colors.textPrimary} size={24} />
+        <View style={styles.headerLeft}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <ArrowLeft color={colors.textPrimary} size={24} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Amigos</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.headerRightButton}
+          onPress={() => {
+            setActiveTab('amigos');
+            searchInputRef.current?.focus();
+          }}
+        >
+          <UserPlus color={colors.textPrimary} size={24} />
         </TouchableOpacity>
-        <Text style={styles.title}>Amigos</Text>
       </View>
 
       <View style={styles.searchContainer}>
         <Search color={colors.textSecondary} size={20} style={styles.searchIcon} />
         <TextInput
+          ref={searchInputRef}
           style={styles.searchInput}
-          placeholder="Buscar por nombre de usuario..."
+          placeholder="Buscar usuarios..."
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={(text) => {
+            setSearchQuery(text);
+            if (text.trim().length > 0 && activeTab !== 'amigos') {
+              setActiveTab('amigos');
+            }
+          }}
           autoCapitalize="none"
         />
       </View>
 
-      <FlatList
-        data={searchQuery.trim() ? searchResults : requests}
-        keyExtractor={item => item.id}
-        renderItem={searchQuery.trim() ? renderSearchCard : renderRequestCard}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={() => (
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {searchQuery.trim() ? 'Resultados de búsqueda' : 'Solicitudes pendientes'}
-            </Text>
-          </View>
-        )}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyState}>
-            {searchQuery.trim() ? (
-              isSearching ? (
-                <ActivityIndicator color={colors.accent} />
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'amigos' && styles.activeTab]}
+          onPress={() => setActiveTab('amigos')}
+        >
+          <Text style={[styles.tabText, activeTab === 'amigos' && styles.activeTabText]}>Amigos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'solicitudes' && styles.activeTab]}
+          onPress={() => setActiveTab('solicitudes')}
+        >
+          <Text style={[styles.tabText, activeTab === 'solicitudes' && styles.activeTabText]}>Solicitudes</Text>
+          {requests && requests.length > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{requests.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === 'amigos' ? (
+        <FlatList
+          data={searchQuery.trim() ? searchResults : friends}
+          keyExtractor={item => item.id}
+          renderItem={searchQuery.trim() ? renderSearchCard : renderFriendCard}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyState}>
+              {searchQuery.trim() ? (
+                isSearching ? (
+                  <ActivityIndicator color={colors.accent} />
+                ) : (
+                  <Text style={styles.emptyText}>No se encontraron usuarios.</Text>
+                )
               ) : (
-                <Text style={styles.emptyText}>No se encontraron usuarios.</Text>
-              )
-            ) : (
-              isRequestsLoading ? (
+                isFriendsLoading ? (
+                  <ActivityIndicator color={colors.accent} />
+                ) : (
+                  <Text style={styles.emptyText}>Aún no tienes amigos añadidos.</Text>
+                )
+              )}
+            </View>
+          )}
+        />
+      ) : (
+        <FlatList
+          data={requests}
+          keyExtractor={item => item.id}
+          renderItem={renderRequestCard}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyState}>
+              {isRequestsLoading ? (
                 <ActivityIndicator color={colors.accent} />
               ) : (
                 <Text style={styles.emptyText}>No tienes solicitudes pendientes.</Text>
-              )
-            )}
-          </View>
-        )}
-      />
+              )}
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 60, paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 24, paddingTop: 60, paddingBottom: 16 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
   backButton: { marginRight: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 24, color: colors.textPrimary },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: 24, borderRadius: 12, paddingHorizontal: 16, marginBottom: 24 },
+  headerRightButton: { padding: 8 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: 24, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   searchIcon: { marginRight: 12 },
   searchInput: { flex: 1, height: 48, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, ...typography.scale.body },
+  tabsContainer: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: colors.surface, marginBottom: 16 },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  activeTab: { borderBottomColor: colors.accent },
+  tabText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, ...typography.scale.body },
+  activeTabText: { color: colors.textPrimary, fontFamily: typography.fontFamily.bold },
+  badge: { backgroundColor: colors.accent, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, minWidth: 20, alignItems: 'center' },
+  badgeText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.background },
   listContent: { paddingHorizontal: 24, paddingBottom: 40 },
-  sectionHeader: { marginBottom: 16 },
-  sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
   card: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.surface, padding: 16, borderRadius: 16, marginBottom: 12 },
   userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   avatarContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },

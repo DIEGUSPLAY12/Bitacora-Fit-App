@@ -179,3 +179,32 @@ export function useFriendsFeed() {
   });
 }
 
+
+
+export function useFriends() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['friends', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('No auth');
+
+      const { data, error } = await supabase
+        .from('friendships')
+        .select(\
+          user_id,
+          friend_id,
+          requester:profiles!friendships_user_id_fkey(id, username, avatar_url),
+          addressee:profiles!friendships_friend_id_fkey(id, username, avatar_url)
+        \)
+        .or(\user_id.eq.\,friend_id.eq.\\)
+        .eq('status', 'accepted');
+
+      if (error) throw error;
+
+      return data.map(f => f.user_id === user.id ? f.addressee : f.requester);
+    },
+    enabled: !!user,
+  });
+}
+
