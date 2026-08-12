@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
@@ -49,7 +49,11 @@ export default function PerfilScreen() {
   const totalWorkouts = stats?.total || 0;
 
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>Perfil</Text>
       </View>
@@ -134,7 +138,7 @@ export default function PerfilScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { padding: 24, paddingTop: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
-  content: { flex: 1, padding: 24 },
+  content: { padding: 24, flexGrow: 1 },
   userSection: { alignItems: 'center', marginBottom: 40 },
   avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden' },
   avatar: { width: '100%', height: '100%' },
