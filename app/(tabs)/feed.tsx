@@ -59,7 +59,11 @@ export default function FeedScreen() {
         transition={{ type: 'timing', duration: 400, delay: reduceMotion ? 0 : index * 100 }}
       >
         <View style={styles.card}>
-          <View style={styles.authorHeader}>
+          <TouchableOpacity 
+            style={styles.authorHeader}
+            activeOpacity={0.7}
+            onPress={() => router.push(`/perfil-usuario/${item.user_id}`)}
+          >
             <View style={styles.avatarContainer}>
               {item.profiles?.avatar_url ? (
                 <Image source={{ uri: item.profiles.avatar_url }} style={styles.avatar} contentFit="cover" />
@@ -71,7 +75,7 @@ export default function FeedScreen() {
               <Text style={styles.authorName}>{item.profiles?.username}</Text>
               <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity 
             activeOpacity={0.7}

@@ -101,3 +101,27 @@ export function useLastWorkout() {
     enabled: !!user,
   });
 }
+
+export function useRecentWorkouts(userId: string, limit: number = 5) {
+  return useQuery({
+    queryKey: ['recent-workouts', userId, limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          *,
+          workout_exercises (
+            exercises ( muscle_group ),
+            sets ( weight_kg, reps )
+          )
+        `)
+        .eq('user_id', userId)
+        .order('started_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userId,
+  });
+}

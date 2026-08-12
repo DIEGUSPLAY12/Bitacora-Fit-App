@@ -2,19 +2,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
-export function useStreak() {
+export function useStreak(userId?: string) {
   const { user } = useAuth();
+  const targetId = userId || user?.id;
 
   return useQuery({
-    queryKey: ['streak', user?.id],
+    queryKey: ['streak', targetId],
     queryFn: async () => {
       const defaultStats = { current: 0, longest: 0, total: 0 };
-      if (!user) return defaultStats;
+      if (!targetId) return defaultStats;
 
       const { data, error } = await supabase
         .from('workouts')
         .select('started_at')
-        .eq('user_id', user.id)
+        .eq('user_id', targetId)
         .order('started_at', { ascending: false });
 
       if (error) throw error;
@@ -74,6 +75,6 @@ export function useStreak() {
 
       return { current, longest, total };
     },
-    enabled: !!user,
+    enabled: !!targetId,
   });
 }
