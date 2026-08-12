@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { useSaveWorkout } from '../hooks/useSaveWorkout';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function formatTime(ms: number) {
   if (ms < 0) return '00:00';
@@ -19,6 +20,7 @@ function formatTime(ms: number) {
 }
 
 export default function EntrenarScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { 
     exercises, 
@@ -113,7 +115,7 @@ export default function EntrenarScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
           <X color={colors.textPrimary} size={24} />
         </TouchableOpacity>
@@ -229,7 +231,7 @@ export default function EntrenarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 60, borderBottomWidth: 1, borderBottomColor: colors.surface },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: colors.surface },
   closeButton: { marginRight: 16 },
   headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, flex: 1 },
   headerRight: { width: 100, alignItems: 'flex-end' },

@@ -10,10 +10,12 @@ import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Search, ArrowLeft, Plus } from 'lucide-react-native';
 import { MotiView } from 'moti';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const FILTERS = ['Todos', 'Pecho', 'Espalda', 'Piernas', 'Hombro', 'Brazo', 'Core'];
 
 export default function ExerciseSelectorScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
@@ -63,7 +65,7 @@ export default function ExerciseSelectorScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
@@ -114,7 +116,7 @@ export default function ExerciseSelectorScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 60 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16 },
   backButton: { marginRight: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: 24, borderRadius: 12, paddingHorizontal: 16, height: 48 },

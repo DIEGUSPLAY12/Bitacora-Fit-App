@@ -4,12 +4,14 @@ import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { Dumbbell } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BienvenidaScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Dumbbell color={colors.accent} size={64} />

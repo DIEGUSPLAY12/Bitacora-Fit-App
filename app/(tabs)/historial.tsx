@@ -8,6 +8,7 @@ import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { Clock, Weight, ChevronRight } from 'lucide-react-native';
 import { MotiView } from 'moti';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -19,6 +20,7 @@ function getRelativeTime(dateString: string) {
 }
 
 export default function HistorialScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { 
     data, 
@@ -102,7 +104,7 @@ export default function HistorialScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>Historial</Text>
       </View>
 
@@ -137,7 +139,7 @@ export default function HistorialScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 24, paddingTop: 60, paddingBottom: 16 },
+  header: { padding: 24, paddingTop: 16, paddingBottom: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
   listContainer: { flex: 1 },
   listContent: { paddingHorizontal: 24, paddingBottom: 100 },

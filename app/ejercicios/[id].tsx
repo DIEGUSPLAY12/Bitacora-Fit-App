@@ -7,8 +7,10 @@ import { useExercise } from '../../hooks/useExercises';
 import { useWorkoutStore } from '../../store/workout-store';
 import { Image } from 'expo-image';
 import { ArrowLeft } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ExerciseDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   
@@ -54,7 +56,7 @@ export default function ExerciseDetailScreen() {
             contentFit="cover" 
             transition={300}
           />
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={[styles.backButton, { top: insets.top + 16 }]} onPress={() => router.back()}>
             <ArrowLeft color={colors.textPrimary} size={24} />
           </TouchableOpacity>
         </View>

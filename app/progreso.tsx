@@ -9,6 +9,7 @@ import { useExerciseProgress, Timeframe } from '../hooks/useExerciseProgress';
 import { useMuscleGroupProgress } from '../hooks/useMuscleGroupProgress';
 import { LineChart } from 'react-native-gifted-charts';
 import { RadarChart } from '../components/RadarChart';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +20,7 @@ const TIMEFRAMES: { label: string; value: Timeframe }[] = [
 ];
 
 export default function ProgresoScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   
   const [activeTab, setActiveTab] = useState<'ejercicio' | 'musculo'>('ejercicio');
@@ -91,7 +93,7 @@ export default function ProgresoScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
@@ -281,7 +283,7 @@ export default function ProgresoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 60, paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, paddingBottom: 16 },
   backButton: { marginRight: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 24, color: colors.textPrimary },
   tabsContainer: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: colors.surface, marginBottom: 20 },

@@ -62,10 +62,12 @@ function RootLayoutNav() {
 }
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  const insets = useSafeAreaInsets();
   const [loaded, error] = useFonts({
     Inter_400Regular,
     Inter_500Medium,

@@ -9,8 +9,10 @@ import { useStreak } from '../../hooks/useStreak';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import { User, LogOut, Edit3, Bell, X, TrendingUp } from 'lucide-react-native';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function PerfilScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useStreak();
@@ -48,7 +50,7 @@ export default function PerfilScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>Perfil</Text>
       </View>
 
@@ -138,7 +140,7 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 24, paddingTop: 60 },
+  header: { padding: 24, paddingTop: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
   content: { flex: 1, padding: 24 },
   userSection: { alignItems: 'center', marginBottom: 40 },

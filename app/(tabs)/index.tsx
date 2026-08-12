@@ -6,6 +6,7 @@ import { typography } from '../../theme/typography';
 import { Flame, User, Play, ChevronRight, Dumbbell } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
 import { useLastWorkout } from '../../hooks/useWorkouts';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -27,6 +28,7 @@ function formatDuration(start: string, end: string) {
 }
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   // Datos reales de racha
@@ -55,7 +57,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
           <View style={styles.logoRow}>
             <Dumbbell color={colors.accent} size={28} />
             <Text style={styles.headerTitle}>Bitácora Fit</Text>
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'row',

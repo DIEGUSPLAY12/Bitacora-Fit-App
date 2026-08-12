@@ -6,8 +6,10 @@ import { typography } from '../theme/typography';
 import { ArrowLeft, User, Search, Check, X as XIcon, UserPlus } from 'lucide-react-native';
 import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends } from '../hooks/useFriends';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AmigosScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const searchInputRef = useRef<TextInput>(null);
   
@@ -115,7 +117,7 @@ export default function AmigosScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <ArrowLeft color={colors.textPrimary} size={24} />
@@ -218,7 +220,7 @@ export default function AmigosScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 24, paddingTop: 60, paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 24, paddingTop: 16, paddingBottom: 16 },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
   backButton: { marginRight: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 24, color: colors.textPrimary },

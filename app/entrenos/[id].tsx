@@ -5,8 +5,10 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { ArrowLeft, Check, Clock, Weight, Hash } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WorkoutDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { data: workout, isLoading } = useWorkoutDetail(id);
@@ -41,7 +43,7 @@ export default function WorkoutDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
@@ -107,7 +109,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   errorText: { fontFamily: typography.fontFamily.medium, color: colors.destructive },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 60, borderBottomWidth: 1, borderBottomColor: colors.surface },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: colors.surface },
   backButton: { marginRight: 16 },
   headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, flex: 1 },
   scrollContent: { padding: 24, paddingBottom: 60 },

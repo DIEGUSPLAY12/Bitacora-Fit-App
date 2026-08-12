@@ -9,6 +9,7 @@ import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { MotiView } from 'moti';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function getRelativeTime(dateString: string) {
   const diffInMs = new Date().getTime() - new Date(dateString).getTime();
@@ -26,6 +27,7 @@ function getRelativeTime(dateString: string) {
 }
 
 export default function FeedScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { data: workouts, isLoading } = useFriendsFeed();
   const reduceMotion = useReduceMotion();
@@ -103,7 +105,7 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>Actividad de tus amigos</Text>
         <TouchableOpacity onPress={() => router.push('/amigos')}>
           <UserPlus color={colors.textPrimary} size={28} />
@@ -138,7 +140,7 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 60, paddingBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 16, paddingBottom: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
   listContainer: { flex: 1 },
   listContent: { paddingHorizontal: 24, paddingBottom: 100 },

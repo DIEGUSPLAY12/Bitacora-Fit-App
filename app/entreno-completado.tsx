@@ -7,8 +7,10 @@ import { CheckCircle2, Flame, Clock, Weight, Hash } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WorkoutCompletedScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { volume, sets, duration } = useLocalSearchParams<{ volume: string, sets: string, duration: string }>();
 
