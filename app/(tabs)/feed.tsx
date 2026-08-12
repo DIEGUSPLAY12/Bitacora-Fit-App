@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { UserPlus, User, Users } from 'lucide-react-native';
-import { useFriendsFeed } from '../../hooks/useFriends';
+import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { MotiView } from 'moti';
@@ -30,7 +30,9 @@ export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { data: workouts, isLoading } = useFriendsFeed();
+  const { data: friends } = useFriends();
   const reduceMotion = useReduceMotion();
+  const hasFriends = friends && friends.length > 0;
 
   const renderItem = useCallback(({ item, index }: { item: any, index: number }) => {
     let muscleGroups = new Set<string>();
@@ -125,10 +127,16 @@ export default function FeedScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Users color={colors.textSecondary} size={48} style={styles.emptyIcon} />
-                <Text style={styles.emptyText}>Añade amigos para ver su actividad aquí</Text>
-                <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/amigos')}>
-                  <Text style={styles.emptyButtonText}>Buscar amigos</Text>
-                </TouchableOpacity>
+                {hasFriends ? (
+                  <Text style={styles.emptyText}>Tus amigos aún no han subido ningún entreno</Text>
+                ) : (
+                  <>
+                    <Text style={styles.emptyText}>Añade amigos para ver su actividad aquí</Text>
+                    <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/amigos')}>
+                      <Text style={styles.emptyButtonText}>Buscar amigos</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             }
           />
