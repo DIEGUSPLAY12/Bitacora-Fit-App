@@ -7,6 +7,8 @@ import { Flame, User, Play, ChevronRight, Dumbbell } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
 import { useLastWorkout } from '../../hooks/useWorkouts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useProfile } from '../../hooks/useProfile';
+import { Image } from 'expo-image';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -35,6 +37,7 @@ export default function HomeScreen() {
   const { data: streakData, isLoading: isStreakLoading } = useStreak();
   const streak = streakData?.current || 0;
 
+  const { data: profile } = useProfile();
   const { data: lastWorkoutData, isLoading: isLastWorkoutLoading } = useLastWorkout();
 
   let lastWorkout = null;
@@ -63,7 +66,13 @@ export default function HomeScreen() {
             <Text style={styles.headerTitle}>Bitácora Fit</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/(tabs)/perfil')}>
-            <User color={colors.textPrimary} size={28} />
+            {profile?.avatar_url ? (
+              <View style={styles.headerAvatarContainer}>
+                <Image source={{ uri: profile.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
+              </View>
+            ) : (
+              <User color={colors.textPrimary} size={28} />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -148,6 +157,17 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.title,
     color: colors.textPrimary,
+  },
+  headerAvatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  headerAvatar: {
+    width: '100%',
+    height: '100%',
   },
   streakContainer: {
     alignItems: 'center',

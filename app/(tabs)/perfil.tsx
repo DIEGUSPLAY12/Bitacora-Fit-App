@@ -21,6 +21,9 @@ export default function PerfilScreen() {
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
+  const [newAvatarUrl, setNewAvatarUrl] = useState('');
+
+  const AVATAR_SEEDS = ['Felix', 'Aneka', 'Oreo', 'Zoey', 'Bella', 'Charlie', 'Molly', 'Simba'];
 
   const handleSignOut = async () => {
     Alert.alert('Cerrar sesión', '¿Estás seguro de que quieres salir?', [
@@ -31,13 +34,17 @@ export default function PerfilScreen() {
 
   const handleEditProfile = () => {
     setNewUsername(profile?.username || '');
+    setNewAvatarUrl(profile?.avatar_url || '');
     setEditModalVisible(true);
   };
 
   const saveProfile = async () => {
     if (!newUsername.trim()) return;
     try {
-      await updateProfile({ username: newUsername.trim() });
+      await updateProfile({ 
+        username: newUsername.trim(),
+        avatar_url: newAvatarUrl || null
+      });
       setEditModalVisible(false);
     } catch (e: any) {
       Alert.alert('Error', e.message);
@@ -62,7 +69,7 @@ export default function PerfilScreen() {
         <View style={styles.userSection}>
           <View style={styles.avatarContainer}>
             {profile?.avatar_url ? (
-              <Image source={profile.avatar_url} style={styles.avatar} contentFit="cover" />
+              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
             ) : (
               <User color={colors.background} size={48} />
             )}
@@ -127,6 +134,23 @@ export default function PerfilScreen() {
               autoCapitalize="none"
               autoCorrect={false}
             />
+
+            <Text style={styles.inputLabel}>Avatar</Text>
+            <View style={styles.avatarGrid}>
+              {AVATAR_SEEDS.map((seed) => {
+                const url = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}`;
+                const isSelected = newAvatarUrl === url;
+                return (
+                  <TouchableOpacity
+                    key={seed}
+                    style={[styles.avatarOption, isSelected && styles.avatarOptionSelected]}
+                    onPress={() => setNewAvatarUrl(url)}
+                  >
+                    <Image source={{ uri: url }} style={styles.avatarOptionImage} contentFit="contain" />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
             
             <TouchableOpacity 
               style={styles.saveButton} 
@@ -165,6 +189,10 @@ const styles = StyleSheet.create({
   modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
   inputLabel: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 8 },
   input: { backgroundColor: colors.background, color: colors.textPrimary, height: 56, borderRadius: 8, paddingHorizontal: 16, fontFamily: typography.fontFamily.regular, ...typography.scale.body, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+  avatarOption: { width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
+  avatarOptionSelected: { borderColor: colors.accent },
+  avatarOptionImage: { width: '100%', height: '100%' },
   saveButton: { backgroundColor: colors.accent, height: 56, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   saveButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.background },
 });
