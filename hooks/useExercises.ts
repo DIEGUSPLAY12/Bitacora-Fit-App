@@ -13,14 +13,7 @@ export function useExercises(searchQuery: string, categoryFilter: string | null)
       }
       
       if (categoryFilter && categoryFilter !== 'Todos') {
-        const dbCategory = getDbMuscleGroup(categoryFilter);
-        if (dbCategory) {
-          if (Array.isArray(dbCategory)) {
-            query = query.in('muscle_group', dbCategory);
-          } else {
-            query = query.eq('muscle_group', dbCategory);
-          }
-        }
+        query = query.eq('category', categoryFilter);
       }
 
       query = query.limit(50); // Límite por rendimiento
@@ -43,14 +36,3 @@ export function useExercise(id: string) {
   });
 }
 
-function getDbMuscleGroup(uiFilter: string) {
-  switch (uiFilter) {
-    case 'Pecho': return 'pectorals';
-    case 'Espalda': return ['lats', 'upper back', 'lower back', 'traps', 'rhomboids'];
-    case 'Piernas': return ['quadriceps', 'quads', 'hamstrings', 'glutes', 'calves'];
-    case 'Hombro': return 'delts';
-    case 'Brazo': return ['biceps', 'triceps', 'forearms'];
-    case 'Core': return ['abs', 'obliques'];
-    default: return null;
-  }
-}
