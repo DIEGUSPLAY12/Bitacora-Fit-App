@@ -9,6 +9,8 @@ import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MotiView, AnimatePresence, MotiText } from 'moti';
+import { LinearGradient } from 'expo-linear-gradient';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,6 +23,9 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [emailError, setEmailError] = useState(false);
+  
+  // Para los efectos de focus (Glassmorphism + Border highlight)
+  const [focusedInput, setFocusedInput] = useState<'email' | 'password' | null>(null);
 
   const handleLogin = async () => {
     setEmailError(false);
@@ -96,50 +101,103 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft color={colors.textPrimary} size={24} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
+          <ArrowLeft color={colors.textPrimary} size={28} />
         </TouchableOpacity>
-        <Text style={styles.title}>Iniciar sesión</Text>
+        <Text style={styles.title}>De vuelta al ruedo</Text>
       </View>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Correo electrónico"
-          placeholderTextColor={colors.textSecondary}
-          value={email}
-          onChangeText={(val) => { setEmail(val); setEmailError(false); }}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-        {emailError ? <Text style={styles.validationErrorText}>Introduce un correo electrónico válido</Text> : null}
+      <MotiView 
+        from={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 500, delay: 100 }}
+        style={styles.form}
+      >
+        <Text style={styles.formSubtitle}>Inicia sesión para continuar</Text>
         
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor={colors.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={[
+          styles.inputContainer, 
+          focusedInput === 'email' && styles.inputFocused,
+          emailError && styles.inputError
+        ]}>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo electrónico"
+            placeholderTextColor={colors.textSecondary}
+            value={email}
+            onChangeText={(val) => { setEmail(val); setEmailError(false); }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            onFocus={() => setFocusedInput('email')}
+            onBlur={() => setFocusedInput(null)}
+          />
+        </View>
+        <AnimatePresence>
+          {emailError && (
+            <MotiText 
+              from={{ opacity: 0, height: 0, translateY: -10 }}
+              animate={{ opacity: 1, height: 'auto', translateY: 0 }}
+              exit={{ opacity: 0, height: 0, translateY: -10 }}
+              style={styles.validationErrorText}
+            >
+              Introduce un correo válido
+            </MotiText>
+          )}
+        </AnimatePresence>
+        
+        <View style={[
+          styles.inputContainer, 
+          focusedInput === 'password' && styles.inputFocused,
+          !!errorMsg && styles.inputError
+        ]}>
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            placeholderTextColor={colors.textSecondary}
+            value={password}
+            onChangeText={(val) => { setPassword(val); setErrorMsg(''); }}
+            secureTextEntry
+            onFocus={() => setFocusedInput('password')}
+            onBlur={() => setFocusedInput(null)}
+          />
+        </View>
 
-        {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+        <AnimatePresence>
+          {!!errorMsg && (
+            <MotiText 
+              from={{ opacity: 0, height: 0, translateY: -10 }}
+              animate={{ opacity: 1, height: 'auto', translateY: 0 }}
+              exit={{ opacity: 0, height: 0, translateY: -10 }}
+              style={styles.errorText}
+            >
+              {errorMsg}
+            </MotiText>
+          )}
+        </AnimatePresence>
 
         <TouchableOpacity 
           style={styles.primaryButton} 
           onPress={handleLogin}
           disabled={loading || googleLoading}
+          activeOpacity={0.9}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.background} />
-          ) : (
-            <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
-          )}
+          <LinearGradient
+            colors={loading ? ['#888', '#666'] : [colors.accent, '#90D41C']}
+            style={styles.primaryButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.background} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>o</Text>
+          <Text style={styles.dividerText}>o entra con</Text>
           <View style={styles.dividerLine} />
         </View>
 
@@ -147,6 +205,7 @@ export default function LoginScreen() {
           style={styles.outlineButton} 
           onPress={handleGoogleLogin}
           disabled={loading || googleLoading}
+          activeOpacity={0.7}
         >
           {googleLoading ? (
             <ActivityIndicator color={colors.textPrimary} />
@@ -154,7 +213,7 @@ export default function LoginScreen() {
             <Text style={styles.outlineButtonText}>Continuar con Google</Text>
           )}
         </TouchableOpacity>
-      </View>
+      </MotiView>
     </KeyboardAvoidingView>
   );
 }
@@ -167,49 +226,84 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 16,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
   backButton: {
     marginRight: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontFamily: typography.fontFamily.bold,
-    ...typography.scale.title,
+    ...typography.scale.display,
+    fontSize: 28,
     color: colors.textPrimary,
   },
   form: {
-    padding: 24,
+    paddingHorizontal: 24,
     gap: 16,
   },
+  formSubtitle: {
+    fontFamily: typography.fontFamily.regular,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  inputContainer: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  inputFocused: {
+    borderColor: colors.accent,
+    backgroundColor: 'rgba(180, 240, 60, 0.05)',
+  },
+  inputError: {
+    borderColor: colors.destructive,
+    backgroundColor: 'rgba(207, 102, 121, 0.05)',
+  },
   input: {
-    backgroundColor: colors.surface,
     color: colors.textPrimary,
-    height: 56,
-    borderRadius: 8,
+    height: 60,
     paddingHorizontal: 16,
     fontFamily: typography.fontFamily.regular,
     ...typography.scale.body,
   },
   primaryButton: {
-    backgroundColor: colors.accent,
-    height: 56,
-    borderRadius: 8,
+    height: 60,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  primaryButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
   },
   primaryButtonText: {
     fontFamily: typography.fontFamily.bold,
-    ...typography.scale.body,
+    ...typography.scale.title,
+    fontSize: 18,
     color: colors.background,
   },
   outlineButton: {
-    backgroundColor: 'transparent',
-    height: 56,
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    height: 60,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.surface,
+    borderColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -226,12 +320,13 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   dividerText: {
     color: colors.textSecondary,
     paddingHorizontal: 16,
-    fontFamily: typography.fontFamily.regular,
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
   },
   errorText: {
     color: colors.destructive,
@@ -242,6 +337,5 @@ const styles = StyleSheet.create({
     color: colors.destructive,
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.caption,
-    marginTop: -8,
   },
 });
