@@ -91,25 +91,38 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Highlight Stats / Streak */}
         <View style={styles.statsRow}>
-          {/* Main Streak Card */}
-          <View style={styles.streakCardContainer}>
-            <LinearGradient
-              colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
-              style={styles.streakCardGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+          <View style={styles.leftColumn}>
+            {/* Main Streak Card (Compact) */}
+            <View style={styles.streakCardContainerSmall}>
+              <LinearGradient
+                colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
+                style={styles.streakCardGradientSmall}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.streakContentSmall}>
+                  <View>
+                    <Text style={[styles.streakLabel, { fontSize: 11, marginBottom: 2 }]}>RACHA ACTUAL</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+                      <Text style={[styles.streakNumber, { fontSize: 32, lineHeight: 36 }]}>{isStreakLoading ? '-' : streak}</Text>
+                      <Text style={[styles.streakDays, { fontSize: 12 }]}>DÍAS</Text>
+                    </View>
+                  </View>
+                  <Flame color={colors.accent} size={28} style={{ opacity: 0.9 }} />
+                </View>
+              </LinearGradient>
+            </View>
+
+            {/* Progress Card (Compact) */}
+            <TouchableOpacity 
+              style={styles.progressCardContainer}
+              onPress={() => router.push('/progreso')}
+              activeOpacity={0.8}
             >
-              <View style={styles.streakHeader}>
-                <Flame color={colors.accent} size={28} />
-                <Text style={styles.streakLabel}>RACHA ACTUAL</Text>
-              </View>
-              <View style={styles.streakContent}>
-                <Text style={styles.streakNumber}>{isStreakLoading ? '-' : streak}</Text>
-                <Text style={styles.streakDays}>DÍAS</Text>
-              </View>
-            </LinearGradient>
+              <Activity color={colors.accent} size={20} />
+              <Text style={styles.progressCardText}>Mi Progreso</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Start Workout Button (Main CTA) */}
@@ -135,7 +148,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={{ marginTop: 32 }}>
+        <View style={{ marginTop: 64 }}>
           {/* Last Workout Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Último Entrenamiento</Text>
@@ -200,7 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
   },
   headerUser: {
     flexDirection: 'row',
@@ -255,24 +268,28 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     gap: 16,
   },
-  streakCardContainer: {
+  leftColumn: {
     flex: 1,
-    height: 180,
+    justifyContent: 'space-between',
+    height: 200,
+  },
+  streakCardContainerSmall: {
+    height: 92,
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(180, 240, 60, 0.2)',
     backgroundColor: colors.surface,
   },
-  streakCardGradient: {
+  streakCardGradientSmall: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    justifyContent: 'center',
   },
-  streakHeader: {
+  streakContentSmall: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
   },
   streakLabel: {
     fontFamily: typography.fontFamily.bold,
@@ -280,25 +297,33 @@ const styles = StyleSheet.create({
     color: colors.accent,
     letterSpacing: 1,
   },
-  streakContent: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-  },
   streakNumber: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 56,
-    lineHeight: 64,
     color: colors.textPrimary,
   },
   streakDays: {
     fontFamily: typography.fontFamily.medium,
-    ...typography.scale.body,
     color: colors.textSecondary,
+  },
+  progressCardContainer: {
+    height: 92,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  progressCardText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   startCardContainer: {
     flex: 1,
-    height: 180,
+    height: 200,
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: colors.accent,

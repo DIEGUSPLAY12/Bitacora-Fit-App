@@ -82,10 +82,20 @@ export default function ProgresoScreen() {
       value: p.maxWeight,
       label: p.label,
       dataPointText: p.maxWeight.toString(),
-      textColor: colors.textSecondary,
-      textFontSize: 10,
+      textColor: colors.textPrimary, // Make the number stand out more
+      textFontSize: 12,
+      textShiftY: -15, // Shift above the point
+      textShiftX: -8,
+      labelTextStyle: { color: colors.textSecondary, fontSize: 11 },
     }));
   }, [progressData]);
+
+  // Calculate dynamic spacing so the chart spans the available width
+  const chartWidth = width - 110; // Account for Y-axis text
+  const chartSpacing = useMemo(() => {
+    if (!progressData || progressData.length <= 1) return chartWidth - 40;
+    return Math.max(30, (chartWidth - 40) / (progressData.length - 1));
+  }, [progressData, chartWidth]);
 
   // Statistics for Muscle
   const totalVolume = useMemo(() => {
@@ -156,14 +166,16 @@ export default function ProgresoScreen() {
                   <View style={styles.chartContainer}>
                     <LineChart
                       data={chartData}
-                      width={width - 80}
+                      width={chartWidth}
+                      spacing={chartSpacing}
                       height={220}
                       thickness={3}
                       color={colors.accent}
                       hideRules
-                      hideYAxisText
                       yAxisColor={colors.textSecondary}
                       xAxisColor={colors.textSecondary}
+                      yAxisTextStyle={{ color: colors.textSecondary, fontSize: 11 }}
+                      xAxisLabelTextStyle={{ color: colors.textSecondary, fontSize: 11 }}
                       dataPointsColor={colors.accent}
                       dataPointsRadius={5}
                       curved
@@ -171,7 +183,6 @@ export default function ProgresoScreen() {
                       animationDuration={1200}
                       initialSpacing={20}
                       endSpacing={20}
-                      textColor={colors.textSecondary}
                     />
                   </View>
 

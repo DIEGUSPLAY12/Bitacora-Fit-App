@@ -157,9 +157,14 @@ export default function EntrenarScreen() {
               transition={{ type: 'spring', delay: index * 100 }}
             >
               <View style={styles.exerciseHeader}>
-                <Text style={styles.exerciseTitle}>{index + 1}. {ex.exercise.name}</Text>
+                <View style={styles.titleContainer}>
+                  <View style={styles.indexBadge}>
+                    <Text style={styles.indexText}>{index + 1}</Text>
+                  </View>
+                  <Text style={styles.exerciseTitle} numberOfLines={2}>{ex.exercise.name}</Text>
+                </View>
                 <TouchableOpacity onPress={() => removeExercise(ex.exercise.id)} style={styles.trashButton}>
-                  <Trash2 color={colors.destructive} size={20} />
+                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={18} />
                 </TouchableOpacity>
               </View>
 
@@ -278,9 +283,12 @@ const styles = StyleSheet.create({
   emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
   
   exerciseCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, lineHeight: 28, color: colors.textPrimary, textTransform: 'capitalize', flex: 1, marginRight: 16, paddingTop: 4 },
-  trashButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(207, 102, 121, 0.1)', justifyContent: 'center', alignItems: 'center', marginTop: 2 },
+  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 16 },
+  indexBadge: { width: 28, height: 28, borderRadius: 8, backgroundColor: 'rgba(180, 240, 60, 0.15)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  indexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 13 },
+  exerciseTitle: { fontFamily: typography.fontFamily.bold, fontSize: 17, color: colors.textPrimary, textTransform: 'capitalize', flex: 1 },
+  trashButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.03)', justifyContent: 'center', alignItems: 'center' },
   
   tableHeader: { flexDirection: 'row', marginBottom: 12, paddingHorizontal: 8 },
   columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center', letterSpacing: 1 },
