@@ -38,6 +38,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: 'shift', // Adds a smooth crossfade/shift animation when changing tabs
+        sceneStyle: { backgroundColor: colors.background }, // Prevents white flash during animation
         tabBarShowLabel: true,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
