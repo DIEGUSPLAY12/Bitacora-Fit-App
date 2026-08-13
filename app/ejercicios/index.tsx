@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { Search, ArrowLeft, Plus } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const FILTERS = ['Todos', 'Pecho', 'Espalda', 'Piernas', 'Hombro', 'Brazo', 'Core'];
 
@@ -19,6 +20,7 @@ export default function ExerciseSelectorScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const reduceMotion = useReduceMotion();
   const { data: exercises, isLoading } = useExercises(search, selectedFilter);
@@ -33,7 +35,7 @@ export default function ExerciseSelectorScreen() {
     <MotiView
       from={{ opacity: 0, translateY: reduceMotion ? 0 : 20 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'timing', duration: 400, delay: reduceMotion ? 0 : index * 50 }}
+      transition={{ type: 'spring', damping: 20, delay: reduceMotion ? 0 : index * 50 }}
     >
       <TouchableOpacity 
         style={styles.card} 
@@ -56,8 +58,16 @@ export default function ExerciseSelectorScreen() {
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => handleAdd(item)}
+          activeOpacity={0.8}
         >
-          <Plus color={colors.background} size={20} />
+          <LinearGradient
+            colors={[colors.accent, '#90D41C']}
+            style={styles.addButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Plus color={colors.background} size={20} strokeWidth={3} />
+          </LinearGradient>
         </TouchableOpacity>
       </TouchableOpacity>
     </MotiView>
@@ -72,28 +82,34 @@ export default function ExerciseSelectorScreen() {
         <Text style={styles.title}>Añadir ejercicio</Text>
       </View>
 
-      <View style={styles.searchContainer}>
-        <Search color={colors.textSecondary} size={20} style={styles.searchIcon} />
+      <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
+        <Search color={isSearchFocused ? colors.accent : colors.textSecondary} size={20} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar ejercicio..."
           placeholderTextColor={colors.textSecondary}
           value={search}
           onChangeText={setSearch}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
         />
       </View>
 
       <View style={styles.filtersWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersContainer}>
-          {FILTERS.map(f => (
-            <TouchableOpacity 
-              key={f}
-              style={[styles.filterChip, selectedFilter === f && styles.filterChipActive]}
-              onPress={() => setSelectedFilter(f)}
-            >
-              <Text style={[styles.filterText, selectedFilter === f && styles.filterTextActive]}>{f}</Text>
-            </TouchableOpacity>
-          ))}
+          {FILTERS.map(f => {
+            const isActive = selectedFilter === f;
+            return (
+              <TouchableOpacity 
+                key={f}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() => setSelectedFilter(f)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterText, isActive && styles.filterTextActive]}>{f}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -107,6 +123,7 @@ export default function ExerciseSelectorScreen() {
             estimatedItemSize={100}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
           />
         )}
       </View>
@@ -117,25 +134,30 @@ export default function ExerciseSelectorScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16 },
-  backButton: { marginRight: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: 24, borderRadius: 12, paddingHorizontal: 16, height: 48 },
-  searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, ...typography.scale.body },
-  filtersWrapper: { marginTop: 16, marginBottom: 8 },
-  filtersContainer: { paddingHorizontal: 24, gap: 8 },
-  filterChip: { backgroundColor: colors.surface, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  filterChipActive: { backgroundColor: colors.accent },
-  filterText: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
-  filterTextActive: { color: colors.background, fontFamily: typography.fontFamily.bold },
+  backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', marginHorizontal: 24, borderRadius: 16, paddingHorizontal: 16, height: 56, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  searchContainerFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
+  searchIcon: { marginRight: 12 },
+  searchInput: { flex: 1, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, fontSize: 16 },
+  
+  filtersWrapper: { marginTop: 20, marginBottom: 12 },
+  filtersContainer: { paddingHorizontal: 24, gap: 10 },
+  filterChip: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  filterChipActive: { backgroundColor: 'rgba(180, 240, 60, 0.15)', borderColor: 'rgba(180, 240, 60, 0.3)' },
+  filterText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, fontSize: 14, color: colors.textSecondary },
+  filterTextActive: { color: colors.accent, fontFamily: typography.fontFamily.bold },
+  
   listContainer: { flex: 1 },
-  listContent: { padding: 24, paddingBottom: 100 },
-  card: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 12, overflow: 'hidden', marginBottom: 12, alignItems: 'center', paddingRight: 12 },
-  image: { width: 80, height: 80, backgroundColor: '#2A2A2A' },
-  cardContent: { flex: 1, padding: 12 },
-  cardName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary, marginBottom: 8, textTransform: 'capitalize' },
+  listContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 8 },
+  card: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, overflow: 'hidden', marginBottom: 16, alignItems: 'center', paddingRight: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  image: { width: 90, height: 90, backgroundColor: 'rgba(255,255,255,0.02)' },
+  cardContent: { flex: 1, padding: 16 },
+  cardName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary, marginBottom: 8, textTransform: 'capitalize' },
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tag: { backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
-  tagText: { fontFamily: typography.fontFamily.regular, fontSize: 10, color: colors.textSecondary, textTransform: 'uppercase' },
-  addButton: { width: 40, height: 40, backgroundColor: colors.accent, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  tag: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  tagText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  addButton: { width: 44, height: 44, borderRadius: 12, overflow: 'hidden' },
+  addButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList, A
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { ArrowLeft, ChevronDown, Search, X, TrendingUp } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Search, X, TrendingUp, Zap, Weight, Target } from 'lucide-react-native';
 import { useExercises } from '../hooks/useExercises';
 import { useExerciseProgress, Timeframe } from '../hooks/useExerciseProgress';
 import { useMuscleGroupProgress } from '../hooks/useMuscleGroupProgress';
 import { LineChart } from 'react-native-gifted-charts';
 import { RadarChart } from '../components/RadarChart';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MotiView } from 'moti';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ export default function ProgresoScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const { data: exercises, isLoading: isExercisesLoading } = useExercises();
   
@@ -40,7 +42,7 @@ export default function ProgresoScreen() {
   }, [exercises, searchQuery]);
 
   // Chart Data
-  const [timeframe, setTimeframe] = useState<Timeframe>('Mes'); // Default to Mes
+  const [timeframe, setTimeframe] = useState<Timeframe>('Mes');
   const { data: progressData, isLoading: isProgressLoading } = useExerciseProgress(selectedExercise?.id || null, timeframe);
   
   // Muscle Group Data
@@ -101,22 +103,23 @@ export default function ProgresoScreen() {
       </View>
 
       <View style={styles.tabsContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'ejercicio' && styles.activeTab]}
-          onPress={() => setActiveTab('ejercicio')}
-        >
-          <Text style={[styles.tabText, activeTab === 'ejercicio' && styles.activeTabText]}>Por ejercicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'musculo' && styles.activeTab]}
-          onPress={() => setActiveTab('musculo')}
-        >
-          <Text style={[styles.tabText, activeTab === 'musculo' && styles.activeTabText]}>Por grupo muscular</Text>
-        </TouchableOpacity>
+        <View style={styles.tabsWrapper}>
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'ejercicio' && styles.activeTab]}
+            onPress={() => setActiveTab('ejercicio')}
+          >
+            <Text style={[styles.tabText, activeTab === 'ejercicio' && styles.activeTabText]}>Por Ejercicio</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'musculo' && styles.activeTab]}
+            onPress={() => setActiveTab('musculo')}
+          >
+            <Text style={[styles.tabText, activeTab === 'musculo' && styles.activeTabText]}>Por Músculo</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.content}>
-        {/* Filtros de tiempo */}
         <View style={styles.filtersContainer}>
           {TIMEFRAMES.map(tf => (
             <TouchableOpacity 
@@ -133,25 +136,27 @@ export default function ProgresoScreen() {
 
         {activeTab === 'ejercicio' ? (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-            {/* Selector de ejercicio */}
-            <TouchableOpacity style={styles.selector} onPress={() => setModalVisible(true)}>
+            <TouchableOpacity style={styles.selector} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
               <View style={styles.selectorTextContainer}>
                 <Text style={styles.selectorLabel}>Ejercicio a analizar</Text>
                 <Text style={styles.selectorValue}>
                   {selectedExercise ? selectedExercise.name : 'Selecciona un ejercicio'}
                 </Text>
               </View>
-              <ChevronDown color={colors.textSecondary} size={24} />
+              <ChevronDown color={colors.accent} size={24} />
             </TouchableOpacity>
 
-            {/* Gráfico y Estadísticas */}
             {selectedExercise ? (
               isProgressLoading ? (
                 <View style={styles.centered}>
                   <ActivityIndicator color={colors.accent} size="large" />
                 </View>
               ) : progressData && progressData.length >= 2 ? (
-                <View style={styles.resultsContainer}>
+                <MotiView 
+                  style={styles.resultsContainer}
+                  from={{ opacity: 0, translateY: 20 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                >
                   <View style={styles.chartContainer}>
                     <LineChart
                       data={chartData}
@@ -164,7 +169,7 @@ export default function ProgresoScreen() {
                       yAxisColor={colors.textSecondary}
                       xAxisColor={colors.textSecondary}
                       dataPointsColor={colors.accent}
-                      dataPointsRadius={4}
+                      dataPointsRadius={5}
                       curved
                       isAnimated
                       animationDuration={1200}
@@ -174,31 +179,42 @@ export default function ProgresoScreen() {
                     />
                   </View>
 
-                  <View style={styles.statsRow}>
-                    <View style={styles.statBox}>
-                      <Text style={styles.statValue}>{stats.pr} kg</Text>
-                      <Text style={styles.statLabel}>PR ACTUAL</Text>
+                  <View style={styles.bentoGrid}>
+                    <View style={[styles.bentoCard, { flex: 1 }]}>
+                      <View style={styles.bentoIconBg}>
+                        <Zap color={colors.accent} size={20} fill={colors.accent} />
+                      </View>
+                      <Text style={styles.bentoValue}>{stats.pr} kg</Text>
+                      <Text style={styles.bentoLabel}>RÉCORD ACTUAL</Text>
                     </View>
-                    <View style={styles.statBox}>
+                    <View style={[styles.bentoCard, { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
+                      <View style={[styles.bentoIconBg, { backgroundColor: 'rgba(180, 240, 60, 0.15)' }]}>
+                        <TrendingUp color={colors.accent} size={20} />
+                      </View>
                       {stats.improvement !== null ? (
-                        <Text style={[styles.statValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]}>
+                        <Text style={[styles.bentoValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]}>
                           {stats.improvement >= 0 ? '+' : ''}{stats.improvement.toFixed(1)}%
                         </Text>
                       ) : (
-                        <Text style={[styles.statValue, { color: colors.textSecondary }]}>N/A</Text>
+                        <Text style={[styles.bentoValue, { color: colors.textSecondary }]}>N/A</Text>
                       )}
-                      <Text style={styles.statLabel}>MEJORA</Text>
+                      <Text style={[styles.bentoLabel, { color: colors.accent }]}>MEJORA</Text>
                     </View>
                   </View>
-                </View>
+                </MotiView>
               ) : (
                 <View style={styles.emptyState}>
-                  <TrendingUp color={colors.textSecondary} size={48} style={styles.emptyIcon} />
-                  <Text style={styles.emptyText}>Necesitas al menos 2 sesiones con este ejercicio para mostrar tu progreso.</Text>
+                  <View style={styles.emptyIconBg}>
+                    <TrendingUp color={colors.accent} size={32} />
+                  </View>
+                  <Text style={styles.emptyText}>Necesitas al menos 2 sesiones con este ejercicio para ver gráficos.</Text>
                 </View>
               )
             ) : (
               <View style={styles.emptyState}>
+                <View style={styles.emptyIconBg}>
+                  <Target color={colors.accent} size={32} />
+                </View>
                 <Text style={styles.emptyText}>Selecciona un ejercicio arriba para ver tu historial de levantamientos.</Text>
               </View>
             )}
@@ -210,21 +226,30 @@ export default function ProgresoScreen() {
                  <ActivityIndicator color={colors.accent} size="large" />
                </View>
             ) : muscleData && totalVolume > 0 ? (
-               <View style={styles.resultsContainer}>
+               <MotiView 
+                 style={styles.resultsContainer}
+                 from={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+               >
                  <View style={styles.chartContainer}>
                    <RadarChart data={muscleData} size={width - 80} />
                  </View>
                  
-                 <View style={styles.statsRow}>
-                    <View style={[styles.statBox, { flex: 1 }]}>
-                      <Text style={styles.statValue}>{totalVolume.toLocaleString()} kg</Text>
-                      <Text style={styles.statLabel}>VOLUMEN TOTAL</Text>
+                 <View style={styles.bentoGrid}>
+                    <View style={[styles.bentoCard, { flex: 1 }]}>
+                      <View style={styles.bentoIconBg}>
+                        <Weight color={colors.accent} size={20} />
+                      </View>
+                      <Text style={styles.bentoValue}>{totalVolume.toLocaleString()} kg</Text>
+                      <Text style={styles.bentoLabel}>VOLUMEN GLOBAL MOVIDO</Text>
                     </View>
                   </View>
-               </View>
+               </MotiView>
             ) : (
               <View style={styles.emptyState}>
-                <TrendingUp color={colors.textSecondary} size={48} style={styles.emptyIcon} />
+                <View style={styles.emptyIconBg}>
+                  <TrendingUp color={colors.accent} size={32} />
+                </View>
                 <Text style={styles.emptyText}>No hay datos de entrenamiento en este periodo.</Text>
               </View>
             )}
@@ -232,24 +257,25 @@ export default function ProgresoScreen() {
         )}
       </View>
 
-      {/* Modal Selector */}
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Seleccionar Ejercicio</Text>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
               <X color={colors.textPrimary} size={24} />
             </TouchableOpacity>
           </View>
           
-          <View style={styles.searchContainer}>
-            <Search color={colors.textSecondary} size={20} style={styles.searchIcon} />
+          <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
+            <Search color={isSearchFocused ? colors.accent : colors.textSecondary} size={20} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar ejercicio..."
               placeholderTextColor={colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
           </View>
 
@@ -284,41 +310,54 @@ export default function ProgresoScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, paddingBottom: 16 },
-  backButton: { marginRight: 16 },
+  backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 24, color: colors.textPrimary },
-  tabsContainer: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: colors.surface, marginBottom: 20 },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  activeTab: { borderBottomColor: colors.accent },
-  tabText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, ...typography.scale.body },
+  
+  tabsContainer: { paddingHorizontal: 24, marginBottom: 24 },
+  tabsWrapper: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
+  activeTab: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  tabText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, ...typography.scale.body, fontSize: 14 },
   activeTabText: { color: colors.textPrimary, fontFamily: typography.fontFamily.bold },
+  
   content: { flex: 1, paddingHorizontal: 24 },
-  selector: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, padding: 16, borderRadius: 12, marginBottom: 20 },
+  filtersContainer: { flexDirection: 'row', gap: 10, marginBottom: 24 },
+  chip: { flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  chipActive: { backgroundColor: 'rgba(180, 240, 60, 0.1)', borderColor: 'rgba(180, 240, 60, 0.3)' },
+  chipText: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary },
+  chipTextActive: { color: colors.accent },
+  
+  selector: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   selectorTextContainer: { flex: 1 },
   selectorLabel: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 4 },
-  selectorValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary, textTransform: 'capitalize' },
-  filtersContainer: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.surface },
-  chipActive: { backgroundColor: colors.accent },
-  chipText: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary },
-  chipTextActive: { color: colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  selectorValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 18, color: colors.textPrimary, textTransform: 'capitalize' },
+  
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 200 },
   resultsContainer: { flex: 1 },
-  chartContainer: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, paddingVertical: 24, marginBottom: 24, alignItems: 'center', justifyContent: 'center' },
-  statsRow: { flexDirection: 'row', gap: 16 },
-  statBox: { flex: 1, backgroundColor: colors.surface, padding: 20, borderRadius: 16, alignItems: 'center' },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 8 },
-  statLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  emptyIcon: { marginBottom: 16 },
-  emptyText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center' },
-  modalContainer: { flex: 1, backgroundColor: colors.background },
+  chartContainer: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 16, paddingVertical: 24, marginBottom: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  
+  bentoGrid: { flexDirection: 'row', gap: 16 },
+  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', padding: 20, borderRadius: 20, alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center' },
+  bentoIconBg: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 4 },
+  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
+  
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', minHeight: 250 },
+  emptyIconBg: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  emptyText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
+  
+  modalContainer: { flex: 1, backgroundColor: colors.surface },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 32 },
-  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: 24, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
+  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  closeButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', marginHorizontal: 24, borderRadius: 16, paddingHorizontal: 16, marginBottom: 16, height: 56, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  searchContainerFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
   searchIcon: { marginRight: 12 },
-  searchInput: { flex: 1, height: 48, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, ...typography.scale.body },
+  searchInput: { flex: 1, height: 56, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, fontSize: 16 },
+  
   listContent: { paddingHorizontal: 24, paddingBottom: 40 },
-  exerciseItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.surface },
-  exerciseName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary, textTransform: 'capitalize', marginBottom: 4 },
-  muscleGroup: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, textTransform: 'uppercase' },
+  exerciseItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  exerciseName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 18, color: colors.textPrimary, textTransform: 'capitalize', marginBottom: 4 },
+  muscleGroup: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.accent, textTransform: 'uppercase' },
 });

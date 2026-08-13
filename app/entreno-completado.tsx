@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView,
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { typography } from '../theme/typography';
 import { colors } from '../theme/colors';
-import { CheckCircle2, Flame, Clock, Weight, Hash } from 'lucide-react-native';
+import { CheckCircle2, Flame, Clock, Weight, Hash, Zap } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWorkoutStore } from '../store/workout-store';
 import { useSaveWorkout } from '../hooks/useSaveWorkout';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function WorkoutCompletedScreen() {
   const insets = useSafeAreaInsets();
@@ -28,6 +29,7 @@ export default function WorkoutCompletedScreen() {
   // Local state for editable fields
   const [workoutName, setWorkoutName] = useState('Entrenamiento Libre');
   const [durationStrState, setDurationStrState] = useState(duration || '0');
+  const [focusedInput, setFocusedInput] = useState<'name' | 'duration' | null>(null);
 
   const handleSaveAndHome = async () => {
     try {
@@ -58,69 +60,118 @@ export default function WorkoutCompletedScreen() {
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <MotiView
-            from={{ scale: reduceMotion ? 1 : 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 100 }}
+            from={{ scale: reduceMotion ? 1 : 0.5, opacity: 0, translateY: 20 }}
+            animate={{ scale: 1, opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 10, delay: 100 }}
           >
-            <CheckCircle2 color={colors.accent} size={80} style={styles.icon} />
+            <View style={styles.iconWrapper}>
+              <CheckCircle2 color={colors.accent} size={72} strokeWidth={2.5} />
+            </View>
           </MotiView>
-          <Text style={styles.title}>¡Entreno completado!</Text>
-          <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 400, delay: 300 }}
+            style={{ alignItems: 'center' }}
+          >
+            <Text style={styles.title}>¡Entreno completado!</Text>
+            <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
+          </MotiView>
         </View>
 
-        <View style={styles.formContainer}>
+        <MotiView 
+          style={styles.formContainer}
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 400, delay: 400 }}
+        >
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>NOMBRE DEL ENTRENO</Text>
-            <TextInput 
-              style={styles.textInput}
-              value={workoutName}
-              onChangeText={setWorkoutName}
-              placeholder="Ej. Día de Pecho"
-              placeholderTextColor={colors.textSecondary}
-            />
+            <View style={[styles.inputWrapper, focusedInput === 'name' && styles.inputFocused]}>
+              <TextInput 
+                style={styles.textInput}
+                value={workoutName}
+                onChangeText={setWorkoutName}
+                placeholder="Ej. Día de Pecho"
+                placeholderTextColor={colors.textSecondary}
+                onFocus={() => setFocusedInput('name')}
+                onBlur={() => setFocusedInput(null)}
+              />
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>DURACIÓN (MINUTOS)</Text>
-            <TextInput 
-              style={styles.textInput}
-              value={durationStrState}
-              onChangeText={setDurationStrState}
-              keyboardType="numeric"
-              placeholder="0"
-              placeholderTextColor={colors.textSecondary}
-            />
+            <View style={[styles.inputWrapper, focusedInput === 'duration' && styles.inputFocused]}>
+              <TextInput 
+                style={styles.textInput}
+                value={durationStrState}
+                onChangeText={setDurationStrState}
+                keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor={colors.textSecondary}
+                onFocus={() => setFocusedInput('duration')}
+                onBlur={() => setFocusedInput(null)}
+              />
+            </View>
           </View>
-        </View>
+        </MotiView>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Weight color={colors.accent} size={24} style={styles.statIcon} />
-            <Text style={styles.statValue}>{volume || '0'} kg</Text>
-            <Text style={styles.statLabel}>VOLUMEN</Text>
+        <MotiView 
+          style={styles.bentoGrid}
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 400, delay: 500 }}
+        >
+          <View style={[styles.bentoCard, { flex: 1 }]}>
+            <View style={styles.bentoIconBg}>
+              <Weight color={colors.accent} size={20} />
+            </View>
+            <Text style={styles.bentoValue}>{volume || '0'} kg</Text>
+            <Text style={styles.bentoLabel}>VOLUMEN TOTAL</Text>
           </View>
-          <View style={styles.statBox}>
-            <Hash color={colors.accent} size={24} style={styles.statIcon} />
-            <Text style={styles.statValue}>{sets || '0'}</Text>
-            <Text style={styles.statLabel}>SERIES</Text>
-          </View>
-        </View>
 
-        <View style={styles.streakContainer}>
-          <Flame color={colors.accent} size={32} />
-          <Text style={styles.streakText}>¡Racha actual: <Text style={styles.streakHighlight}>{streak} días</Text>!</Text>
-        </View>
+          <View style={[styles.bentoCol, { flex: 1 }]}>
+            <View style={[styles.bentoCard, styles.bentoCardSmall]}>
+              <View style={styles.bentoIconBgSmall}>
+                <Hash color={colors.accent} size={16} />
+              </View>
+              <View>
+                <Text style={styles.bentoValueSmall}>{sets || '0'}</Text>
+                <Text style={styles.bentoLabel}>SERIES</Text>
+              </View>
+            </View>
+
+            <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
+              <View style={styles.bentoIconBgSmallAccented}>
+                <Flame color={colors.accent} size={16} fill={colors.accent} />
+              </View>
+              <View>
+                <Text style={[styles.bentoValueSmall, { color: colors.accent }]}>{streak} días</Text>
+                <Text style={[styles.bentoLabel, { color: colors.accent }]}>RACHA ACTUAL</Text>
+              </View>
+            </View>
+          </View>
+        </MotiView>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24 }]}>
         <TouchableOpacity 
-          style={[styles.primaryButton, isSaving && { opacity: 0.7 }]} 
+          style={styles.primaryButton} 
           onPress={handleSaveAndHome}
           disabled={isSaving}
+          activeOpacity={0.9}
         >
-          <Text style={styles.primaryButtonText}>
-            {isSaving ? 'Guardando...' : 'Guardar y volver'}
-          </Text>
+          <LinearGradient
+            colors={isSaving ? ['#888', '#666'] : [colors.accent, '#90D41C']}
+            style={styles.primaryButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.primaryButtonText}>
+              {isSaving ? 'Guardando...' : 'Guardar y finalizar'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -129,24 +180,34 @@ export default function WorkoutCompletedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: 24, paddingBottom: 100 },
-  header: { alignItems: 'center', marginBottom: 32 },
-  icon: { marginBottom: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
-  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center' },
-  formContainer: { marginBottom: 32, gap: 16 },
+  scrollContent: { padding: 24, paddingBottom: 140 },
+  header: { alignItems: 'center', marginBottom: 40 },
+  iconWrapper: { width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24, borderWidth: 2, borderColor: 'rgba(180, 240, 60, 0.2)' },
+  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
+  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
+  
+  formContainer: { marginBottom: 32, gap: 20 },
   inputGroup: { gap: 8 },
-  inputLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  textInput: { backgroundColor: colors.surface, color: colors.textPrimary, fontFamily: typography.fontFamily.medium, fontSize: 16, padding: 16, borderRadius: 12 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 32, gap: 12 },
-  statBox: { flex: 1, backgroundColor: colors.surface, padding: 16, borderRadius: 16, alignItems: 'center' },
-  statIcon: { marginBottom: 8 },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 4 },
-  statLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  streakContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 24, paddingVertical: 16, borderRadius: 100, gap: 12, alignSelf: 'center' },
-  streakText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textPrimary },
-  streakHighlight: { fontFamily: typography.fontFamily.bold, color: colors.accent },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: 40, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.surface },
-  primaryButton: { backgroundColor: colors.accent, height: 56, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.background },
+  inputLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1, marginLeft: 4 },
+  inputWrapper: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
+  inputFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
+  textInput: { color: colors.textPrimary, fontFamily: typography.fontFamily.regular, fontSize: 18, height: 64, paddingHorizontal: 20 },
+  
+  bentoGrid: { flexDirection: 'row', gap: 16 },
+  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center' },
+  bentoCol: { flex: 1, gap: 16 },
+  bentoCardSmall: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
+  
+  bentoIconBg: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  bentoIconBgSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  bentoIconBgSmallAccented: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
+  
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 4 },
+  bentoValueSmall: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5 },
+
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 24, paddingTop: 16, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
+  primaryButton: { height: 64, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.background },
 });

@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { User, Weight, ArrowLeft } from 'lucide-react-native';
+import { User, Weight, ArrowLeft, Flame, Trophy } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useProfile } from '../../hooks/useProfile';
 import { useStreak } from '../../hooks/useStreak';
 import { useRecentWorkouts } from '../../hooks/useWorkouts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MotiView } from 'moti';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -28,7 +29,7 @@ export default function UserProfileScreen() {
   const { data: stats, isLoading: statsLoading } = useStreak(id);
   const { data: recentWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(id, 5);
 
-  const renderWorkoutCard = useCallback((item: any) => {
+  const renderWorkoutCard = useCallback((item: any, index: number) => {
     let totalVolume = 0;
     let totalSets = 0;
     let exerciseCount = item.workout_exercises?.length || 0;
@@ -47,41 +48,56 @@ export default function UserProfileScreen() {
     const tags = Array.from(muscleGroups).slice(0, 3);
 
     return (
-      <TouchableOpacity 
+      <MotiView
         key={item.id}
-        style={styles.card} 
-        activeOpacity={0.7}
-        onPress={() => router.push(`/entrenos/${item.id}`)}
+        from={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'spring', delay: 300 + (index * 100) }}
       >
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
+        <TouchableOpacity 
+          style={styles.card} 
+          activeOpacity={0.7}
+          onPress={() => router.push(`/entrenos/${item.id}`)}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
+          </View>
 
-        <View style={styles.tagsContainer}>
-          {tags.map(tag => (
-            <View key={tag} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+          <View style={styles.tagsContainer}>
+            {tags.map(tag => (
+              <View key={tag} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+            {muscleGroups.size > 3 && (
+              <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+            )}
+          </View>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.statGroup}>
+              <View style={styles.statValueContainer}>
+                <Text style={styles.statValueHighlight}>{exerciseCount}</Text>
+                <Text style={styles.statLabelSmall}>ejer.</Text>
+              </View>
             </View>
-          ))}
-          {muscleGroups.size > 3 && (
-            <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-          )}
-        </View>
-
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
-            <Text style={styles.statText}>ejercicios</Text>
+            <View style={styles.statGroup}>
+              <View style={styles.statValueContainer}>
+                <Text style={styles.statValueHighlight}>{totalSets}</Text>
+                <Text style={styles.statLabelSmall}>series</Text>
+              </View>
+            </View>
+            <View style={styles.statGroup}>
+              <View style={styles.statValueContainer}>
+                <Weight color={colors.accent} size={14} style={{ marginRight: 4 }} />
+                <Text style={styles.statValueHighlight}>{totalVolume}</Text>
+                <Text style={styles.statLabelSmall}>kg</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statTextHighlight}>{totalSets}</Text>
-            <Text style={styles.statText}>series</Text>
-          </View>
-          <View style={styles.stat}>
-            <Weight color={colors.textSecondary} size={16} />
-            <Text style={styles.statText}>{totalVolume} kg</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </MotiView>
     );
   }, [router]);
 
@@ -101,47 +117,74 @@ export default function UserProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ArrowLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Perfil de usuario</Text>
-        <View style={{ width: 24 }} />
+        <Text style={styles.headerTitle}>Perfil de Amigo</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.userSection}>
-          <View style={styles.avatarContainer}>
-            {profile?.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
-            ) : (
-              <User color={colors.background} size={48} />
-            )}
+        <MotiView 
+          style={styles.userSection}
+          from={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring' }}
+        >
+          <View style={styles.avatarRing}>
+            <View style={styles.avatarContainer}>
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+              ) : (
+                <User color={colors.accent} size={48} />
+              )}
+            </View>
           </View>
           <Text style={styles.username}>
             {profile?.username || 'Usuario'}
           </Text>
-        </View>
+        </MotiView>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{statsLoading ? '-' : stats?.total || 0}</Text>
-            <Text style={styles.statLabel}>ENTRENOS</Text>
+        <MotiView 
+          style={styles.bentoGrid}
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'spring', delay: 100 }}
+        >
+          <View style={[styles.bentoCard, { flex: 1 }]}>
+            <View style={styles.bentoIconBg}>
+              <Trophy color={colors.textPrimary} size={20} />
+            </View>
+            <Text style={styles.bentoValue}>{statsLoading ? '-' : stats?.total || 0}</Text>
+            <Text style={styles.bentoLabel}>ENTRENOS</Text>
           </View>
-          <View style={styles.statBox}>
-            <Text style={[styles.statValue, { color: colors.accent }]}>{statsLoading ? '-' : stats?.longest || 0}</Text>
-            <Text style={[styles.statLabel, { color: colors.accent }]}>RACHA MÁX</Text>
+          
+          <View style={[styles.bentoCard, { flex: 1.2, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
+            <View style={[styles.bentoIconBg, { backgroundColor: 'rgba(180, 240, 60, 0.15)' }]}>
+              <Flame color={colors.accent} size={20} />
+            </View>
+            <Text style={[styles.bentoValue, { color: colors.accent }]}>{statsLoading ? '-' : stats?.longest || 0}</Text>
+            <Text style={[styles.bentoLabel, { color: colors.accent }]}>RACHA MÁXIMA</Text>
           </View>
-        </View>
+        </MotiView>
 
-        <Text style={styles.sectionTitle}>Últimos entrenos</Text>
-        
-        {workoutsLoading ? (
-          <ActivityIndicator size="small" color={colors.accent} style={{ marginTop: 20 }} />
-        ) : recentWorkouts && recentWorkouts.length > 0 ? (
-          recentWorkouts.map(workout => renderWorkoutCard(workout))
-        ) : (
-          <Text style={styles.emptyText}>Este usuario aún no ha registrado entrenos.</Text>
-        )}
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 200 }}
+        >
+          <Text style={styles.sectionTitle}>Últimos entrenos</Text>
+          
+          {workoutsLoading ? (
+            <ActivityIndicator size="small" color={colors.accent} style={{ marginTop: 20 }} />
+          ) : recentWorkouts && recentWorkouts.length > 0 ? (
+            recentWorkouts.map((workout, idx) => renderWorkoutCard(workout, idx))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Este usuario aún no ha registrado entrenos.</Text>
+            </View>
+          )}
+        </MotiView>
       </ScrollView>
     </View>
   );
@@ -150,27 +193,39 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingBottom: 16 },
-  backButton: { padding: 4, marginLeft: -4 },
-  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
+  backButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  
   scrollContent: { padding: 24, paddingBottom: 100 },
-  userSection: { alignItems: 'center', marginBottom: 40 },
-  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden' },
+  userSection: { alignItems: 'center', marginBottom: 32 },
+  avatarRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginBottom: 16, backgroundColor: 'rgba(180, 240, 60, 0.1)' },
+  avatarContainer: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
   avatar: { width: '100%', height: '100%' },
-  username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.surface, borderRadius: 16, padding: 20, marginBottom: 40 },
-  statBox: { flex: 1, alignItems: 'center' },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary, marginBottom: 4 },
-  statLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 16 },
-  card: { backgroundColor: colors.surface, borderRadius: 16, padding: 20, marginBottom: 16 },
-  cardTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.textPrimary, marginBottom: 4 },
-  cardDate: { fontFamily: typography.fontFamily.regular, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 12 },
+  username: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
+  
+  bentoGrid: { flexDirection: 'row', gap: 12, marginBottom: 40 },
+  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'flex-start' },
+  bentoIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 26, color: colors.textPrimary, marginBottom: 4 },
+  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
+  
+  sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, marginBottom: 20 },
+  
+  card: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  cardTitle: { flex: 1, fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.textPrimary },
+  cardDate: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  tag: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  tagText: { fontFamily: typography.fontFamily.medium, fontSize: 10, color: colors.textSecondary, textTransform: 'uppercase' },
-  statsContainer: { flexDirection: 'row', gap: 24 },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statText: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
-  statTextHighlight: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.accent },
-  emptyText: { fontFamily: typography.fontFamily.regular, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center', marginTop: 20 },
+  tag: { backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
+  tagText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.accent, textTransform: 'uppercase', letterSpacing: 0.5 },
+  
+  statsContainer: { flexDirection: 'row', gap: 16, backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12 },
+  statGroup: { flex: 1, alignItems: 'center' },
+  statValueContainer: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  statValueHighlight: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary },
+  statLabelSmall: { fontFamily: typography.fontFamily.medium, fontSize: 12, color: colors.textSecondary },
+  
+  emptyState: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginTop: 10 },
+  emptyText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center' },
 });

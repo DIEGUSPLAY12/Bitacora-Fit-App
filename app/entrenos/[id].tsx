@@ -6,6 +6,7 @@ import { typography } from '../../theme/typography';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { ArrowLeft, Check, Clock, Weight, Hash } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MotiView } from 'moti';
 
 export default function WorkoutDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -44,19 +45,24 @@ export default function WorkoutDetailScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft color={colors.textPrimary} size={24} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
+          <ArrowLeft color={colors.textPrimary} size={28} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{workout.name}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Resumen Superior */}
-        <View style={styles.summaryContainer}>
+        {/* Resumen Superior Bento-like */}
+        <MotiView 
+          style={styles.summaryContainer}
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'spring', delay: 100 }}
+        >
           <View style={styles.statBox}>
             <Clock color={colors.accent} size={20} style={styles.statIcon} />
-            <Text style={styles.statValue}>{durationMin} min</Text>
+            <Text style={styles.statValue}>{durationMin} m</Text>
           </View>
           <View style={styles.statBox}>
             <Weight color={colors.accent} size={20} style={styles.statIcon} />
@@ -64,12 +70,18 @@ export default function WorkoutDetailScreen() {
           </View>
           <View style={styles.statBox}>
             <Hash color={colors.accent} size={20} style={styles.statIcon} />
-            <Text style={styles.statValue}>{totalSets} series</Text>
+            <Text style={styles.statValue}>{totalSets} s</Text>
           </View>
-        </View>
+        </MotiView>
 
         {workout.workout_exercises?.map((we: any, index: number) => (
-          <View key={we.id} style={styles.exerciseCard}>
+          <MotiView 
+            key={we.id} 
+            style={styles.exerciseCard}
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', delay: 200 + (index * 100) }}
+          >
             <View style={styles.exerciseHeader}>
               <Text style={styles.exerciseTitle}>{index + 1}. {we.exercises?.name}</Text>
             </View>
@@ -94,11 +106,11 @@ export default function WorkoutDetailScreen() {
                 </View>
 
                 <View style={styles.checkboxActive}>
-                  <Check color={colors.background} size={16} />
+                  <Check color={colors.background} size={16} strokeWidth={3} />
                 </View>
               </View>
             ))}
-          </View>
+          </MotiView>
         ))}
       </ScrollView>
     </View>
@@ -109,26 +121,31 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   errorText: { fontFamily: typography.fontFamily.medium, color: colors.destructive },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: colors.surface },
-  backButton: { marginRight: 16 },
-  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, flex: 1 },
   scrollContent: { padding: 24, paddingBottom: 60 },
   summaryContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32, gap: 12 },
-  statBox: { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.1)', padding: 16, borderRadius: 12, alignItems: 'center' },
+  statBox: { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.1)', padding: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
   statIcon: { marginBottom: 8 },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary },
-  exerciseCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 24 },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary, textTransform: 'capitalize', flex: 1 },
-  tableHeader: { flexDirection: 'row', marginBottom: 8, paddingHorizontal: 8 },
-  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center' },
+  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary },
+  
+  exerciseCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, textTransform: 'capitalize', flex: 1 },
+  
+  tableHeader: { flexDirection: 'row', marginBottom: 12, paddingHorizontal: 8 },
+  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center', letterSpacing: 1 },
   colSet: { width: 40 },
   colKg: { flex: 1 },
   colReps: { flex: 1 },
   colCheck: { width: 40 },
-  setRowCompleted: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 8, borderRadius: 8, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.02)' },
-  setIndexCompleted: { width: 40, fontFamily: typography.fontFamily.bold, color: colors.textSecondary, textAlign: 'center' },
-  controlGroup: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  controlValue: { textAlign: 'center', fontFamily: typography.fontFamily.bold, color: colors.textPrimary },
-  checkboxActive: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  
+  setRowCompleted: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 12, marginBottom: 8, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
+  setIndexCompleted: { width: 40, fontFamily: typography.fontFamily.bold, color: colors.accent, textAlign: 'center', fontSize: 16 },
+  
+  controlGroup: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 12, marginHorizontal: 6, paddingVertical: 10 },
+  controlValue: { textAlign: 'center', fontFamily: typography.fontFamily.bold, color: colors.textSecondary, fontSize: 16 },
+  
+  checkboxActive: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
 });

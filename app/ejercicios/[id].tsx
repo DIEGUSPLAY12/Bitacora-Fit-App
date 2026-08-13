@@ -6,8 +6,10 @@ import { typography } from '../../theme/typography';
 import { useExercise } from '../../hooks/useExercises';
 import { useWorkoutStore } from '../../store/workout-store';
 import { Image } from 'expo-image';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Target, Dumbbell, Zap } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView } from 'moti';
 
 export default function ExerciseDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -40,15 +42,13 @@ export default function ExerciseDetailScreen() {
     );
   }
 
-  // Las instrucciones en este JSON suelen venir como un bloque de texto largo, 
-  // pero intentamos separarlas si hay puntos y seguidos claros.
   const instructionsList = exercise.instructions_es 
     ? exercise.instructions_es.split('. ').filter(i => i.trim().length > 0)
     : [];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.imageContainer}>
           <Image 
             source={exercise.gif_url || exercise.image_url} 
@@ -56,37 +56,97 @@ export default function ExerciseDetailScreen() {
             contentFit="cover" 
             transition={300}
           />
-          <TouchableOpacity style={[styles.backButton, { top: 16 }]} onPress={() => router.back()}>
+          {/* Capa oscura superior para que el botón back siempre se vea */}
+          <LinearGradient
+            colors={['rgba(0,0,0,0.8)', 'transparent']}
+            style={styles.imageTopGradient}
+          />
+          {/* Capa oscura inferior para que el título no se pierda */}
+          <LinearGradient
+            colors={['transparent', colors.background]}
+            style={styles.imageBottomGradient}
+          />
+          <TouchableOpacity style={[styles.backButton, { top: insets.top + 16 }]} onPress={() => router.back()}>
             <ArrowLeft color={colors.textPrimary} size={24} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>{exercise.name}</Text>
-          
-          <View style={styles.tagsContainer}>
-            <View style={styles.tag}><Text style={styles.tagText}>{exercise.muscle_group}</Text></View>
-            <View style={styles.tag}><Text style={styles.tagText}>{exercise.equipment}</Text></View>
-            <View style={styles.tag}><Text style={styles.tagText}>{exercise.target}</Text></View>
-          </View>
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', damping: 20, delay: 100 }}
+          >
+            <Text style={styles.title}>{exercise.name}</Text>
+          </MotiView>
 
-          <Text style={styles.sectionTitle}>Instrucciones</Text>
-          {instructionsList.length > 0 ? (
-            instructionsList.map((instruction, index) => (
-              <View key={index} style={styles.instructionRow}>
-                <Text style={styles.instructionNumber}>{index + 1}.</Text>
-                <Text style={styles.instructionText}>{instruction.trim()}{instruction.endsWith('.') ? '' : '.'}</Text>
+          <MotiView 
+            style={styles.bentoGrid}
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', damping: 20, delay: 200 }}
+          >
+            <View style={[styles.bentoCard, { flex: 1.5 }]}>
+              <View style={styles.bentoIconBg}>
+                <Target color={colors.accent} size={20} />
               </View>
-            ))
-          ) : (
-            <Text style={styles.instructionText}>Sin instrucciones disponibles.</Text>
-          )}
+              <Text style={styles.bentoLabel}>MÚSCULO</Text>
+              <Text style={styles.bentoValue}>{exercise.muscle_group}</Text>
+            </View>
+            
+            <View style={[styles.bentoCol, { flex: 1 }]}>
+              <View style={[styles.bentoCard, styles.bentoCardSmall]}>
+                <Dumbbell color={colors.textSecondary} size={16} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.bentoLabelSmall}>EQUIPO</Text>
+                  <Text style={styles.bentoValueSmall} numberOfLines={1}>{exercise.equipment}</Text>
+                </View>
+              </View>
+              
+              <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.1)' }]}>
+                <Zap color={colors.accent} size={16} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.bentoLabelSmall, { color: colors.accent }]}>OBJETIVO</Text>
+                  <Text style={[styles.bentoValueSmall, { color: colors.textPrimary }]} numberOfLines={1}>{exercise.target}</Text>
+                </View>
+              </View>
+            </View>
+          </MotiView>
+
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', damping: 20, delay: 300 }}
+          >
+            <Text style={styles.sectionTitle}>Instrucciones</Text>
+            <View style={styles.instructionsContainer}>
+              {instructionsList.length > 0 ? (
+                instructionsList.map((instruction, index) => (
+                  <View key={index} style={styles.instructionRow}>
+                    <View style={styles.instructionNumberBg}>
+                      <Text style={styles.instructionNumber}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.instructionText}>{instruction.trim()}{instruction.endsWith('.') ? '' : '.'}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.instructionText}>Sin instrucciones detalladas disponibles.</Text>
+              )}
+            </View>
+          </MotiView>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleAdd} activeOpacity={0.8}>
-          <Text style={styles.primaryButtonText}>Añadir a mi entreno</Text>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24 }]}>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleAdd} activeOpacity={0.9}>
+          <LinearGradient
+            colors={[colors.accent, '#90D41C']}
+            style={styles.primaryButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.primaryButtonText}>Añadir a mi entreno</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </View>
@@ -95,22 +155,40 @@ export default function ExerciseDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  centered: { justifyContent: 'center', alignItems: 'center' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { fontFamily: typography.fontFamily.medium, color: colors.destructive },
-  scrollContent: { paddingBottom: 100 },
-  imageContainer: { width: '100%', height: 350, position: 'relative' },
+  scrollContent: { paddingBottom: 120 },
+  
+  imageContainer: { width: '100%', height: 400, position: 'relative' },
   heroImage: { width: '100%', height: '100%' },
-  backButton: { position: 'absolute', top: 60, left: 24, width: 44, height: 44, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  content: { padding: 24 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary, marginBottom: 16, textTransform: 'capitalize' },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 32 },
-  tag: { backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 },
-  tagText: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.accent, textTransform: 'uppercase' },
-  sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 16 },
-  instructionRow: { flexDirection: 'row', marginBottom: 12, paddingRight: 16 },
-  instructionNumber: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.accent, width: 24 },
-  instructionText: { flex: 1, fontFamily: typography.fontFamily.regular, ...typography.scale.body, color: colors.textSecondary, lineHeight: 24 },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.background, padding: 24, borderTopWidth: 1, borderTopColor: colors.surface },
-  primaryButton: { backgroundColor: colors.accent, height: 56, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.background },
+  imageTopGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 100 },
+  imageBottomGradient: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 150 },
+  backButton: { position: 'absolute', left: 24, width: 44, height: 44, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 22, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  
+  content: { padding: 24, marginTop: -40 },
+  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 24, textTransform: 'capitalize' },
+  
+  bentoGrid: { flexDirection: 'row', gap: 12, marginBottom: 32 },
+  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center' },
+  bentoCol: { flex: 1, gap: 12 },
+  bentoCardSmall: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, flex: 1 },
+  
+  bentoIconBg: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1, marginBottom: 4 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, textTransform: 'capitalize' },
+  
+  bentoLabelSmall: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.textSecondary, letterSpacing: 0.5, marginBottom: 2 },
+  bentoValueSmall: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 14, color: colors.textPrimary, textTransform: 'capitalize' },
+
+  sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, marginBottom: 20 },
+  instructionsContainer: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  instructionRow: { flexDirection: 'row', marginBottom: 16, paddingRight: 8 },
+  instructionNumberBg: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginRight: 12, marginTop: -2 },
+  instructionNumber: { fontFamily: typography.fontFamily.bold, fontSize: 12, color: colors.accent },
+  instructionText: { flex: 1, fontFamily: typography.fontFamily.regular, ...typography.scale.body, fontSize: 16, color: colors.textSecondary, lineHeight: 24 },
+  
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
+  primaryButton: { height: 60, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+  primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.background },
 });
