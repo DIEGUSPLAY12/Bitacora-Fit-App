@@ -116,7 +116,6 @@ export default function RegisterScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
           <ArrowLeft color={colors.textPrimary} size={28} />
         </TouchableOpacity>
-        <Text style={styles.title}>Crear cuenta</Text>
       </View>
 
       <MotiView 
@@ -125,6 +124,7 @@ export default function RegisterScreen() {
         transition={{ type: 'timing', duration: 500, delay: 100 }}
         style={styles.form}
       >
+        <Text style={styles.title}>Crear cuenta</Text>
         <Text style={styles.formSubtitle}>Únete a la mejor bitácora</Text>
         
         <View style={[
@@ -299,12 +299,16 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.display,
-    fontSize: 28,
+    fontSize: 32,
     color: colors.textPrimary,
+    marginBottom: 4,
   },
   form: {
+    flex: 1,
+    justifyContent: 'center',
     paddingHorizontal: 24,
     gap: 16,
+    paddingBottom: 40,
   },
   formSubtitle: {
     fontFamily: typography.fontFamily.regular,

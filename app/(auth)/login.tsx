@@ -104,7 +104,6 @@ export default function LoginScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
           <ArrowLeft color={colors.textPrimary} size={28} />
         </TouchableOpacity>
-        <Text style={styles.title}>De vuelta al ruedo</Text>
       </View>
 
       <MotiView 
@@ -113,6 +112,7 @@ export default function LoginScreen() {
         transition={{ type: 'timing', duration: 500, delay: 100 }}
         style={styles.form}
       >
+        <Text style={styles.title}>Inicio de Sesión</Text>
         <Text style={styles.formSubtitle}>Inicia sesión para continuar</Text>
         
         <View style={[
@@ -247,18 +247,24 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.display,
-    fontSize: 28,
+    fontSize: 32,
     color: colors.textPrimary,
+    marginBottom: 4,
+    textAlign: 'center',
   },
   form: {
+    flex: 1,
+    justifyContent: 'center',
     paddingHorizontal: 24,
     gap: 16,
+    paddingBottom: 40,
   },
   formSubtitle: {
     fontFamily: typography.fontFamily.regular,
     ...typography.scale.body,
     color: colors.textSecondary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   inputContainer: {
     backgroundColor: 'rgba(255,255,255,0.03)',
