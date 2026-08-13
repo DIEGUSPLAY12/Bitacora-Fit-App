@@ -1,14 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { Flame, User, Play, ChevronRight, Dumbbell } from 'lucide-react-native';
+import { Flame, User, Play, ChevronRight, Dumbbell, Activity, Calendar } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
 import { useLastWorkout } from '../../hooks/useWorkouts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfile } from '../../hooks/useProfile';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MotiView } from 'moti';
+
+const { width } = Dimensions.get('window');
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -33,10 +37,9 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // Datos reales de racha
   const { data: streakData, isLoading: isStreakLoading } = useStreak();
   const streak = streakData?.current || 0;
-
+  
   const { data: profile } = useProfile();
   const { data: lastWorkoutData, isLoading: isLastWorkoutLoading } = useLastWorkout();
 
@@ -58,76 +61,142 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 100 }]} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-          <View style={styles.logoRow}>
-            <Dumbbell color={colors.accent} size={28} />
-            <Text style={styles.headerTitle}>Bitácora Fit</Text>
+        <View style={styles.header}>
+          <View style={styles.headerUser}>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/perfil')}>
+              {profile?.avatar_url ? (
+                <View style={styles.headerAvatarContainer}>
+                  <Image source={{ uri: profile.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
+                </View>
+              ) : (
+                <View style={styles.headerAvatarFallback}>
+                  <User color={colors.textPrimary} size={24} />
+                </View>
+              )}
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.greetingText}>
+                Hola, {profile?.username ? profile.username : 'Atleta'} 👋
+              </Text>
+              <Text style={styles.headerSubtitle}>¿Listo para sudar?</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/perfil')}>
-            {profile?.avatar_url ? (
-              <View style={styles.headerAvatarContainer}>
-                <Image source={{ uri: profile.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
+          <View style={styles.iconButton}>
+            <Dumbbell color={colors.accent} size={24} />
+          </View>
+        </View>
+
+        {/* Highlight Stats / Streak */}
+        <View style={styles.statsRow}>
+          {/* Main Streak Card */}
+          <MotiView 
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 600, delay: 100 }}
+            style={styles.streakCardContainer}
+          >
+            <LinearGradient
+              colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
+              style={styles.streakCardGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.streakHeader}>
+                <Flame color={colors.accent} size={28} />
+                <Text style={styles.streakLabel}>RACHA ACTUAL</Text>
               </View>
-            ) : (
-              <User color={colors.textPrimary} size={28} />
-            )}
-          </TouchableOpacity>
+              <View style={styles.streakContent}>
+                <Text style={styles.streakNumber}>{isStreakLoading ? '-' : streak}</Text>
+                <Text style={styles.streakDays}>DÍAS</Text>
+              </View>
+            </LinearGradient>
+          </MotiView>
+
+          {/* Start Workout Button (Main CTA) */}
+          <MotiView 
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 600, delay: 200 }}
+            style={styles.startCardContainer}
+          >
+            <TouchableOpacity 
+              activeOpacity={0.9}
+              onPress={() => router.push('/entrenar')}
+              style={{ flex: 1 }}
+            >
+              <LinearGradient
+                colors={[colors.accent, '#90D41C']}
+                style={styles.startGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.playIconContainer}>
+                  <Play color={colors.background} size={32} fill={colors.background} />
+                </View>
+                <Text style={styles.startText}>Empezar</Text>
+                <Text style={styles.startSubText}>Entrenamiento</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </MotiView>
         </View>
 
-        {/* Streak Counter */}
-        <View style={styles.streakContainer}>
-          <Flame color={colors.accent} size={64} />
-          <Text style={styles.streakNumber}>{isStreakLoading ? '-' : streak}</Text>
-          <Text style={styles.streakLabel}>CURRENT STREAK</Text>
-        </View>
-
-        {/* Start Workout Button */}
-        <TouchableOpacity 
-          style={styles.startButton}
-          activeOpacity={0.8}
-          onPress={() => router.push('/entrenar')}
+        <MotiView 
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 600, delay: 300 }}
         >
-          <Play color={colors.background} size={24} fill={colors.background} style={styles.startIcon} />
-          <Text style={styles.startButtonText}>Empezar entreno</Text>
-        </TouchableOpacity>
-
-        {/* Last Workout Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Último entreno</Text>
-            {lastWorkout && <Text style={styles.cardDate}>{lastWorkout.date}</Text>}
+          {/* Last Workout Section */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Último Entrenamiento</Text>
+            {lastWorkout && <Text style={styles.sectionSubtitle}>{lastWorkout.date}</Text>}
           </View>
           
-          {isLastWorkoutLoading ? (
-            <Text style={styles.emptyText}>Cargando...</Text>
-          ) : lastWorkout ? (
-            <>
-              <Text style={styles.workoutName}>{lastWorkout.name}</Text>
-              <Text style={styles.workoutDetails}>{lastWorkout.duration} • {lastWorkout.exercises}</Text>
-              
-              <TouchableOpacity 
-                style={styles.cardButton}
-                onPress={() => router.push('/(tabs)/historial')}
-              >
-                <Text style={styles.cardButtonText}>Ver historial completo</Text>
-                <ChevronRight color={colors.accent} size={20} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Aún no has registrado ningún entreno</Text>
-              <TouchableOpacity 
-                style={[styles.cardButton, { borderTopWidth: 0, paddingTop: 12 }]}
-                onPress={() => router.push('/entrenar')}
-              >
-                <Text style={styles.cardButtonText}>Empezar uno ahora</Text>
-                <ChevronRight color={colors.accent} size={20} />
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
+          <View style={styles.lastWorkoutCard}>
+            {isLastWorkoutLoading ? (
+              <View style={styles.loadingState}>
+                <Activity color={colors.textSecondary} size={24} />
+                <Text style={styles.emptyText}>Cargando datos...</Text>
+              </View>
+            ) : lastWorkout ? (
+              <View style={styles.lastWorkoutContent}>
+                <View style={styles.lastWorkoutTop}>
+                  <View style={styles.workoutIconBg}>
+                    <Activity color={colors.accent} size={24} />
+                  </View>
+                  <View style={styles.lastWorkoutDetails}>
+                    <Text style={styles.workoutName}>{lastWorkout.name}</Text>
+                    <Text style={styles.workoutDuration}>{lastWorkout.duration}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.exercisesContainer}>
+                  <Text style={styles.workoutExercisesText}>{lastWorkout.exercises}</Text>
+                </View>
+
+                <TouchableOpacity 
+                  style={styles.historyButton}
+                  onPress={() => router.push('/(tabs)/historial')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.historyButtonText}>Ver historial completo</Text>
+                  <ChevronRight color={colors.accent} size={20} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Calendar color={colors.textSecondary} size={48} style={{ marginBottom: 16 }} />
+                <Text style={styles.emptyTitle}>Aún no hay registros</Text>
+                <Text style={styles.emptyText}>Inicia tu primer entrenamiento hoy</Text>
+              </View>
+            )}
+          </View>
+        </MotiView>
+
       </ScrollView>
     </View>
   );
@@ -139,126 +208,248 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 16,
+    paddingHorizontal: 24,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
   },
-  logoRow: {
+  headerUser: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  headerTitle: {
-    fontFamily: typography.fontFamily.bold,
-    ...typography.scale.title,
-    color: colors.textPrimary,
+    gap: 16,
   },
   headerAvatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 2,
+    borderColor: colors.accent,
   },
   headerAvatar: {
     width: '100%',
     height: '100%',
   },
-  streakContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  streakNumber: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: 80,
-    lineHeight: 90,
-    color: colors.textPrimary,
-    marginTop: 8,
-  },
-  streakLabel: {
-    fontFamily: typography.fontFamily.medium,
-    ...typography.scale.caption,
-    color: colors.textSecondary,
-    letterSpacing: 2,
-  },
-  startButton: {
-    backgroundColor: colors.accent,
-    height: 64,
-    borderRadius: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  startIcon: {
-    marginRight: 12,
-  },
-  startButtonText: {
-    fontFamily: typography.fontFamily.bold,
-    ...typography.scale.title,
-    fontSize: 20,
-    color: colors.background,
-  },
-  card: {
+  headerAvatarFallback: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: colors.accent,
   },
-  cardTitle: {
-    fontFamily: typography.fontFamily.bold,
-    ...typography.scale.body,
-    color: colors.textPrimary,
-  },
-  cardDate: {
-    fontFamily: typography.fontFamily.regular,
-    ...typography.scale.caption,
-    color: colors.textSecondary,
-  },
-  workoutName: {
+  greetingText: {
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.title,
     fontSize: 22,
     color: colors.textPrimary,
+  },
+  headerSubtitle: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  iconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+    gap: 16,
+  },
+  streakCardContainer: {
+    flex: 1,
+    height: 180,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.2)',
+    backgroundColor: colors.surface,
+  },
+  streakCardGradient: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'space-between',
+  },
+  streakHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  streakLabel: {
+    fontFamily: typography.fontFamily.bold,
+    ...typography.scale.caption,
+    color: colors.accent,
+    letterSpacing: 1,
+  },
+  streakContent: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  streakNumber: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 56,
+    lineHeight: 64,
+    color: colors.textPrimary,
+  },
+  streakDays: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+  },
+  startCardContainer: {
+    flex: 1,
+    height: 180,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  startGradient: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  playIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  startText: {
+    fontFamily: typography.fontFamily.bold,
+    ...typography.scale.title,
+    color: colors.background,
     marginBottom: 4,
   },
-  workoutDetails: {
+  startSubText: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: 'rgba(0,0,0,0.6)',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontFamily: typography.fontFamily.bold,
+    ...typography.scale.body,
+    fontSize: 18,
+    color: colors.textPrimary,
+  },
+  sectionSubtitle: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: colors.textSecondary,
+  },
+  lastWorkoutCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  lastWorkoutContent: {
+    flex: 1,
+  },
+  lastWorkoutTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 20,
+  },
+  workoutIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lastWorkoutDetails: {
+    flex: 1,
+  },
+  workoutName: {
+    fontFamily: typography.fontFamily.bold,
+    ...typography.scale.body,
+    fontSize: 18,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  workoutDuration: {
+    fontFamily: typography.fontFamily.regular,
+    ...typography.scale.caption,
+    color: colors.accent,
+  },
+  exercisesContainer: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  workoutExercisesText: {
     fontFamily: typography.fontFamily.regular,
     ...typography.scale.body,
     color: colors.textSecondary,
-    marginBottom: 20,
+    lineHeight: 22,
   },
-  cardButton: {
+  historyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-    paddingTop: 16,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
   },
-  cardButtonText: {
+  historyButtonText: {
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.body,
     color: colors.accent,
   },
   emptyState: {
-    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  emptyTitle: {
+    fontFamily: typography.fontFamily.bold,
+    ...typography.scale.body,
+    color: colors.textPrimary,
+    marginBottom: 8,
   },
   emptyText: {
     fontFamily: typography.fontFamily.regular,
     ...typography.scale.body,
     color: colors.textSecondary,
-    marginBottom: 8,
+  },
+  loadingState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    gap: 16,
   }
 });
