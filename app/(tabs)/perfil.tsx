@@ -7,9 +7,10 @@ import { typography } from '../../theme/typography';
 import { useAuth } from '../../hooks/useAuth';
 import { useStreak } from '../../hooks/useStreak';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
-import { User, LogOut, Edit3, Edit2, Bell, X, TrendingUp } from 'lucide-react-native';
+import { User, LogOut, Edit3, Edit2, Bell, X, TrendingUp, ChevronRight, Activity, Zap } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PerfilScreen() {
   const insets = useSafeAreaInsets();
@@ -23,6 +24,8 @@ export default function PerfilScreen() {
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newAvatarUrl, setNewAvatarUrl] = useState('');
+
+  const [focusedInput, setFocusedInput] = useState(false);
 
   const AVATAR_SEEDS = ['Felix', 'Aneka', 'Oreo', 'Zoey', 'Bella', 'Charlie', 'Molly', 'Simba'];
 
@@ -73,20 +76,22 @@ export default function PerfilScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Perfil</Text>
+        <Text style={styles.title}>Mi Perfil</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.userSection}>
           <View style={styles.avatarWrapper}>
-            <View style={styles.avatarContainer}>
-              {profile?.avatar_url ? (
-                <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
-              ) : (
-                <User color={colors.background} size={48} />
-              )}
+            <View style={styles.avatarOuterRing}>
+              <View style={styles.avatarContainer}>
+                {profile?.avatar_url ? (
+                  <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+                ) : (
+                  <User color={colors.background} size={48} />
+                )}
+              </View>
             </View>
-            <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar}>
+            <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar} activeOpacity={0.8}>
               <Edit2 color={colors.background} size={16} />
             </TouchableOpacity>
           </View>
@@ -96,36 +101,61 @@ export default function PerfilScreen() {
           <Text style={styles.email}>{user?.email}</Text>
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{statsLoading ? '-' : totalWorkouts}</Text>
-            <Text style={styles.statLabel}>ENTRENOS</Text>
+        {/* Bento Grid Stats */}
+        <View style={styles.bentoGrid}>
+          <View style={[styles.bentoCard, styles.bentoCardLarge]}>
+            <View style={styles.bentoIconContainer}>
+              <Activity color={colors.accent} size={24} />
+            </View>
+            <Text style={styles.bentoValue}>{statsLoading ? '-' : totalWorkouts}</Text>
+            <Text style={styles.bentoLabel}>Entrenos Totales</Text>
           </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{statsLoading ? '-' : longestStreak}</Text>
-            <Text style={styles.statLabel}>RACHA MÁX</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={[styles.statValue, { color: colors.accent }]}>{statsLoading ? '-' : currentStreak}</Text>
-            <Text style={[styles.statLabel, { color: colors.accent }]}>ACTUAL</Text>
+          
+          <View style={styles.bentoCol}>
+            <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={styles.bentoLabel}>Racha Actual</Text>
+                <Zap color={colors.accent} size={16} fill={colors.accent} />
+              </View>
+              <Text style={[styles.bentoValue, { color: colors.accent }]}>{statsLoading ? '-' : currentStreak}</Text>
+            </View>
+
+            <View style={[styles.bentoCard, styles.bentoCardSmall]}>
+              <Text style={styles.bentoLabel}>Racha Máxima</Text>
+              <Text style={styles.bentoValue}>{statsLoading ? '-' : longestStreak}</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.optionsList}>
-          <TouchableOpacity style={styles.optionRow} onPress={() => router.push('/progreso')}>
-            <TrendingUp color={colors.textPrimary} size={24} />
+          <TouchableOpacity style={styles.optionRow} onPress={() => router.push('/progreso')} activeOpacity={0.7}>
+            <View style={styles.optionIconBg}>
+              <TrendingUp color={colors.textPrimary} size={20} />
+            </View>
             <Text style={styles.optionText}>Mi Progreso</Text>
+            <ChevronRight color={colors.textSecondary} size={20} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionRow} onPress={handleEditProfile}>
-            <Edit3 color={colors.textPrimary} size={24} />
+          
+          <TouchableOpacity style={styles.optionRow} onPress={handleEditProfile} activeOpacity={0.7}>
+            <View style={styles.optionIconBg}>
+              <Edit3 color={colors.textPrimary} size={20} />
+            </View>
             <Text style={styles.optionText}>Editar perfil</Text>
+            <ChevronRight color={colors.textSecondary} size={20} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionRow} onPress={() => Alert.alert('Notificaciones', 'Próximamente')}>
-            <Bell color={colors.textPrimary} size={24} />
+
+          <TouchableOpacity style={styles.optionRow} onPress={() => Alert.alert('Notificaciones', 'Próximamente')} activeOpacity={0.7}>
+            <View style={styles.optionIconBg}>
+              <Bell color={colors.textPrimary} size={20} />
+            </View>
             <Text style={styles.optionText}>Notificaciones</Text>
+            <ChevronRight color={colors.textSecondary} size={20} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionRow} onPress={handleSignOut}>
-            <LogOut color={colors.destructive} size={24} />
+
+          <TouchableOpacity style={[styles.optionRow, styles.optionRowDanger]} onPress={handleSignOut} activeOpacity={0.7}>
+            <View style={[styles.optionIconBg, { backgroundColor: 'rgba(207, 102, 121, 0.1)' }]}>
+              <LogOut color={colors.destructive} size={20} />
+            </View>
             <Text style={[styles.optionText, { color: colors.destructive }]}>Cerrar sesión</Text>
           </TouchableOpacity>
         </View>
@@ -136,27 +166,40 @@ export default function PerfilScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Editar Perfil</Text>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <X color={colors.textPrimary} size={24} />
+              <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.closeButton}>
+                <X color={colors.textPrimary} size={20} />
               </TouchableOpacity>
             </View>
             
             <Text style={styles.inputLabel}>Nombre de usuario</Text>
-            <TextInput
-              style={styles.input}
-              value={newUsername}
-              onChangeText={setNewUsername}
-              placeholderTextColor={colors.textSecondary}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <View style={[styles.inputContainer, focusedInput && styles.inputFocused]}>
+              <TextInput
+                style={styles.input}
+                value={newUsername}
+                onChangeText={setNewUsername}
+                placeholder="Escribe un alias único"
+                placeholderTextColor={colors.textSecondary}
+                autoCapitalize="none"
+                autoCorrect={false}
+                onFocus={() => setFocusedInput(true)}
+                onBlur={() => setFocusedInput(false)}
+              />
+            </View>
 
             <TouchableOpacity 
               style={styles.saveButton} 
               onPress={saveProfile}
               disabled={isUpdating}
+              activeOpacity={0.9}
             >
-              {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar</Text>}
+              <LinearGradient
+                colors={isUpdating ? ['#888', '#666'] : [colors.accent, '#90D41C']}
+                style={styles.saveButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar cambios</Text>}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -167,8 +210,8 @@ export default function PerfilScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Cambiar Avatar</Text>
-              <TouchableOpacity onPress={() => setAvatarModalVisible(false)}>
-                <X color={colors.textPrimary} size={24} />
+              <TouchableOpacity onPress={() => setAvatarModalVisible(false)} style={styles.closeButton}>
+                <X color={colors.textPrimary} size={20} />
               </TouchableOpacity>
             </View>
 
@@ -181,6 +224,7 @@ export default function PerfilScreen() {
                     key={seed}
                     style={[styles.avatarOption, isSelected && styles.avatarOptionSelected]}
                     onPress={() => setNewAvatarUrl(url)}
+                    activeOpacity={0.8}
                   >
                     <Image source={{ uri: url }} style={styles.avatarOptionImage} contentFit="contain" />
                   </TouchableOpacity>
@@ -192,8 +236,16 @@ export default function PerfilScreen() {
               style={styles.saveButton} 
               onPress={saveAvatar}
               disabled={isUpdating}
+              activeOpacity={0.9}
             >
-              {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar avatar</Text>}
+              <LinearGradient
+                colors={isUpdating ? ['#888', '#666'] : [colors.accent, '#90D41C']}
+                style={styles.saveButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar avatar</Text>}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -204,33 +256,49 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 24, paddingTop: 16 },
+  header: { paddingHorizontal: 24, paddingBottom: 16 },
   title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
-  content: { padding: 24, flexGrow: 1 },
-  userSection: { alignItems: 'center', marginBottom: 40 },
+  content: { paddingHorizontal: 24, flexGrow: 1 },
+  userSection: { alignItems: 'center', marginBottom: 32, marginTop: 16 },
   avatarWrapper: { position: 'relative', marginBottom: 16 },
-  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  editAvatarButton: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.accent, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: colors.background },
+  avatarOuterRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: colors.accent, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(180, 240, 60, 0.05)' },
+  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  editAvatarButton: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.accent, width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: colors.background },
   avatar: { width: '100%', height: '100%' },
-  username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 4 },
-  email: { fontFamily: typography.fontFamily.regular, ...typography.scale.body, color: colors.textSecondary },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.surface, borderRadius: 16, padding: 20, marginBottom: 40 },
-  statBox: { flex: 1, alignItems: 'center' },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary, marginBottom: 4 },
-  statLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  optionsList: { gap: 8 },
-  optionRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, padding: 16, borderRadius: 12, gap: 16 },
-  optionText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textPrimary },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: colors.surface, padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 40 },
+  username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 4 },
+  email: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary },
+  
+  bentoGrid: { flexDirection: 'row', gap: 16, marginBottom: 32 },
+  bentoCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  bentoCardLarge: { flex: 1, justifyContent: 'center' },
+  bentoCol: { flex: 1, gap: 16 },
+  bentoCardSmall: { flex: 1, justifyContent: 'center' },
+  bentoIconContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 4 },
+  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5, textTransform: 'uppercase' },
+  
+  optionsList: { gap: 12 },
+  optionRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  optionRowDanger: { borderColor: 'rgba(207, 102, 121, 0.2)', backgroundColor: 'rgba(207, 102, 121, 0.02)' },
+  optionIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  optionText: { flex: 1, fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary },
+  
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: colors.surface, padding: 24, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary },
-  inputLabel: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 8 },
-  input: { backgroundColor: colors.background, color: colors.textPrimary, height: 56, borderRadius: 8, paddingHorizontal: 16, fontFamily: typography.fontFamily.regular, ...typography.scale.body, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
-  avatarOption: { width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
-  avatarOptionSelected: { borderColor: colors.accent },
+  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  closeButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  inputLabel: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 8, marginLeft: 4 },
+  inputContainer: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 24 },
+  inputFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
+  input: { color: colors.textPrimary, height: 60, paddingHorizontal: 16, fontFamily: typography.fontFamily.regular, ...typography.scale.body },
+  
+  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32, justifyContent: 'center' },
+  avatarOption: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 3, borderColor: 'transparent', overflow: 'hidden' },
+  avatarOptionSelected: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.1)' },
   avatarOptionImage: { width: '100%', height: '100%' },
-  saveButton: { backgroundColor: colors.accent, height: 56, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  saveButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.background },
+  
+  saveButton: { height: 60, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+  saveButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  saveButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.background },
 });

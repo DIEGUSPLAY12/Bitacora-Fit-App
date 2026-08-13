@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { UserPlus, User, Users, Weight } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
-import { MotiView } from 'moti';
+import { MotiView, AnimatePresence } from 'moti';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -54,9 +54,9 @@ export default function FeedScreen() {
 
     return (
       <MotiView
-        from={{ opacity: 0, translateY: reduceMotion ? 0 : 20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 400, delay: reduceMotion ? 0 : index * 100 }}
+        from={{ opacity: 0, translateY: reduceMotion ? 0 : 30, scale: 0.95 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{ type: 'spring', damping: 20, delay: reduceMotion ? 0 : index * 100 }}
       >
         <View style={styles.card}>
           <TouchableOpacity 
@@ -96,57 +96,86 @@ export default function FeedScreen() {
 
             <View style={styles.statsContainer}>
               <View style={styles.stat}>
-                <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
-                <Text style={styles.statText}>ejercicios</Text>
+                <View style={styles.statIconBg}>
+                  <Dumbbell color={colors.accent} size={16} />
+                </View>
+                <View>
+                  <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
+                  <Text style={styles.statText}>Ejercicios</Text>
+                </View>
               </View>
               <View style={styles.stat}>
-                <Text style={styles.statTextHighlight}>{totalSets}</Text>
-                <Text style={styles.statText}>series</Text>
+                <View style={styles.statIconBg}>
+                  <Repeat color={colors.accent} size={16} />
+                </View>
+                <View>
+                  <Text style={styles.statTextHighlight}>{totalSets}</Text>
+                  <Text style={styles.statText}>Series</Text>
+                </View>
               </View>
               <View style={styles.stat}>
-                <Weight color={colors.textSecondary} size={16} />
-                <Text style={styles.statText}>{totalVolume} kg</Text>
+                <View style={styles.statIconBg}>
+                  <Activity color={colors.accent} size={16} />
+                </View>
+                <View>
+                  <Text style={styles.statTextHighlight}>{totalVolume}</Text>
+                  <Text style={styles.statText}>Vol (kg)</Text>
+                </View>
               </View>
             </View>
           </TouchableOpacity>
         </View>
       </MotiView>
     );
-  }, [reduceMotion]);
+  }, [router, reduceMotion]);
 
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Actividad de tus amigos</Text>
-        <TouchableOpacity onPress={() => router.push('/amigos')}>
-          <UserPlus color={colors.textPrimary} size={28} />
+        <View>
+          <Text style={styles.title}>Actividad</Text>
+          <Text style={styles.subtitle}>Explora lo que hacen tus amigos</Text>
+        </View>
+        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
+          <UserPlus color={colors.textPrimary} size={24} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.listContainer}>
         {isLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
         ) : (
           <FlashList
             data={workouts || []}
             renderItem={renderItem}
-            estimatedItemSize={300}
+            estimatedItemSize={250}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Users color={colors.textSecondary} size={48} style={styles.emptyIcon} />
+              <MotiView 
+                from={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={styles.emptyState}
+              >
+                <View style={styles.emptyIconContainer}>
+                  <Users color={colors.accent} size={48} />
+                </View>
                 {hasFriends ? (
-                  <Text style={styles.emptyText}>Tus amigos aún no han subido ningún entreno</Text>
+                  <>
+                    <Text style={styles.emptyTitle}>Sin actividad reciente</Text>
+                    <Text style={styles.emptyText}>Tus amigos no han registrado entrenos últimamente.</Text>
+                  </>
                 ) : (
                   <>
-                    <Text style={styles.emptyText}>Añade amigos para ver su actividad aquí</Text>
-                    <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/amigos')}>
+                    <Text style={styles.emptyTitle}>Comienza a socializar</Text>
+                    <Text style={styles.emptyText}>Añade amigos para motivarte viendo su progreso.</Text>
+                    <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/amigos')} activeOpacity={0.9}>
                       <Text style={styles.emptyButtonText}>Buscar amigos</Text>
                     </TouchableOpacity>
                   </>
                 )}
-              </View>
+              </MotiView>
             }
           />
         )}
@@ -157,28 +186,32 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 16, paddingBottom: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 16 },
+  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
+  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, marginTop: 4 },
+  headerButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   listContainer: { flex: 1 },
-  listContent: { paddingHorizontal: 24, paddingBottom: 100 },
-  card: { backgroundColor: colors.surface, borderRadius: 16, padding: 20, marginBottom: 16 },
+  listContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 16 },
+  card: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   authorHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  avatarContainer: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.textPrimary, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  avatarContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
   avatar: { width: '100%', height: '100%' },
   authorInfo: { flex: 1 },
-  authorName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.textPrimary },
-  cardTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.textPrimary, marginBottom: 12 },
-  cardDate: { fontFamily: typography.fontFamily.regular, ...typography.scale.caption, color: colors.textSecondary },
+  authorName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary },
+  cardTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, marginBottom: 12 },
+  cardDate: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  tag: { backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  tagText: { fontFamily: typography.fontFamily.medium, fontSize: 10, color: colors.textSecondary, textTransform: 'uppercase' },
-  statsContainer: { flexDirection: 'row', gap: 24, marginTop: 4 },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statText: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
-  statTextHighlight: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, color: colors.accent },
-  emptyState: { padding: 40, alignItems: 'center', marginTop: 40 },
-  emptyIcon: { marginBottom: 16 },
-  emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16 },
-  emptyButton: { backgroundColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
-  emptyButtonText: { fontFamily: typography.fontFamily.bold, color: colors.background, ...typography.scale.body }
+  tag: { backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
+  tagText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.accent, textTransform: 'uppercase', letterSpacing: 0.5 },
+  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 16, padding: 16 },
+  stat: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  statIconBg: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  statText: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, marginTop: 2 },
+  statTextHighlight: { fontFamily: typography.fontFamily.bold, fontSize: 14, color: colors.textPrimary },
+  emptyState: { padding: 40, alignItems: 'center', marginTop: 40, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  emptyIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+  emptyTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
+  emptyText: { fontFamily: typography.fontFamily.regular, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16, lineHeight: 24 },
+  emptyButton: { backgroundColor: colors.accent, paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+  emptyButtonText: { fontFamily: typography.fontFamily.bold, color: colors.background, ...typography.scale.body, fontSize: 16 }
 });
