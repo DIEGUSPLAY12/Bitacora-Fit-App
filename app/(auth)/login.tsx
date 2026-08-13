@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
@@ -202,15 +202,21 @@ export default function LoginScreen() {
         </View>
 
         <TouchableOpacity 
-          style={styles.outlineButton} 
+          style={styles.googleButton} 
           onPress={handleGoogleLogin}
           disabled={loading || googleLoading}
           activeOpacity={0.7}
         >
           {googleLoading ? (
-            <ActivityIndicator color={colors.textPrimary} />
+            <ActivityIndicator color="#000" />
           ) : (
-            <Text style={styles.outlineButtonText}>Continuar con Google</Text>
+            <>
+              <Image 
+                source={require('../../assets/images/google-logo.png')} 
+                style={styles.googleIcon} 
+              />
+              <Text style={styles.googleButtonText}>Continuar con Google</Text>
+            </>
           )}
         </TouchableOpacity>
       </MotiView>
@@ -298,19 +304,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.background,
   },
-  outlineButton: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+  googleButton: {
+    backgroundColor: '#FFFFFF',
     height: 60,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  outlineButtonText: {
+  googleIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
+  googleButtonText: {
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.body,
-    color: colors.textPrimary,
+    color: '#000000',
   },
   divider: {
     flexDirection: 'row',
