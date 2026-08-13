@@ -27,7 +27,7 @@ export default function PerfilScreen() {
 
   const [focusedInput, setFocusedInput] = useState(false);
 
-  const AVATAR_SEEDS = ['Felix', 'Aneka', 'Oreo', 'Zoey', 'Bella', 'Charlie', 'Molly', 'Simba'];
+  const AVATAR_SEEDS = ['Power', 'Energy', 'Focus', 'Strength', 'Agility', 'Speed', 'Endurance', 'Balance'];
 
   const handleSignOut = async () => {
     Alert.alert('Cerrar sesión', '¿Estás seguro de que quieres salir?', [
@@ -82,15 +82,20 @@ export default function PerfilScreen() {
       <View style={styles.content}>
         <View style={styles.userSection}>
           <View style={styles.avatarWrapper}>
-            <View style={styles.avatarOuterRing}>
+            <LinearGradient 
+              colors={[colors.accent, '#90D41C']} 
+              style={styles.avatarOuterRing}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <View style={styles.avatarContainer}>
                 {profile?.avatar_url ? (
                   <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
                 ) : (
-                  <User color={colors.background} size={48} />
+                  <User color={colors.textSecondary} size={48} />
                 )}
               </View>
-            </View>
+            </LinearGradient>
             <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar} activeOpacity={0.8}>
               <Edit2 color={colors.background} size={16} />
             </TouchableOpacity>
@@ -103,27 +108,42 @@ export default function PerfilScreen() {
 
         {/* Bento Grid Stats */}
         <View style={styles.bentoGrid}>
-          <View style={[styles.bentoCard, styles.bentoCardLarge]}>
+          <LinearGradient 
+            colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.01)']}
+            style={[styles.bentoCard, styles.bentoCardLarge]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
             <View style={styles.bentoIconContainer}>
               <Activity color={colors.accent} size={24} />
             </View>
             <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : totalWorkouts}</Text>
             <Text style={styles.bentoLabel}>Entrenos Totales</Text>
-          </View>
+          </LinearGradient>
           
           <View style={styles.bentoCol}>
-            <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)' }]}>
+            <LinearGradient 
+              colors={['rgba(180, 240, 60, 0.1)', 'rgba(180, 240, 60, 0.02)']}
+              style={[styles.bentoCard, styles.bentoCardSmall]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <Text style={styles.bentoLabel}>Racha Actual</Text>
+                <Text style={[styles.bentoLabel, { color: colors.accent }]}>Racha Actual</Text>
                 <Zap color={colors.accent} size={16} fill={colors.accent} />
               </View>
               <Text style={[styles.bentoValue, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : currentStreak}</Text>
-            </View>
+            </LinearGradient>
 
-            <View style={[styles.bentoCard, styles.bentoCardSmall]}>
+            <LinearGradient 
+              colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0.01)']}
+              style={[styles.bentoCard, styles.bentoCardSmall]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <Text style={styles.bentoLabel}>Racha Máxima</Text>
               <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : longestStreak}</Text>
-            </View>
+            </LinearGradient>
           </View>
         </View>
 
@@ -217,7 +237,7 @@ export default function PerfilScreen() {
 
             <View style={styles.avatarGrid}>
               {AVATAR_SEEDS.map((seed) => {
-                const url = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}`;
+                const url = `https://api.dicebear.com/9.x/shapes/svg?seed=${seed}&backgroundColor=transparent&shape1Color=b4f03c&shape2Color=90d41c&shape3Color=ffffff`;
                 const isSelected = newAvatarUrl === url;
                 return (
                   <TouchableOpacity
@@ -261,15 +281,15 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 24, flexGrow: 1 },
   userSection: { alignItems: 'center', marginBottom: 32, marginTop: 16 },
   avatarWrapper: { position: 'relative', marginBottom: 16 },
-  avatarOuterRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: colors.accent, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(180, 240, 60, 0.05)' },
-  avatarContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  avatarOuterRing: { width: 116, height: 116, borderRadius: 58, justifyContent: 'center', alignItems: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  avatarContainer: { width: 108, height: 108, borderRadius: 54, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center', overflow: 'hidden', borderWidth: 4, borderColor: colors.background },
   editAvatarButton: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.accent, width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: colors.background },
   avatar: { width: '100%', height: '100%' },
   username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 4 },
   email: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary },
   
   bentoGrid: { flexDirection: 'row', gap: 16, marginBottom: 32 },
-  bentoCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  bentoCard: { borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', overflow: 'hidden' },
   bentoCardLarge: { flex: 1, justifyContent: 'center' },
   bentoCol: { flex: 1, gap: 16 },
   bentoCardSmall: { flex: 1, justifyContent: 'center' },
