@@ -302,6 +302,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: colors.textPrimary,
     marginBottom: 4,
+    textAlign: 'center',
   },
   form: {
     flex: 1,
@@ -315,6 +316,7 @@ const styles = StyleSheet.create({
     ...typography.scale.body,
     color: colors.textSecondary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   inputContainer: {
     backgroundColor: 'rgba(255,255,255,0.03)',

@@ -120,7 +120,13 @@ export default function HomeScreen() {
               onPress={() => router.push('/progreso')}
               activeOpacity={0.8}
             >
-              <Activity color={colors.accent} size={20} />
+              <LinearGradient
+                colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.01)']}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <Activity color={colors.textPrimary} size={24} />
               <Text style={styles.progressCardText}>Mi Progreso</Text>
             </TouchableOpacity>
           </View>
@@ -133,22 +139,24 @@ export default function HomeScreen() {
               style={{ flex: 1 }}
             >
               <LinearGradient
-                colors={[colors.accent, '#90D41C']}
+                colors={[colors.accent, '#7CB314']}
                 style={styles.startGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
                 <View style={styles.playIconContainer}>
-                  <Play color={colors.background} size={32} fill={colors.background} />
+                  <Play color={colors.background} size={32} fill={colors.background} style={{ marginLeft: 4 }} />
                 </View>
-                <Text style={styles.startText}>Empezar</Text>
-                <Text style={styles.startSubText}>Entrenamiento</Text>
+                <View>
+                  <Text style={styles.startText}>Empezar</Text>
+                  <Text style={styles.startSubText}>Entrenamiento</Text>
+                </View>
               </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ marginTop: 64 }}>
+        <View style={{ marginTop: 24 }}>
           {/* Last Workout Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Último Entrenamiento</Text>
@@ -213,7 +221,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 64,
   },
   headerUser: {
     flexDirection: 'row',
@@ -271,19 +279,19 @@ const styles = StyleSheet.create({
   leftColumn: {
     flex: 1,
     justifyContent: 'space-between',
-    height: 200,
+    height: 208,
   },
   streakCardContainerSmall: {
-    height: 92,
+    height: 96,
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(180, 240, 60, 0.2)',
-    backgroundColor: colors.surface,
+    borderColor: 'rgba(180, 240, 60, 0.3)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   streakCardGradientSmall: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     justifyContent: 'center',
   },
   streakContentSmall: {
@@ -306,51 +314,56 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   progressCardContainer: {
-    height: 92,
+    height: 96,
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'rgba(255,255,255,0.02)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
   },
   progressCardText: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   startCardContainer: {
     flex: 1,
-    height: 200,
+    height: 208,
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.5)',
   },
   startGradient: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+    padding: 24,
+    justifyContent: 'space-between',
   },
   playIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: 'rgba(0,0,0,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   startText: {
     fontFamily: typography.fontFamily.bold,
     ...typography.scale.title,
     color: colors.background,
-    marginBottom: 4,
+    marginBottom: 2,
+    fontSize: 28,
   },
   startSubText: {
     fontFamily: typography.fontFamily.medium,
