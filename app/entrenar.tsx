@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   timerBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
   timerText: { fontFamily: typography.fontFamily.bold, color: colors.accent, ...typography.scale.body, fontSize: 16 },
   scrollContent: { padding: 24, paddingBottom: 140 },
-  emptyState: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  emptyState: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginBottom: 24 },
   emptyIconBg: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
   emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
   
