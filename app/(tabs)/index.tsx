@@ -81,7 +81,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View>
               <Text style={styles.greetingText}>
-                Hola, {profile?.username ? profile.username : 'Atleta'} 👋
+                Hola, {profile?.username ? profile.username : 'Atleta'}
               </Text>
               <Text style={styles.headerSubtitle}>¿Listo para sudar?</Text>
             </View>
@@ -94,12 +94,7 @@ export default function HomeScreen() {
         {/* Highlight Stats / Streak */}
         <View style={styles.statsRow}>
           {/* Main Streak Card */}
-          <MotiView 
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 600, delay: 100 }}
-            style={styles.streakCardContainer}
-          >
+          <View style={styles.streakCardContainer}>
             <LinearGradient
               colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
               style={styles.streakCardGradient}
@@ -115,15 +110,10 @@ export default function HomeScreen() {
                 <Text style={styles.streakDays}>DÍAS</Text>
               </View>
             </LinearGradient>
-          </MotiView>
+          </View>
 
           {/* Start Workout Button (Main CTA) */}
-          <MotiView 
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 600, delay: 200 }}
-            style={styles.startCardContainer}
-          >
+          <View style={styles.startCardContainer}>
             <TouchableOpacity 
               activeOpacity={0.9}
               onPress={() => router.push('/entrenar')}
@@ -142,14 +132,10 @@ export default function HomeScreen() {
                 <Text style={styles.startSubText}>Entrenamiento</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </MotiView>
+          </View>
         </View>
 
-        <MotiView 
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 600, delay: 300 }}
-        >
+        <View style={{ marginTop: 32 }}>
           {/* Last Workout Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Último Entrenamiento</Text>
@@ -195,7 +181,7 @@ export default function HomeScreen() {
               </View>
             )}
           </View>
-        </MotiView>
+        </View>
 
       </ScrollView>
     </View>

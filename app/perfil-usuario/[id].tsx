@@ -48,12 +48,7 @@ export default function UserProfileScreen() {
     const tags = Array.from(muscleGroups).slice(0, 3);
 
     return (
-      <MotiView
-        key={item.id}
-        from={{ opacity: 0, translateY: 20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'spring', delay: 300 + (index * 100) }}
-      >
+      <View key={item.id}>
         <TouchableOpacity 
           style={styles.card} 
           activeOpacity={0.7}
@@ -97,7 +92,7 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </TouchableOpacity>
-      </MotiView>
+      </View>
     );
   }, [router]);
 
@@ -125,12 +120,7 @@ export default function UserProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <MotiView 
-          style={styles.userSection}
-          from={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring' }}
-        >
+        <View style={styles.userSection}>
           <View style={styles.avatarRing}>
             <View style={styles.avatarContainer}>
               {profile?.avatar_url ? (
@@ -143,19 +133,14 @@ export default function UserProfileScreen() {
           <Text style={styles.username}>
             {profile?.username || 'Usuario'}
           </Text>
-        </MotiView>
+        </View>
 
-        <MotiView 
-          style={styles.bentoGrid}
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'spring', delay: 100 }}
-        >
+        <View style={styles.bentoGrid}>
           <View style={[styles.bentoCard, { flex: 1 }]}>
             <View style={styles.bentoIconBg}>
               <Trophy color={colors.textPrimary} size={20} />
             </View>
-            <Text style={styles.bentoValue}>{statsLoading ? '-' : stats?.total || 0}</Text>
+            <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : stats?.total || 0}</Text>
             <Text style={styles.bentoLabel}>ENTRENOS</Text>
           </View>
           
@@ -163,16 +148,12 @@ export default function UserProfileScreen() {
             <View style={[styles.bentoIconBg, { backgroundColor: 'rgba(180, 240, 60, 0.15)' }]}>
               <Flame color={colors.accent} size={20} />
             </View>
-            <Text style={[styles.bentoValue, { color: colors.accent }]}>{statsLoading ? '-' : stats?.longest || 0}</Text>
+            <Text style={[styles.bentoValue, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : stats?.longest || 0}</Text>
             <Text style={[styles.bentoLabel, { color: colors.accent }]}>RACHA MÁXIMA</Text>
           </View>
-        </MotiView>
+        </View>
 
-        <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 200 }}
-        >
+        <View>
           <Text style={styles.sectionTitle}>Últimos entrenos</Text>
           
           {workoutsLoading ? (
@@ -184,7 +165,7 @@ export default function UserProfileScreen() {
               <Text style={styles.emptyText}>Este usuario aún no ha registrado entrenos.</Text>
             </View>
           )}
-        </MotiView>
+        </View>
       </ScrollView>
     </View>
   );

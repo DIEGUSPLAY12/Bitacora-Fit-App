@@ -278,9 +278,9 @@ const styles = StyleSheet.create({
   emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
   
   exerciseCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, textTransform: 'capitalize', flex: 1, marginRight: 16 },
-  trashButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(207, 102, 121, 0.1)', justifyContent: 'center', alignItems: 'center' },
+  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, lineHeight: 28, color: colors.textPrimary, textTransform: 'capitalize', flex: 1, marginRight: 16, paddingTop: 4 },
+  trashButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(207, 102, 121, 0.1)', justifyContent: 'center', alignItems: 'center', marginTop: 2 },
   
   tableHeader: { flexDirection: 'row', marginBottom: 12, paddingHorizontal: 8 },
   columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center', letterSpacing: 1 },

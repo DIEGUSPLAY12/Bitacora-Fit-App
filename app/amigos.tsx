@@ -38,12 +38,7 @@ export default function AmigosScreen() {
   };
 
   const renderRequestCard = ({ item, index }: { item: any; index: number }) => (
-    <MotiView 
-      from={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'timing', delay: index * 50 }}
-      style={styles.card}
-    >
+    <View style={styles.card}>
       <View style={styles.userInfo}>
         <View style={styles.avatarContainer}>
           {item.profiles?.avatar_url ? (
@@ -73,19 +68,14 @@ export default function AmigosScreen() {
           <XIcon color={colors.textSecondary} size={20} />
         </TouchableOpacity>
       </View>
-    </MotiView>
+    </View>
   );
 
   const renderSearchCard = ({ item, index }: { item: any; index: number }) => {
     const isPending = pendingUserIds.has(item.id);
     
     return (
-      <MotiView 
-        from={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'timing', delay: index * 50 }}
-        style={styles.card}
-      >
+      <View style={styles.card}>
         <TouchableOpacity 
           style={styles.userInfo}
           onPress={() => router.push(`/perfil-usuario/${item.id}`)}
@@ -110,18 +100,13 @@ export default function AmigosScreen() {
             {isPending ? 'Pendiente' : 'Añadir'}
           </Text>
         </TouchableOpacity>
-      </MotiView>
+      </View>
     );
   };
   
   const renderFriendCard = ({ item, index }: { item: any; index: number }) => {
     return (
-      <MotiView 
-        from={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'timing', delay: index * 50 }}
-        style={styles.card}
-      >
+      <View style={styles.card}>
         <TouchableOpacity 
           style={styles.userInfo}
           onPress={() => router.push(`/perfil-usuario/${item.id}`)}
@@ -136,7 +121,7 @@ export default function AmigosScreen() {
           </View>
           <Text style={styles.username}>{item.username}</Text>
         </TouchableOpacity>
-      </MotiView>
+      </View>
     );
   };
 

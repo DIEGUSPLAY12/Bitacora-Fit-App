@@ -8,25 +8,27 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   return (
-    <Tabs screenOptions={{
-      headerShown: false,
-      tabBarStyle: {
-        backgroundColor: colors.background,
-        borderTopWidth: 1,
-        borderTopColor: colors.surface,
-        elevation: 0,
-        shadowOpacity: 0,
-        height: 60 + insets.bottom,
-        paddingBottom: 8 + insets.bottom,
-        paddingTop: 8,
-      },
-      tabBarActiveTintColor: colors.accent,
-      tabBarInactiveTintColor: colors.textSecondary,
-      tabBarLabelStyle: {
-        fontFamily: typography.fontFamily.medium,
-        fontSize: typography.scale.caption.fontSize,
-      }
-    }}>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.surface,
+          elevation: 0,
+          shadowOpacity: 0,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarLabelStyle: {
+          fontFamily: typography.fontFamily.medium,
+          fontSize: typography.scale.caption.fontSize,
+          marginTop: 4,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{

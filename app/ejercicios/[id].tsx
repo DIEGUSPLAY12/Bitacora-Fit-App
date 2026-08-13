@@ -48,7 +48,11 @@ export default function ExerciseDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]} 
+        showsVerticalScrollIndicator={false} 
+        bounces={false}
+      >
         <View style={styles.imageContainer}>
           <Image 
             source={exercise.gif_url || exercise.image_url} 
@@ -66,7 +70,7 @@ export default function ExerciseDetailScreen() {
             colors={['transparent', colors.background]}
             style={styles.imageBottomGradient}
           />
-          <TouchableOpacity style={[styles.backButton, { top: insets.top + 16 }]} onPress={() => router.back()}>
+          <TouchableOpacity style={[styles.backButton, { top: 16 }]} onPress={() => router.back()}>
             <ArrowLeft color={colors.textPrimary} size={24} />
           </TouchableOpacity>
         </View>

@@ -107,7 +107,7 @@ export default function PerfilScreen() {
             <View style={styles.bentoIconContainer}>
               <Activity color={colors.accent} size={24} />
             </View>
-            <Text style={styles.bentoValue}>{statsLoading ? '-' : totalWorkouts}</Text>
+            <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : totalWorkouts}</Text>
             <Text style={styles.bentoLabel}>Entrenos Totales</Text>
           </View>
           
@@ -117,12 +117,12 @@ export default function PerfilScreen() {
                 <Text style={styles.bentoLabel}>Racha Actual</Text>
                 <Zap color={colors.accent} size={16} fill={colors.accent} />
               </View>
-              <Text style={[styles.bentoValue, { color: colors.accent }]}>{statsLoading ? '-' : currentStreak}</Text>
+              <Text style={[styles.bentoValue, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : currentStreak}</Text>
             </View>
 
             <View style={[styles.bentoCard, styles.bentoCardSmall]}>
               <Text style={styles.bentoLabel}>Racha Máxima</Text>
-              <Text style={styles.bentoValue}>{statsLoading ? '-' : longestStreak}</Text>
+              <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : longestStreak}</Text>
             </View>
           </View>
         </View>
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   bentoCol: { flex: 1, gap: 16 },
   bentoCardSmall: { flex: 1, justifyContent: 'center' },
   bentoIconContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 4 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 26, color: colors.textPrimary, marginBottom: 4 },
   bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5, textTransform: 'uppercase' },
   
   optionsList: { gap: 12 },

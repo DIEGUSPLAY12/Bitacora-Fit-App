@@ -59,32 +59,18 @@ export default function WorkoutCompletedScreen() {
     >
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <MotiView
-            from={{ scale: reduceMotion ? 1 : 0.5, opacity: 0, translateY: 20 }}
-            animate={{ scale: 1, opacity: 1, translateY: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 10, delay: 100 }}
-          >
+          <View>
             <View style={styles.iconWrapper}>
               <CheckCircle2 color={colors.accent} size={72} strokeWidth={2.5} />
             </View>
-          </MotiView>
-          <MotiView
-            from={{ opacity: 0, translateY: 10 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 400, delay: 300 }}
-            style={{ alignItems: 'center' }}
-          >
+          </View>
+          <View style={{ alignItems: 'center' }}>
             <Text style={styles.title}>¡Entreno completado!</Text>
             <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
-          </MotiView>
+          </View>
         </View>
 
-        <MotiView 
-          style={styles.formContainer}
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 400 }}
-        >
+        <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>NOMBRE DEL ENTRENO</Text>
             <View style={[styles.inputWrapper, focusedInput === 'name' && styles.inputFocused]}>
@@ -115,19 +101,14 @@ export default function WorkoutCompletedScreen() {
               />
             </View>
           </View>
-        </MotiView>
+        </View>
 
-        <MotiView 
-          style={styles.bentoGrid}
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 500 }}
-        >
+        <View style={styles.bentoGrid}>
           <View style={[styles.bentoCard, { flex: 1 }]}>
             <View style={styles.bentoIconBg}>
               <Weight color={colors.accent} size={20} />
             </View>
-            <Text style={styles.bentoValue}>{volume || '0'} kg</Text>
+            <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
             <Text style={styles.bentoLabel}>VOLUMEN TOTAL</Text>
           </View>
 
@@ -152,7 +133,7 @@ export default function WorkoutCompletedScreen() {
               </View>
             </View>
           </View>
-        </MotiView>
+        </View>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24 }]}>
@@ -202,7 +183,7 @@ const styles = StyleSheet.create({
   bentoIconBgSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   bentoIconBgSmallAccented: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
   
-  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 4 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 26, color: colors.textPrimary, marginBottom: 4 },
   bentoValueSmall: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
   bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5 },
 

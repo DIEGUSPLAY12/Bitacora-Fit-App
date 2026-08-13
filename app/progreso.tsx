@@ -152,11 +152,7 @@ export default function ProgresoScreen() {
                   <ActivityIndicator color={colors.accent} size="large" />
                 </View>
               ) : progressData && progressData.length >= 2 ? (
-                <MotiView 
-                  style={styles.resultsContainer}
-                  from={{ opacity: 0, translateY: 20 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                >
+                <View style={styles.resultsContainer}>
                   <View style={styles.chartContainer}>
                     <LineChart
                       data={chartData}
@@ -184,7 +180,7 @@ export default function ProgresoScreen() {
                       <View style={styles.bentoIconBg}>
                         <Zap color={colors.accent} size={20} fill={colors.accent} />
                       </View>
-                      <Text style={styles.bentoValue}>{stats.pr} kg</Text>
+                      <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{stats.pr} kg</Text>
                       <Text style={styles.bentoLabel}>RÉCORD ACTUAL</Text>
                     </View>
                     <View style={[styles.bentoCard, { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
@@ -192,16 +188,16 @@ export default function ProgresoScreen() {
                         <TrendingUp color={colors.accent} size={20} />
                       </View>
                       {stats.improvement !== null ? (
-                        <Text style={[styles.bentoValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]}>
+                        <Text style={[styles.bentoValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]} adjustsFontSizeToFit numberOfLines={1}>
                           {stats.improvement >= 0 ? '+' : ''}{stats.improvement.toFixed(1)}%
                         </Text>
                       ) : (
-                        <Text style={[styles.bentoValue, { color: colors.textSecondary }]}>N/A</Text>
+                        <Text style={[styles.bentoValue, { color: colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>N/A</Text>
                       )}
                       <Text style={[styles.bentoLabel, { color: colors.accent }]}>MEJORA</Text>
                     </View>
                   </View>
-                </MotiView>
+                </View>
               ) : (
                 <View style={styles.emptyState}>
                   <View style={styles.emptyIconBg}>
@@ -226,11 +222,7 @@ export default function ProgresoScreen() {
                  <ActivityIndicator color={colors.accent} size="large" />
                </View>
             ) : muscleData && totalVolume > 0 ? (
-               <MotiView 
-                 style={styles.resultsContainer}
-                 from={{ opacity: 0, scale: 0.95 }}
-                 animate={{ opacity: 1, scale: 1 }}
-               >
+               <View style={styles.resultsContainer}>
                  <View style={styles.chartContainer}>
                    <RadarChart data={muscleData} size={width - 80} />
                  </View>
@@ -240,11 +232,11 @@ export default function ProgresoScreen() {
                       <View style={styles.bentoIconBg}>
                         <Weight color={colors.accent} size={20} />
                       </View>
-                      <Text style={styles.bentoValue}>{totalVolume.toLocaleString()} kg</Text>
+                      <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{totalVolume.toLocaleString()} kg</Text>
                       <Text style={styles.bentoLabel}>VOLUMEN GLOBAL MOVIDO</Text>
                     </View>
                   </View>
-               </MotiView>
+               </View>
             ) : (
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconBg}>

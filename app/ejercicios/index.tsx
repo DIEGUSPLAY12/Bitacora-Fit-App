@@ -33,9 +33,9 @@ export default function ExerciseSelectorScreen() {
 
   const renderItem = useCallback(({ item, index }: { item: Exercise, index: number }) => (
     <MotiView
-      from={{ opacity: 0, translateY: reduceMotion ? 0 : 20 }}
+      from={{ opacity: 0, translateY: reduceMotion ? 0 : 10 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'spring', damping: 20, delay: reduceMotion ? 0 : index * 50 }}
+      transition={{ type: 'timing', duration: 250, delay: reduceMotion ? 0 : index * 30 }}
     >
       <TouchableOpacity 
         style={styles.card} 
