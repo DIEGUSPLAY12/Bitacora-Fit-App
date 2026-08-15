@@ -30,7 +30,7 @@ export default function BienvenidaScreen() {
           <MotiView
             from={{ opacity: 0, translateY: -30 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'spring', delay: 200, damping: 15 }}
+            transition={{ type: 'timing', delay: 200, duration: 600 }}
           >
             <View style={[styles.iconWrapper, { backgroundColor: 'transparent', shadowColor: 'transparent', elevation: 0, transform: [] }]}>
               <Image 
@@ -63,9 +63,9 @@ export default function BienvenidaScreen() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 24 }]}>
         <MotiView
-          from={{ opacity: 0, translateY: 50 }}
+          from={{ opacity: 0, translateY: 30 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'spring', delay: 800, damping: 14 }}
+          transition={{ type: 'timing', delay: 800, duration: 600 }}
         >
           <TouchableOpacity
             style={styles.primaryButton}
@@ -84,9 +84,9 @@ export default function BienvenidaScreen() {
         </MotiView>
 
         <MotiView
-          from={{ opacity: 0, translateY: 30 }}
+          from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'spring', delay: 1000, damping: 14 }}
+          transition={{ type: 'timing', delay: 1000, duration: 600 }}
         >
           <TouchableOpacity
             style={styles.secondaryButton}
@@ -152,17 +152,17 @@ const styles = StyleSheet.create({
   footer: {
     width: '100%',
     paddingHorizontal: 24,
-    gap: 16,
+    gap: 24,
   },
   primaryButton: {
     height: 64,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonGradient: {
     flex: 1,
