@@ -6,7 +6,7 @@ import { Dimensions } from 'react-native';
 // never exceed 100 % on large devices or drop below ~85 % on small ones.
 const BASE_WIDTH = 390;
 
-function rs(size: number): number {
+export function rs(size: number): number {
   const { width } = Dimensions.get('window');
   const scale = width / BASE_WIDTH;
   // Clamp: minimum 85 % of design size, maximum 100 %

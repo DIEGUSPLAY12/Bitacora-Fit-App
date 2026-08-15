@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { typography, rs } from '../../theme/typography';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { ArrowLeft, Check, Clock, Weight, Hash, Bookmark } from 'lucide-react-native';
 import { useToggleTemplate } from '../../hooks/useTemplates';
@@ -149,45 +149,45 @@ const styles = StyleSheet.create({
   errorText: { fontFamily: typography.fontFamily.medium, color: colors.destructive },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, flex: 1 },
+  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: rs(22), color: colors.textPrimary, flex: 1 },
   templateButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 20, paddingBottom: 60 },
+  scrollContent: { padding: rs(20), paddingBottom: rs(60) },
   
   // Stats Strip (Sleek)
   statsStrip: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderRadius: rs(20),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    paddingVertical: 18,
-    paddingHorizontal: 12,
-    marginBottom: 24,
+    paddingVertical: rs(18),
+    paddingHorizontal: rs(12),
+    marginBottom: rs(24),
   },
   stripStat: { flex: 1, alignItems: 'center' },
   stripDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: 4 },
-  stripLabel: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  stripLabel: { fontFamily: typography.fontFamily.medium, fontSize: rs(11), color: colors.textSecondary, marginBottom: rs(8), textTransform: 'uppercase', letterSpacing: 0.5 },
   stripValueRow: { flexDirection: 'row', alignItems: 'center' },
-  stripValue: { fontFamily: typography.fontFamily.bold, fontSize: 18, color: colors.textPrimary },
+  stripValue: { fontFamily: typography.fontFamily.bold, fontSize: rs(18), color: colors.textPrimary },
   
   // Exercise Card
-  exerciseCard: { backgroundColor: colors.surface, borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
-  exerciseHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingRight: 8 },
-  exerciseNumberBadge: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', alignItems: 'center', marginRight: 12, marginTop: 0 },
-  exerciseNumberText: { fontFamily: typography.fontFamily.bold, color: colors.textPrimary, fontSize: 13 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, lineHeight: 26, color: colors.textPrimary, flex: 1, textTransform: 'capitalize' },
+  exerciseCard: { backgroundColor: colors.surface, borderRadius: rs(24), padding: rs(20), marginBottom: rs(20), borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
+  exerciseHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: rs(20), paddingRight: rs(8) },
+  exerciseNumberBadge: { width: rs(28), height: rs(28), borderRadius: rs(14), backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', alignItems: 'center', marginRight: rs(12), marginTop: 0 },
+  exerciseNumberText: { fontFamily: typography.fontFamily.bold, color: colors.textPrimary, fontSize: rs(13) },
+  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: rs(18), lineHeight: rs(26), color: colors.textPrimary, flex: 1, textTransform: 'capitalize' },
   
   // Table
-  tableHeader: { flexDirection: 'row', marginBottom: 8, paddingHorizontal: 8, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
+  tableHeader: { flexDirection: 'row', marginBottom: rs(8), paddingHorizontal: rs(8), paddingBottom: rs(12), borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
   columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
-  colSet: { width: 50 },
+  colSet: { width: rs(50) },
   colKg: { flex: 1, textAlign: 'center' },
   colReps: { flex: 1, textAlign: 'center' },
   
   // Rows
-  setRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.02)' },
-  setIndexBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
-  setIndexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 12 },
+  setRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: rs(12), paddingHorizontal: rs(8), borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.02)' },
+  setIndexBadge: { width: rs(24), height: rs(24), borderRadius: rs(12), backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
+  setIndexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: rs(12) },
   
-  setValue: { flex: 1, textAlign: 'center', fontFamily: typography.fontFamily.semibold, color: colors.textPrimary, fontSize: 16 },
+  setValue: { flex: 1, textAlign: 'center', fontFamily: typography.fontFamily.semibold, color: colors.textPrimary, fontSize: rs(16) },
 });

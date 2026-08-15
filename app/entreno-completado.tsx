@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { typography } from '../theme/typography';
+import { typography, rs } from '../theme/typography';
 import { colors } from '../theme/colors';
 import { CheckCircle2, Flame, Weight, Hash, Globe, Users } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
@@ -60,18 +60,18 @@ export default function WorkoutCompletedScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + rs(24) }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Compact header — icon + title + subtitle */}
         <MotiView
           style={styles.header}
-          from={{ opacity: 0, translateY: reduceMotion ? 0 : -16 }}
+          from={{ opacity: 0, translateY: reduceMotion ? 0 : rs(-16) }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'spring', delay: 50 }}
         >
           <View style={styles.iconWrapper}>
-            <CheckCircle2 color={colors.accent} size={48} strokeWidth={2} />
+            <CheckCircle2 color={colors.accent} size={rs(48)} strokeWidth={2} />
           </View>
           <Text style={styles.title}>¡Entreno completado!</Text>
           <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
@@ -118,7 +118,7 @@ export default function WorkoutCompletedScreen() {
                 onPress={() => setVisibility('friends')}
                 activeOpacity={0.7}
               >
-                <Users color={visibility === 'friends' ? colors.accent : colors.textSecondary} size={18} />
+                <Users color={visibility === 'friends' ? colors.accent : colors.textSecondary} size={rs(18)} />
                 <Text style={[styles.visibilityOptionText, visibility === 'friends' && styles.visibilityOptionTextActive]}>Amigos</Text>
               </TouchableOpacity>
               
@@ -127,7 +127,7 @@ export default function WorkoutCompletedScreen() {
                 onPress={() => setVisibility('public')}
                 activeOpacity={0.7}
               >
-                <Globe color={visibility === 'public' ? colors.accent : colors.textSecondary} size={18} />
+                <Globe color={visibility === 'public' ? colors.accent : colors.textSecondary} size={rs(18)} />
                 <Text style={[styles.visibilityOptionText, visibility === 'public' && styles.visibilityOptionTextActive]}>Público</Text>
               </TouchableOpacity>
             </View>
@@ -139,7 +139,7 @@ export default function WorkoutCompletedScreen() {
           <View style={styles.stripStat}>
             <Text style={styles.stripLabel}>Volumen</Text>
             <View style={styles.stripValueRow}>
-              <Weight color={colors.accent} size={14} style={{ marginRight: 4 }} />
+              <Weight color={colors.accent} size={rs(14)} style={{ marginRight: rs(4) }} />
               <Text style={styles.stripValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
             </View>
           </View>
@@ -149,7 +149,7 @@ export default function WorkoutCompletedScreen() {
           <View style={styles.stripStat}>
             <Text style={styles.stripLabel}>Series</Text>
             <View style={styles.stripValueRow}>
-              <Hash color={colors.accent} size={14} style={{ marginRight: 4 }} />
+              <Hash color={colors.accent} size={rs(14)} style={{ marginRight: rs(4) }} />
               <Text style={styles.stripValue}>{sets || '0'}</Text>
             </View>
           </View>
@@ -159,14 +159,14 @@ export default function WorkoutCompletedScreen() {
           <View style={[styles.stripStat, styles.stripStatAccent]}>
             <Text style={[styles.stripLabel, { color: colors.accent }]}>Racha</Text>
             <View style={styles.stripValueRow}>
-              <Flame color={colors.accent} size={14} fill={colors.accent} style={{ marginRight: 4 }} />
+              <Flame color={colors.accent} size={rs(14)} fill={colors.accent} style={{ marginRight: rs(4) }} />
               <Text style={[styles.stripValue, { color: colors.accent }]}>{streak} días</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24 }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + rs(8) : rs(24) }]}>
         <TouchableOpacity 
           style={styles.primaryButton} 
           onPress={handleSaveAndHome}
@@ -191,53 +191,54 @@ export default function WorkoutCompletedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 130 },
+  scrollContent: { paddingHorizontal: rs(20), paddingBottom: rs(130) },
 
   // Compact header (no more giant icon + huge title)
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: rs(28),
   },
   iconWrapper: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: rs(88),
+    height: rs(88),
+    borderRadius: rs(44),
     backgroundColor: 'rgba(180, 240, 60, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: rs(16),
     borderWidth: 1,
     borderColor: 'rgba(180, 240, 60, 0.2)',
   },
   title: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: 22,
+    fontSize: rs(22),
     color: colors.textPrimary,
-    marginBottom: 6,
+    marginBottom: rs(6),
     textAlign: 'center',
     letterSpacing: 0.2,
   },
   subtitle: {
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.body,
+    fontSize: rs(14),
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: rs(21),
   },
 
   // Form
-  formContainer: { marginBottom: 24, gap: 16 },
-  inputGroup: { gap: 6 },
+  formContainer: { marginBottom: rs(24), gap: rs(16) },
+  inputGroup: { gap: rs(6) },
   inputLabel: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 11,
+    fontSize: rs(11),
     color: colors.textSecondary,
     letterSpacing: 1.2,
-    marginLeft: 2,
+    marginLeft: rs(2),
   },
   inputWrapper: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
+    borderRadius: rs(14),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
@@ -246,25 +247,25 @@ const styles = StyleSheet.create({
   textInput: {
     color: colors.textPrimary,
     fontFamily: typography.fontFamily.regular,
-    fontSize: 16,
-    height: 56,
-    paddingHorizontal: 16,
+    fontSize: rs(16),
+    height: rs(56),
+    paddingHorizontal: rs(16),
   },
   visibilitySelector: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 14,
+    borderRadius: rs(14),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
-    height: 56,
+    height: rs(56),
   },
   visibilityOption: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: rs(8),
   },
   visibilityOptionActive: {
     backgroundColor: 'rgba(180, 240, 60, 0.05)',
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   visibilityOptionText: {
     fontFamily: typography.fontFamily.medium,
     color: colors.textSecondary,
-    fontSize: 15,
+    fontSize: rs(15),
   },
   visibilityOptionTextActive: {
     color: colors.textPrimary,
@@ -283,11 +284,11 @@ const styles = StyleSheet.create({
   statsStrip: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderRadius: rs(20),
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    paddingVertical: 18,
-    paddingHorizontal: 12,
+    paddingVertical: rs(18),
+    paddingHorizontal: rs(12),
   },
   stripStat: {
     flex: 1,
@@ -299,13 +300,13 @@ const styles = StyleSheet.create({
   stripDivider: {
     width: 1,
     backgroundColor: 'rgba(255,255,255,0.08)',
-    marginVertical: 4,
+    marginVertical: rs(4),
   },
   stripLabel: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: 11,
+    fontSize: rs(11),
     color: colors.textSecondary,
-    marginBottom: 6,
+    marginBottom: rs(6),
   },
   stripValueRow: {
     flexDirection: 'row',
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   },
   stripValue: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 16,
+    fontSize: rs(16),
     color: colors.textPrimary,
   },
 
@@ -323,26 +324,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
-    paddingTop: 14,
+    paddingHorizontal: rs(20),
+    paddingTop: rs(14),
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.05)',
   },
   primaryButton: {
-    height: 56,
-    borderRadius: 16,
+    height: rs(56),
+    borderRadius: rs(16),
     overflow: 'hidden',
     shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: rs(4) },
     shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowRadius: rs(12),
     elevation: 6,
   },
   primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   primaryButtonText: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: 17,
+    fontSize: rs(17),
     color: colors.background,
   },
 });
