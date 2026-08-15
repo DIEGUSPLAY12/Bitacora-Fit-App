@@ -7,7 +7,8 @@ import { typography } from '../../theme/typography';
 import { useAuth } from '../../hooks/useAuth';
 import { useStreak } from '../../hooks/useStreak';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
-import { User, LogOut, Edit3, Edit2, Bell, X, TrendingUp, ChevronRight, Activity, Zap } from 'lucide-react-native';
+import { useRecentWorkouts } from '../../hooks/useWorkouts';
+import { User, Edit3, Edit2, X, TrendingUp, ChevronRight, Settings, Calendar, Activity, Trophy } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +20,7 @@ export default function PerfilScreen() {
   const { data: stats, isLoading: statsLoading } = useStreak();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { mutateAsync: updateProfile, isPending: isUpdating } = useUpdateProfile();
+  const { data: recentWorkouts } = useRecentWorkouts(user?.id || '', 3);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
@@ -29,12 +31,6 @@ export default function PerfilScreen() {
 
   const AVATAR_SEEDS = ['Power', 'Energy', 'Focus', 'Strength', 'Agility', 'Speed', 'Endurance', 'Balance'];
 
-  const handleSignOut = async () => {
-    Alert.alert('Cerrar sesión', '¿Estás seguro de que quieres salir?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => supabase.auth.signOut() }
-    ]);
-  };
 
   const handleEditProfile = () => {
     setNewUsername(profile?.username || '');
@@ -77,6 +73,9 @@ export default function PerfilScreen() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.title}>Mi Perfil</Text>
+        <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/ajustes')} activeOpacity={0.7}>
+          <Settings color={colors.textPrimary} size={22} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
@@ -103,12 +102,12 @@ export default function PerfilScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Username + email */}
+          {/* Username + Full Name */}
           <View style={styles.userInfo}>
             <Text style={styles.username} numberOfLines={1}>
-              {profileLoading ? 'Cargando...' : profile?.username || user?.email}
+              {profileLoading ? 'Cargando...' : profile?.full_name || profile?.username || user?.email}
             </Text>
-            <Text style={styles.email} numberOfLines={1}>{user?.email}</Text>
+            <Text style={styles.email} numberOfLines={1}>@{profile?.username}</Text>
           </View>
         </View>
 
@@ -146,28 +145,53 @@ export default function PerfilScreen() {
             <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
           
+          <TouchableOpacity style={styles.optionRow} onPress={() => router.push('/records')} activeOpacity={0.7}>
+            <View style={styles.optionIconBg}>
+              <Trophy color={colors.textPrimary} size={19} />
+            </View>
+            <Text style={styles.optionText}>Mis Récords (PRs)</Text>
+            <ChevronRight color={colors.textSecondary} size={18} />
+          </TouchableOpacity>
+          
           <TouchableOpacity style={styles.optionRow} onPress={handleEditProfile} activeOpacity={0.7}>
             <View style={styles.optionIconBg}>
               <Edit3 color={colors.textPrimary} size={19} />
             </View>
-            <Text style={styles.optionText}>Editar perfil</Text>
+            <Text style={styles.optionText}>Editar usuario</Text>
             <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
+        </View>
 
-          <TouchableOpacity style={styles.optionRow} onPress={() => Alert.alert('Notificaciones', 'Próximamente')} activeOpacity={0.7}>
-            <View style={styles.optionIconBg}>
-              <Bell color={colors.textPrimary} size={19} />
+        {/* === Recent Workouts Mini === */}
+        <View style={styles.recentSection}>
+          <Text style={styles.sectionTitle}>Entrenos recientes</Text>
+          {recentWorkouts && recentWorkouts.length > 0 ? (
+            <View style={styles.recentList}>
+              {recentWorkouts.map((workout: any) => (
+                <TouchableOpacity 
+                  key={workout.id} 
+                  style={styles.recentCard}
+                  onPress={() => router.push(`/entrenos/${workout.id}`)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.recentIconBg}>
+                    <Activity color={colors.accent} size={16} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.recentName} numberOfLines={1}>{workout.name}</Text>
+                    <Text style={styles.recentDate}>
+                      {new Date(workout.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    </Text>
+                  </View>
+                  <ChevronRight color={colors.textSecondary} size={16} />
+                </TouchableOpacity>
+              ))}
             </View>
-            <Text style={styles.optionText}>Notificaciones</Text>
-            <ChevronRight color={colors.textSecondary} size={18} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.optionRow, styles.optionRowDanger]} onPress={handleSignOut} activeOpacity={0.7}>
-            <View style={[styles.optionIconBg, { backgroundColor: 'rgba(207, 102, 121, 0.1)' }]}>
-              <LogOut color={colors.destructive} size={19} />
+          ) : (
+            <View style={styles.recentEmpty}>
+              <Text style={styles.recentEmptyText}>Aún no has registrado entrenamientos.</Text>
             </View>
-            <Text style={[styles.optionText, { color: colors.destructive }]}>Cerrar sesión</Text>
-          </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -268,12 +292,17 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: 20, paddingBottom: 20 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 },
   title: {
     fontFamily: typography.fontFamily.semibold,
     fontSize: 26,
     letterSpacing: 0.3,
     color: colors.textPrimary,
+  },
+  settingsButton: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: colors.surface,
+    justifyContent: 'center', alignItems: 'center',
   },
   content: { paddingHorizontal: 20, flexGrow: 1 },
 
@@ -396,6 +425,46 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium,
     fontSize: 15,
     color: colors.textPrimary,
+  },
+
+  // --- Recent workouts mini ---
+  recentSection: { marginTop: 28 },
+  sectionTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 15, color: colors.textPrimary,
+    marginBottom: 12, marginLeft: 4,
+  },
+  recentList: { gap: 10 },
+  recentCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: 14, borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+  },
+  recentIconBg: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: 'rgba(180,240,60,0.1)',
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 12,
+  },
+  recentName: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 14, color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  recentDate: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 12, color: colors.textSecondary,
+  },
+  recentEmpty: {
+    backgroundColor: colors.surface,
+    padding: 24, borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+  },
+  recentEmptyText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 13, color: colors.textSecondary,
   },
 
   // --- Modals ---

@@ -6,6 +6,7 @@ import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
 import { colors } from '../theme/colors';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { View, ActivityIndicator } from 'react-native';
+import { useProfile } from '../hooks/useProfile';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,20 +25,21 @@ function RootLayoutNav() {
   const { session, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const { data: profile, isLoading: isProfileLoading } = useProfile();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isProfileLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)' || segments[0] === 'bienvenida';
 
-    if (session && inAuthGroup) {
-      // Redirigir a tabs si hay sesión y está en bienvenida/auth
-      router.replace('/(tabs)');
-    } else if (!session && !inAuthGroup) {
-      // Redirigir a bienvenida si no hay sesión
+    if (!session && !inAuthGroup) {
+      // No session → go to welcome screen
       router.replace('/bienvenida');
+    } else if (session && inAuthGroup) {
+      // Just logged in → go to tabs
+      router.replace('/(tabs)');
     }
-  }, [session, isLoading, segments]);
+  }, [session, isLoading, isProfileLoading, segments]);
 
   if (isLoading) {
     return (
@@ -57,17 +59,19 @@ function RootLayoutNav() {
       <Stack.Screen name="entreno-completado" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="ejercicios/index" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="ejercicios/[id]" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="ajustes" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="notificaciones" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="peso" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="records" options={{ headerShown: false, animation: 'slide_from_right' }} />
     </Stack>
   );
 }
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const insets = useSafeAreaInsets();
   const [loaded, error] = useFonts({
     Inter_400Regular,
     Inter_500Medium,

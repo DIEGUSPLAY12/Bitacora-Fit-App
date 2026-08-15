@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { UserPlus, User, Users, Activity, Dumbbell, Repeat } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
@@ -137,9 +137,14 @@ export default function FeedScreen() {
           <Text style={styles.title}>Actividad</Text>
           <Text style={styles.subtitle}>Explora lo que hacen tus amigos</Text>
         </View>
-        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
-          <UserPlus color={colors.textPrimary} size={22} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/notificaciones')} activeOpacity={0.7}>
+            <Bell color={colors.textPrimary} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
+            <UserPlus color={colors.textPrimary} size={20} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.listContainer}>

@@ -3,36 +3,65 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Home, History, User, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform, TouchableOpacity } from 'react-native';
+import { Platform, TouchableOpacity, View, Text } from 'react-native';
 import { MotiView } from 'moti';
+import { useFriendRequests } from '../../hooks/useFriends';
 
-function TabIcon({ Icon, focused }: { Icon: any, focused: boolean }) {
+function TabIcon({ Icon, focused, badgeCount = 0 }: { Icon: any, focused: boolean, badgeCount?: number }) {
   return (
-    <MotiView
-      animate={{
-        scale: focused ? 1.15 : 1,
-        backgroundColor: focused ? 'rgba(180, 240, 60, 0.15)' : 'transparent',
-      }}
-      transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-      style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 56,
-        height: 32,
-        borderRadius: 16,
-      }}
-    >
-      <Icon 
-        color={focused ? colors.accent : colors.textSecondary} 
-        size={22} 
-        strokeWidth={focused ? 2.5 : 2} 
-      />
-    </MotiView>
+    <View style={{ position: 'relative' }}>
+      <MotiView
+        animate={{
+          scale: focused ? 1.15 : 1,
+          backgroundColor: focused ? 'rgba(180, 240, 60, 0.15)' : 'transparent',
+        }}
+        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 56,
+          height: 32,
+          borderRadius: 16,
+        }}
+      >
+        <Icon 
+          color={focused ? colors.accent : colors.textSecondary} 
+          size={22} 
+          strokeWidth={focused ? 2.5 : 2} 
+        />
+      </MotiView>
+      {badgeCount > 0 && (
+        <View style={{
+          position: 'absolute',
+          top: -4,
+          right: 8,
+          backgroundColor: colors.destructive,
+          minWidth: 16,
+          height: 16,
+          borderRadius: 8,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: 2,
+          borderColor: colors.background,
+        }}>
+          <Text style={{
+            color: 'white',
+            fontSize: 9,
+            fontFamily: typography.fontFamily.bold,
+            paddingHorizontal: 3,
+          }}>
+            {badgeCount > 9 ? '9+' : badgeCount}
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { data: requests } = useFriendRequests();
+  const pendingCount = requests?.length || 0;
 
   return (
     <Tabs
@@ -79,7 +108,7 @@ export default function TabLayout() {
         name="feed"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ focused }) => <TabIcon Icon={Users} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Users} focused={focused} badgeCount={pendingCount} />,
         }}
       />
       <Tabs.Screen

@@ -32,6 +32,7 @@ interface WorkoutState {
   restTimerEndsAt: number | null;
   
   startWorkout: () => void;
+  loadFromTemplate: (exercises: WorkoutExercise[]) => void;
   endWorkout: () => void;
   addExercise: (exercise: Exercise) => void;
   removeExercise: (exerciseId: string) => void;
@@ -52,6 +53,16 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   restTimerEndsAt: null,
 
   startWorkout: () => set({ isActive: true, startedAt: Date.now(), exercises: [], restTimerEndsAt: null }),
+  
+  loadFromTemplate: (exercises) => set({
+    isActive: true,
+    startedAt: Date.now(),
+    exercises: exercises.map(ex => ({
+      ...ex,
+      sets: ex.sets.map(s => ({ ...s, completed: false })) // Reset completions
+    })),
+    restTimerEndsAt: null
+  }),
   
   endWorkout: () => set({ isActive: false, startedAt: null, exercises: [], restTimerEndsAt: null }),
   

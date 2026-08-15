@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensio
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { Flame, User, Play, ChevronRight, Dumbbell, Activity, Calendar } from 'lucide-react-native';
+import { Flame, User, Play, ChevronRight, Dumbbell, Activity, Calendar, Bookmark } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
 import { useLastWorkout } from '../../hooks/useWorkouts';
+import { useTemplates } from '../../hooks/useTemplates';
+import { useWorkoutStore } from '../../store/workout-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfile } from '../../hooks/useProfile';
 import { Image } from 'expo-image';
@@ -41,6 +43,9 @@ export default function HomeScreen() {
   
   const { data: profile } = useProfile();
   const { data: lastWorkoutData, isLoading: isLastWorkoutLoading } = useLastWorkout();
+  
+  const { data: templates } = useTemplates();
+  const loadFromTemplate = useWorkoutStore(state => state.loadFromTemplate);
 
   let lastWorkout = null;
   if (lastWorkoutData) {
@@ -157,6 +162,36 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Templates section */}
+        {templates && templates.length > 0 && (
+          <View style={styles.sectionWrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Plantillas Rápidas</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 20 }}>
+              {templates.map((template: any) => (
+                <TouchableOpacity
+                  key={template.id}
+                  style={styles.templateCard}
+                  onPress={() => {
+                    loadFromTemplate(template.workout_exercises);
+                    router.push('/entrenar');
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.templateIconBg}>
+                    <Bookmark color={colors.accent} size={18} fill={colors.accent} />
+                  </View>
+                  <Text style={styles.templateName} numberOfLines={1}>{template.name}</Text>
+                  <Text style={styles.templateDetails}>
+                    {template.workout_exercises?.length || 0} ejercicios
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Last Workout section */}
         <View style={styles.sectionWrapper}>
@@ -402,6 +437,36 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.caption,
+    color: colors.textSecondary,
+  },
+
+  // Templates
+  templateCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    width: 140,
+  },
+  templateIconBg: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  templateName: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  templateDetails: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
     color: colors.textSecondary,
   },
 

@@ -33,7 +33,7 @@ export default function AmigosScreen() {
       await sendRequest(friendId);
       setPendingUserIds(prev => new Set(prev).add(friendId));
     } catch (e) {
-      console.error(e);
+      // Ignorar el error o manejar de forma silenciosa en producción
     }
   };
 
