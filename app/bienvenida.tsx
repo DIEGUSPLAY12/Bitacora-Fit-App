@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { Dumbbell } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView, MotiText } from 'moti';
+import { Image } from 'expo-image';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,8 +32,12 @@ export default function BienvenidaScreen() {
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'spring', delay: 200, damping: 15 }}
           >
-            <View style={styles.iconWrapper}>
-              <Dumbbell color={colors.background} size={64} />
+            <View style={[styles.iconWrapper, { backgroundColor: 'transparent', shadowColor: 'transparent', elevation: 0, transform: [] }]}>
+              <Image 
+                source={require('../assets/images/logo.png')} 
+                style={{ width: 140, height: 140, borderRadius: 32 }} 
+                contentFit="contain" 
+              />
             </View>
           </MotiView>
           
@@ -43,7 +47,7 @@ export default function BienvenidaScreen() {
             transition={{ type: 'timing', delay: 400, duration: 600 }}
             style={styles.wordmark}
           >
-            Bitácora Fit
+            BítacoraFit
           </MotiText>
           
           <MotiText 
