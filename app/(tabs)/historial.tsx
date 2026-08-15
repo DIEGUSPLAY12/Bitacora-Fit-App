@@ -6,7 +6,7 @@ import { typography } from '../../theme/typography';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
-import { Clock, Weight, Dumbbell, ChevronRight, History } from 'lucide-react-native';
+import { Clock, Weight, Dumbbell, ChevronRight, History, Send } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -68,8 +68,17 @@ export default function HistorialScreen() {
               <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
               <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
             </View>
-            <View style={styles.chevronBg}>
-              <ChevronRight color={colors.accent} size={18} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <TouchableOpacity 
+                style={styles.shareButton}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/compartir?workoutId=${item.id}`)}
+              >
+                <Send color={colors.textPrimary} size={18} />
+              </TouchableOpacity>
+              <View style={styles.chevronBg}>
+                <ChevronRight color={colors.accent} size={18} />
+              </View>
             </View>
           </View>
 
@@ -215,6 +224,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
+  },
+  shareButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Tags

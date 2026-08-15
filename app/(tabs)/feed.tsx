@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
-import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle, Send } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useDiscoverFeed } from '../../hooks/useDiscoverFeed';
 import { useToggleLike } from '../../hooks/useWorkoutLikes';
@@ -169,6 +169,14 @@ export default function FeedScreen() {
               <Text style={styles.actionText}>
                 {item.comments?.length > 0 ? item.comments.length : 'Comentar'}
               </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.actionButton, { marginLeft: 'auto' }]}
+              activeOpacity={0.7}
+              onPress={() => router.push(`/compartir?workoutId=${item.id}`)}
+            >
+              <Send size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>

@@ -49,7 +49,9 @@ export function useWorkoutDetail(id: string) {
             order_index,
             exercises ( id, name, category, muscle_group, image_url, gif_url ),
             sets ( id, set_number, weight_kg, reps )
-          )
+          ),
+          likes:workout_likes ( user_id ),
+          comments:workout_comments(id)
         `)
         .eq('id', id)
         .single();
