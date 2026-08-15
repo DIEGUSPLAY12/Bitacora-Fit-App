@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useExercises } from '../../hooks/useExercises';
 import { useWorkoutStore, Exercise } from '../../store/workout-store';
+import { useTemplateBuilderStore } from '../../store/template-builder-store';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
@@ -18,18 +19,26 @@ const FILTERS = ['Todos', 'Pecho', 'Espalda', 'Piernas', 'Hombro', 'Brazo', 'Cor
 export default function ExerciseSelectorScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isTemplate } = useLocalSearchParams();
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const reduceMotion = useReduceMotion();
   const { data: exercises, isLoading } = useExercises(search, selectedFilter);
+  
   const addExercise = useWorkoutStore(state => state.addExercise);
+  const addTemplateExercise = useTemplateBuilderStore(state => state.addExercise);
 
   const handleAdd = useCallback((exercise: Exercise) => {
-    addExercise(exercise);
-    router.navigate('/entrenar');
-  }, [addExercise, router]);
+    if (isTemplate === 'true') {
+      addTemplateExercise(exercise);
+      router.navigate('/template/crear');
+    } else {
+      addExercise(exercise);
+      router.navigate('/entrenar');
+    }
+  }, [addExercise, addTemplateExercise, router, isTemplate]);
 
   const renderItem = useCallback(({ item, index }: { item: Exercise, index: number }) => (
     <MotiView

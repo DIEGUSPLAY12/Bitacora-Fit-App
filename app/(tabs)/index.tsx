@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensio
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { Flame, User, Play, ChevronRight, Dumbbell, Activity, Calendar, Bookmark } from 'lucide-react-native';
+import { Flame, User, ChevronRight, Dumbbell, Activity, Calendar, Folder, Sparkles, Edit2 } from 'lucide-react-native';
 import { useStreak } from '../../hooks/useStreak';
 import { useLastWorkout } from '../../hooks/useWorkouts';
 import { useTemplates } from '../../hooks/useTemplates';
@@ -63,10 +63,6 @@ export default function HomeScreen() {
     };
   }
 
-  // Responsive: CTA card column needs enough width for text to fit in 1 line
-  // On narrow screens reduce startText slightly
-  const startFontSize = Math.min(24, Math.max(18, width * 0.058));
-
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -99,99 +95,135 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Main action row */}
+        {/* Stats row (Streak & Progress) */}
         <View style={styles.statsRow}>
-          {/* Left column: streak + progress */}
-          <View style={styles.leftColumn}>
-            <View style={styles.streakCard}>
-              <LinearGradient
-                colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              <Text style={styles.streakLabel} numberOfLines={1}>RACHA ACTUAL</Text>
-              <View style={styles.streakValueRow}>
-                <Text style={styles.streakNumber} numberOfLines={1}>
-                  {isStreakLoading ? '-' : streak}
-                </Text>
-                <Text style={styles.streakDays}> DÍAS</Text>
-              </View>
-              <Flame color={colors.accent} size={22} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.85 }} />
+          <View style={[styles.streakCard, { flex: 1 }]}>
+            <LinearGradient
+              colors={['rgba(180, 240, 60, 0.15)', 'rgba(180, 240, 60, 0.02)']}
+              style={StyleSheet.absoluteFill}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+            <Text style={styles.streakLabel} numberOfLines={1}>RACHA ACTUAL</Text>
+            <View style={styles.streakValueRow}>
+              <Text style={styles.streakNumber} numberOfLines={1}>
+                {isStreakLoading ? '-' : streak}
+              </Text>
+              <Text style={styles.streakDays}> DÍAS</Text>
             </View>
-
-            <TouchableOpacity 
-              style={styles.progressCard}
-              onPress={() => router.push('/progreso')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.01)']}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              <Activity color={colors.textPrimary} size={20} />
-              <Text style={styles.progressCardText} numberOfLines={1}>Mi Progreso</Text>
-            </TouchableOpacity>
+            <Flame color={colors.accent} size={22} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.85 }} />
           </View>
 
-          {/* Right: Start Workout CTA */}
-          <View style={styles.startCardContainer}>
-            <TouchableOpacity 
-              activeOpacity={0.9}
-              onPress={() => router.push('/entrenar')}
-              style={{ flex: 1 }}
-            >
-              <LinearGradient
-                colors={[colors.accent, '#7CB314']}
-                style={styles.startGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={styles.playIconContainer}>
-                  <Play color={colors.background} size={28} fill={colors.background} style={{ marginLeft: 3 }} />
-                </View>
-                <View>
-                  <Text style={[styles.startText, { fontSize: startFontSize }]} numberOfLines={1}>
-                    Empezar
-                  </Text>
-                  <Text style={styles.startSubText} numberOfLines={1}>ENTRENAMIENTO</Text>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={[styles.progressCard, { flex: 1 }]}
+            onPress={() => router.push('/progreso')}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.01)']}
+              style={StyleSheet.absoluteFill}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+            <Activity color={colors.textPrimary} size={24} style={{ marginBottom: 4 }} />
+            <Text style={styles.progressCardText} numberOfLines={1}>Mi Progreso</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Templates section */}
-        {templates && templates.length > 0 && (
-          <View style={styles.sectionWrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Plantillas Rápidas</Text>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 20 }}>
-              {templates.map((template: any) => (
+        {/* Tu Plan (Templates) */}
+        <View style={styles.sectionWrapper}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Tu Plan</Text>
+            {templates && templates.length > 0 && (
+              <TouchableOpacity onPress={() => { /* Navigate to all templates */ }}>
+                <Text style={styles.sectionSubtitle}>Más planes <ChevronRight size={14} color={colors.textSecondary} /></Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16, paddingRight: 20 }}>
+            {templates && templates.length > 0 ? (
+              templates.map((template: any) => (
                 <TouchableOpacity
                   key={template.id}
-                  style={styles.templateCard}
-                  onPress={() => {
-                    loadFromTemplate(template.workout_exercises);
-                    router.push('/entrenar');
-                  }}
-                  activeOpacity={0.8}
+                  style={styles.templateCardLarge}
+                  onPress={() => router.push(`/template/${template.id}`)}
+                  activeOpacity={0.9}
                 >
-                  <View style={styles.templateIconBg}>
-                    <Bookmark color={colors.accent} size={18} fill={colors.accent} />
+                  <LinearGradient
+                    colors={['#1F2514', '#10140A']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                    style={StyleSheet.absoluteFill}
+                    locations={[0.3, 1]}
+                  />
+                  
+                  <View style={styles.templateCardContent}>
+                    <View style={styles.templateCardBadge}>
+                      <Text style={styles.templateCardBadgeText}>Plantilla</Text>
+                    </View>
+                    
+                    <View>
+                      <Text style={styles.templateCardTitle} numberOfLines={2}>{template.name}</Text>
+                      <Text style={styles.templateCardDetails}>
+                        45 min · {template.workout_exercises?.length || 0} ejercicios
+                      </Text>
+                      
+                      <View style={styles.templateCardButton}>
+                        <Text style={styles.templateCardButtonText}>Ver</Text>
+                      </View>
+                    </View>
                   </View>
-                  <Text style={styles.templateName} numberOfLines={1}>{template.name}</Text>
-                  <Text style={styles.templateDetails}>
-                    {template.workout_exercises?.length || 0} ejercicios
-                  </Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+              ))
+            ) : (
+              <View style={[styles.templateCardLarge, styles.templateCardEmpty]}>
+                <Text style={styles.emptyTitle}>Sin plantillas</Text>
+                <Text style={styles.emptyText}>Crea tu primera rutina para empezar.</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Action Rows */}
+        <View style={styles.sectionWrapper}>
+          <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>Crear plantilla para otro momento</Text>
+          
+          <TouchableOpacity 
+            style={styles.actionRow} 
+            onPress={() => router.push('/template/crear')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+              <Folder color={colors.textPrimary} size={22} />
+            </View>
+            <View style={styles.actionTextContainer}>
+              <Text style={styles.actionTitle}>Crear plantilla</Text>
+              <Text style={styles.actionDesc}>Créala ahora y úsala cuando quieras</Text>
+            </View>
+          </TouchableOpacity>
+
+          <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 16 }]}>¿Buscas otra forma de entrenar?</Text>
+          
+
+          <TouchableOpacity 
+            style={styles.actionRow} 
+            onPress={() => router.push('/entrenar')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: 'rgba(180, 240, 60, 0.1)' }]}>
+              <Edit2 color={colors.accent} size={22} />
+            </View>
+            <View style={styles.actionTextContainer}>
+              <Text style={styles.actionTitle}>Empezar entrenamiento libre</Text>
+              <Text style={styles.actionDesc}>Añade ejercicios a medida que entrenas</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Last Workout section */}
         <View style={styles.sectionWrapper}>
@@ -315,16 +347,12 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 14,
-    marginBottom: 28,
+    marginBottom: 32,
   },
-  leftColumn: {
-    flex: 1,
-    gap: 12,
-  },
-
+  
   // Streak card
   streakCard: {
-    height: 92,
+    height: 96,
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
@@ -346,91 +374,48 @@ const styles = StyleSheet.create({
   },
   streakNumber: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 32,
+    lineHeight: 36,
     color: colors.textPrimary,
   },
   streakDays: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: 11,
+    fontSize: 12,
     color: colors.textSecondary,
     letterSpacing: 0.5,
   },
 
   // Progress card
   progressCard: {
-    height: 92,
+    height: 96,
     borderRadius: 20,
     backgroundColor: colors.surface,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.07)',
     overflow: 'hidden',
   },
   progressCardText: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textPrimary,
-  },
-
-  // Start CTA card
-  startCardContainer: {
-    flex: 1,
-    height: 196,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(180, 240, 60, 0.45)',
-  },
-  startGradient: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
-  },
-  playIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  startText: {
-    fontFamily: typography.fontFamily.bold,
-    color: colors.background,
-    marginBottom: 2,
-  },
-  startSubText: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: 10,
-    color: 'rgba(0,0,0,0.55)',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+    marginTop: 4,
   },
 
   // Section
   sectionWrapper: {
-    marginTop: 4,
+    marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontFamily: typography.fontFamily.semibold,
-    fontSize: 16,
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 18,
     color: colors.textPrimary,
     letterSpacing: 0.2,
   },
@@ -438,35 +423,103 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium,
     ...typography.scale.caption,
     color: colors.textSecondary,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
-  // Templates
-  templateCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
+  // Templates Large Card (Symmetry style)
+  templateCardLarge: {
+    width: 240,
+    height: 320,
+    borderRadius: 24,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    width: 140,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  templateIconBg: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+  templateCardEmpty: {
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    padding: 20,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255,255,255,0.2)',
   },
-  templateName: {
+  templateCardContent: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'space-between',
+    zIndex: 2,
+  },
+  templateCardBadge: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    backdropFilter: 'blur(10px)',
+  },
+  templateCardBadgeText: {
     fontFamily: typography.fontFamily.semibold,
-    fontSize: 14,
+    fontSize: 12,
+    color: colors.textPrimary,
+  },
+  templateCardTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 26,
+    color: colors.textPrimary,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  templateCardDetails: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 16,
+  },
+  templateCardButton: {
+    backgroundColor: colors.textPrimary,
+    paddingVertical: 14,
+    borderRadius: 100,
+    alignItems: 'center',
+  },
+  templateCardButtonText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 15,
+    color: colors.background,
+  },
+
+  // Action Rows
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  actionIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  actionTextContainer: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 16,
     color: colors.textPrimary,
     marginBottom: 4,
   },
-  templateDetails: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: 11,
+  actionDesc: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 13,
     color: colors.textSecondary,
   },
 
