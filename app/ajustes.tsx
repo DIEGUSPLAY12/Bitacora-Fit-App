@@ -180,13 +180,13 @@ export default function AjustesScreen() {
           <SettingRow
             icon={<ShieldCheck color={colors.textPrimary} size={19} />}
             label="Política de privacidad"
-            onPress={() => Alert.alert('Política', 'Disponible próximamente.')}
+            onPress={() => router.push('/politica-privacidad')}
           />
           <View style={styles.rowDivider} />
           <SettingRow
             icon={<Info color={colors.textPrimary} size={19} />}
             label="Términos de uso"
-            onPress={() => Alert.alert('Términos', 'Disponible próximamente.')}
+            onPress={() => router.push('/terminos-uso')}
           />
           <View style={styles.rowDivider} />
           <View style={styles.infoRow}>
