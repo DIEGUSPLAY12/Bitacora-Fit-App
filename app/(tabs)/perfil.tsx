@@ -157,7 +157,7 @@ export default function PerfilScreen() {
             <View style={styles.optionIconBg}>
               <Edit3 color={colors.textPrimary} size={19} />
             </View>
-            <Text style={styles.optionText}>Editar usuario</Text>
+            <Text style={styles.optionText}>Editar perfil</Text>
             <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
         </View>

@@ -94,12 +94,6 @@ export default function AjustesScreen() {
         <Text style={styles.sectionLabel}>PERFIL Y CUENTA</Text>
         <View style={styles.section}>
           <SettingRow
-            icon={<User color={colors.textPrimary} size={19} />}
-            label="Editar perfil"
-            onPress={() => router.push('/(tabs)/perfil')}
-          />
-          <View style={styles.rowDivider} />
-          <SettingRow
             icon={<Lock color={colors.textPrimary} size={19} />}
             label="Cambiar contraseña"
             onPress={() => setPwModal(true)}
