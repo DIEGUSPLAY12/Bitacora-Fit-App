@@ -62,53 +62,54 @@ export default function HistorialScreen() {
           activeOpacity={0.7}
           onPress={() => router.push(`/entrenos/${item.id}`)}
         >
+          {/* Card header: title + date + chevron */}
           <View style={styles.cardHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
               <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
             </View>
             <View style={styles.chevronBg}>
-              <ChevronRight color={colors.accent} size={20} />
+              <ChevronRight color={colors.accent} size={18} />
             </View>
           </View>
 
-          <View style={styles.tagsContainer}>
-            {tags.map(tag => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-            {muscleGroups.size > 3 && (
-              <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-            )}
-          </View>
+          {/* Muscle group tags */}
+          {tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {tags.map(tag => (
+                <View key={tag} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+              {muscleGroups.size > 3 && (
+                <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+              )}
+            </View>
+          )}
 
+          {/* Stats row — label above, value below (Symmetry style) */}
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
-              <View style={styles.statIconBg}>
-                <Clock color={colors.accent} size={16} />
-              </View>
-              <View>
-                <Text style={styles.statTextHighlight}>{durationMin}</Text>
-                <Text style={styles.statText}>Minutos</Text>
+              <Text style={styles.statLabel}>Tiempo</Text>
+              <View style={styles.statValueRow}>
+                <Clock color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                <Text style={styles.statValue}>{durationMin}m</Text>
               </View>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <View style={styles.statIconBg}>
-                <Weight color={colors.accent} size={16} />
-              </View>
-              <View>
-                <Text style={styles.statTextHighlight}>{totalVolume}</Text>
-                <Text style={styles.statText}>Vol (kg)</Text>
+              <Text style={styles.statLabel}>Volumen</Text>
+              <View style={styles.statValueRow}>
+                <Weight color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                <Text style={styles.statValue}>{totalVolume} kg</Text>
               </View>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <View style={styles.statIconBg}>
-                <Dumbbell color={colors.accent} size={16} />
-              </View>
-              <View>
-                <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
-                <Text style={styles.statText}>Ejercicios</Text>
+              <Text style={styles.statLabel}>Ejercicios</Text>
+              <View style={styles.statValueRow}>
+                <Dumbbell color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                <Text style={styles.statValue}>{exerciseCount}</Text>
               </View>
             </View>
           </View>
@@ -119,7 +120,7 @@ export default function HistorialScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.title}>Historial</Text>
         <Text style={styles.subtitle}>Todos tus entrenamientos</Text>
       </View>
@@ -131,7 +132,7 @@ export default function HistorialScreen() {
           <FlashList
             data={workouts}
             renderItem={renderItem}
-            estimatedItemSize={200}
+            estimatedItemSize={210}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -144,12 +145,12 @@ export default function HistorialScreen() {
             }
             ListEmptyComponent={
               <MotiView 
-                from={{ opacity: 0, scale: 0.9 }}
+                from={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={styles.emptyState}
               >
                 <View style={styles.emptyIconContainer}>
-                  <History color={colors.accent} size={48} />
+                  <History color={colors.accent} size={40} />
                 </View>
                 <Text style={styles.emptyTitle}>Empieza a entrenar</Text>
                 <Text style={styles.emptyText}>No has registrado ningún entrenamiento aún. Tus sesiones completadas aparecerán aquí.</Text>
@@ -164,26 +165,140 @@ export default function HistorialScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: 24, paddingBottom: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
-  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, marginTop: 4 },
+  header: { paddingHorizontal: 20, paddingBottom: 8 },
+  title: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 26,
+    letterSpacing: 0.3,
+    color: colors.textPrimary,
+  },
+  subtitle: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
   listContainer: { flex: 1 },
-  listContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 16 },
-  card: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  cardTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, marginBottom: 4 },
-  cardDate: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
-  chevronBg: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  tag: { backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  tagText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.accent, textTransform: 'uppercase', letterSpacing: 0.5 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 16, padding: 16 },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  statIconBg: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  statText: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, marginTop: 2 },
-  statTextHighlight: { fontFamily: typography.fontFamily.bold, fontSize: 14, color: colors.textPrimary },
-  emptyState: { padding: 40, alignItems: 'center', marginTop: 40, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  emptyIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
-  emptyTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
-  emptyText: { fontFamily: typography.fontFamily.regular, color: colors.textSecondary, textAlign: 'center', fontSize: 16, lineHeight: 24 },
+  listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 20 },
+
+  // Card
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 17,
+    color: colors.textPrimary,
+    marginBottom: 3,
+  },
+  cardDate: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: colors.textSecondary,
+  },
+  chevronBg: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+
+  // Tags
+  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
+  tag: {
+    backgroundColor: 'rgba(180, 240, 60, 0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.18)',
+  },
+  tagText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 10,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Stats — Symmetry style: label top, icon+value bottom
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  stat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    marginVertical: 2,
+  },
+  statLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginBottom: 5,
+  },
+  statValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statValue: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+
+  // Empty
+  emptyState: {
+    padding: 36,
+    alignItems: 'center',
+    marginTop: 40,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  emptyIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 17,
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontFamily: typography.fontFamily.regular,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 21,
+  },
 });

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView,
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { typography } from '../theme/typography';
 import { colors } from '../theme/colors';
-import { CheckCircle2, Flame, Clock, Weight, Hash, Zap } from 'lucide-react-native';
+import { CheckCircle2, Flame, Weight, Hash } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
@@ -57,19 +57,25 @@ export default function WorkoutCompletedScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View>
-            <View style={styles.iconWrapper}>
-              <CheckCircle2 color={colors.accent} size={72} strokeWidth={2.5} />
-            </View>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Compact header — icon + title + subtitle */}
+        <MotiView
+          style={styles.header}
+          from={{ opacity: 0, translateY: reduceMotion ? 0 : -16 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'spring', delay: 50 }}
+        >
+          <View style={styles.iconWrapper}>
+            <CheckCircle2 color={colors.accent} size={48} strokeWidth={2} />
           </View>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={styles.title}>¡Entreno completado!</Text>
-            <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
-          </View>
-        </View>
+          <Text style={styles.title}>¡Entreno completado!</Text>
+          <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
+        </MotiView>
 
+        {/* Form fields */}
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>NOMBRE DEL ENTRENO</Text>
@@ -103,34 +109,33 @@ export default function WorkoutCompletedScreen() {
           </View>
         </View>
 
-        <View style={styles.bentoGrid}>
-          <View style={[styles.bentoCard, { flex: 1 }]}>
-            <View style={styles.bentoIconBg}>
-              <Weight color={colors.accent} size={20} />
+        {/* Stats row — Symmetry style: label top, value bottom, all in a single horizontal strip */}
+        <View style={styles.statsStrip}>
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Volumen</Text>
+            <View style={styles.stripValueRow}>
+              <Weight color={colors.accent} size={14} style={{ marginRight: 4 }} />
+              <Text style={styles.stripValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
             </View>
-            <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
-            <Text style={styles.bentoLabel}>VOLUMEN TOTAL</Text>
           </View>
 
-          <View style={[styles.bentoCol, { flex: 1 }]}>
-            <View style={[styles.bentoCard, styles.bentoCardSmall]}>
-              <View style={styles.bentoIconBgSmall}>
-                <Hash color={colors.accent} size={16} />
-              </View>
-              <View>
-                <Text style={styles.bentoValueSmall}>{sets || '0'}</Text>
-                <Text style={styles.bentoLabel}>SERIES</Text>
-              </View>
-            </View>
+          <View style={styles.stripDivider} />
 
-            <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
-              <View style={styles.bentoIconBgSmallAccented}>
-                <Flame color={colors.accent} size={16} fill={colors.accent} />
-              </View>
-              <View>
-                <Text style={[styles.bentoValueSmall, { color: colors.accent }]}>{streak} días</Text>
-                <Text style={[styles.bentoLabel, { color: colors.accent }]}>RACHA ACTUAL</Text>
-              </View>
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Series</Text>
+            <View style={styles.stripValueRow}>
+              <Hash color={colors.accent} size={14} style={{ marginRight: 4 }} />
+              <Text style={styles.stripValue}>{sets || '0'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.stripDivider} />
+
+          <View style={[styles.stripStat, styles.stripStatAccent]}>
+            <Text style={[styles.stripLabel, { color: colors.accent }]}>Racha</Text>
+            <View style={styles.stripValueRow}>
+              <Flame color={colors.accent} size={14} fill={colors.accent} style={{ marginRight: 4 }} />
+              <Text style={[styles.stripValue, { color: colors.accent }]}>{streak} días</Text>
             </View>
           </View>
         </View>
@@ -161,34 +166,130 @@ export default function WorkoutCompletedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: 24, paddingBottom: 140 },
-  header: { alignItems: 'center', marginBottom: 40 },
-  iconWrapper: { width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24, borderWidth: 2, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 32, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
-  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
-  
-  formContainer: { marginBottom: 32, gap: 20 },
-  inputGroup: { gap: 8 },
-  inputLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1, marginLeft: 4 },
-  inputWrapper: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
-  inputFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
-  textInput: { color: colors.textPrimary, fontFamily: typography.fontFamily.regular, fontSize: 18, height: 64, paddingHorizontal: 20 },
-  
-  bentoGrid: { flexDirection: 'row', gap: 16 },
-  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center' },
-  bentoCol: { flex: 1, gap: 16 },
-  bentoCardSmall: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  
-  bentoIconBg: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  bentoIconBgSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  bentoIconBgSmallAccented: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
-  
-  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 26, color: colors.textPrimary, marginBottom: 4 },
-  bentoValueSmall: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
-  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 130 },
 
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 24, paddingTop: 16, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
-  primaryButton: { height: 64, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  // Compact header (no more giant icon + huge title)
+  header: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
+  iconWrapper: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.2)',
+  },
+  title: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 22,
+    color: colors.textPrimary,
+    marginBottom: 6,
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  subtitle: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 21,
+  },
+
+  // Form
+  formContainer: { marginBottom: 24, gap: 16 },
+  inputGroup: { gap: 6 },
+  inputLabel: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 11,
+    color: colors.textSecondary,
+    letterSpacing: 1.2,
+    marginLeft: 2,
+  },
+  inputWrapper: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+  },
+  inputFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
+  textInput: {
+    color: colors.textPrimary,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    height: 56,
+    paddingHorizontal: 16,
+  },
+
+  // Stats strip — Symmetry style: all 3 stats in one horizontal card
+  statsStrip: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+  },
+  stripStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  stripStatAccent: {
+    // slight accent tint for streak cell
+  },
+  stripDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginVertical: 4,
+  },
+  stripLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginBottom: 6,
+  },
+  stripValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stripValue: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 16,
+    color: colors.textPrimary,
+  },
+
+  // Footer CTA
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  primaryButton: {
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.background },
+  primaryButtonText: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 17,
+    color: colors.background,
+  },
 });

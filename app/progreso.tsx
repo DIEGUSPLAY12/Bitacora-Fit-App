@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingTop: 16, paddingBottom: 16 },
   backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 24, color: colors.textPrimary },
+  title: { fontFamily: typography.fontFamily.semibold, fontSize: 22, letterSpacing: 0.3, color: colors.textPrimary },
   
   tabsContainer: { paddingHorizontal: 24, marginBottom: 24 },
   tabsWrapper: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
@@ -337,24 +337,24 @@ const styles = StyleSheet.create({
   
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 200 },
   resultsContainer: { flex: 1 },
-  chartContainer: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 16, paddingVertical: 24, marginBottom: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  chartContainer: { backgroundColor: colors.surface, borderRadius: 20, padding: 16, paddingVertical: 24, marginBottom: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
   
-  bentoGrid: { flexDirection: 'row', gap: 16 },
-  bentoCard: { backgroundColor: 'rgba(255,255,255,0.02)', padding: 20, borderRadius: 20, alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', justifyContent: 'center' },
-  bentoIconBg: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 4 },
-  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
+  bentoGrid: { flexDirection: 'row', gap: 14 },
+  bentoCard: { backgroundColor: colors.surface, padding: 20, borderRadius: 18, alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', justifyContent: 'center' },
+  bentoIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(180, 240, 60, 0.12)', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  bentoValue: { fontFamily: typography.fontFamily.bold, fontSize: 22, color: colors.textPrimary, marginBottom: 4 },
+  bentoLabel: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, letterSpacing: 0.8 },
   
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', minHeight: 250 },
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 36, backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', minHeight: 240 },
   emptyIconBg: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
   emptyText: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
   
   modalContainer: { flex: 1, backgroundColor: colors.surface },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 32 },
-  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
+  modalTitle: { fontFamily: typography.fontFamily.semibold, fontSize: 20, letterSpacing: 0.2, color: colors.textPrimary },
   closeButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', marginHorizontal: 24, borderRadius: 16, paddingHorizontal: 16, marginBottom: 16, height: 56, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceElevated, marginHorizontal: 24, borderRadius: 14, paddingHorizontal: 16, marginBottom: 16, height: 52, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   searchContainerFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
   searchIcon: { marginRight: 12 },
   searchInput: { flex: 1, height: 56, color: colors.textPrimary, fontFamily: typography.fontFamily.regular, fontSize: 16 },

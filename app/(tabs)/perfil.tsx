@@ -72,15 +72,17 @@ export default function PerfilScreen() {
   return (
     <ScrollView 
       style={styles.container}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 32 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.title}>Mi Perfil</Text>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.userSection}>
+        {/* === User Hero Section === */}
+        <View style={styles.userHero}>
+          {/* Avatar */}
           <View style={styles.avatarWrapper}>
             <LinearGradient 
               colors={[colors.accent, '#90D41C']} 
@@ -92,95 +94,84 @@ export default function PerfilScreen() {
                 {profile?.avatar_url ? (
                   <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
                 ) : (
-                  <User color={colors.textSecondary} size={48} />
+                  <User color={colors.textSecondary} size={44} />
                 )}
               </View>
             </LinearGradient>
             <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar} activeOpacity={0.8}>
-              <Edit2 color={colors.background} size={16} />
+              <Edit2 color={colors.background} size={14} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.username}>
-            {profileLoading ? 'Cargando...' : profile?.username || user?.email}
-          </Text>
-          <Text style={styles.email}>{user?.email}</Text>
-        </View>
 
-        {/* Bento Grid Stats */}
-        <View style={styles.bentoGrid}>
-          <LinearGradient 
-            colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.01)']}
-            style={[styles.bentoCard, styles.bentoCardLarge]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.bentoIconContainer}>
-              <Activity color={colors.accent} size={24} />
-            </View>
-            <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : totalWorkouts}</Text>
-            <Text style={styles.bentoLabel}>Entrenos Totales</Text>
-          </LinearGradient>
-          
-          <View style={styles.bentoCol}>
-            <LinearGradient 
-              colors={['rgba(180, 240, 60, 0.1)', 'rgba(180, 240, 60, 0.02)']}
-              style={[styles.bentoCard, styles.bentoCardSmall]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <Text style={[styles.bentoLabel, { color: colors.accent }]}>Racha Actual</Text>
-                <Zap color={colors.accent} size={16} fill={colors.accent} />
-              </View>
-              <Text style={[styles.bentoValue, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : currentStreak}</Text>
-            </LinearGradient>
-
-            <LinearGradient 
-              colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0.01)']}
-              style={[styles.bentoCard, styles.bentoCardSmall]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.bentoLabel}>Racha Máxima</Text>
-              <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{statsLoading ? '-' : longestStreak}</Text>
-            </LinearGradient>
+          {/* Username + email */}
+          <View style={styles.userInfo}>
+            <Text style={styles.username} numberOfLines={1}>
+              {profileLoading ? 'Cargando...' : profile?.username || user?.email}
+            </Text>
+            <Text style={styles.email} numberOfLines={1}>{user?.email}</Text>
           </View>
         </View>
 
+        {/* === Inline Stats Row (Symmetry style) === */}
+        <View style={styles.statsCard}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber} adjustsFontSizeToFit numberOfLines={1}>
+              {statsLoading ? '-' : totalWorkouts}
+            </Text>
+            <Text style={styles.statLabel}>Entrenos</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>
+              {statsLoading ? '-' : currentStreak}
+            </Text>
+            <Text style={styles.statLabel}>Racha actual</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber} adjustsFontSizeToFit numberOfLines={1}>
+              {statsLoading ? '-' : longestStreak}
+            </Text>
+            <Text style={styles.statLabel}>Racha máx.</Text>
+          </View>
+        </View>
+
+        {/* === Options List === */}
         <View style={styles.optionsList}>
           <TouchableOpacity style={styles.optionRow} onPress={() => router.push('/progreso')} activeOpacity={0.7}>
             <View style={styles.optionIconBg}>
-              <TrendingUp color={colors.textPrimary} size={20} />
+              <TrendingUp color={colors.textPrimary} size={19} />
             </View>
             <Text style={styles.optionText}>Mi Progreso</Text>
-            <ChevronRight color={colors.textSecondary} size={20} />
+            <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.optionRow} onPress={handleEditProfile} activeOpacity={0.7}>
             <View style={styles.optionIconBg}>
-              <Edit3 color={colors.textPrimary} size={20} />
+              <Edit3 color={colors.textPrimary} size={19} />
             </View>
             <Text style={styles.optionText}>Editar perfil</Text>
-            <ChevronRight color={colors.textSecondary} size={20} />
+            <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionRow} onPress={() => Alert.alert('Notificaciones', 'Próximamente')} activeOpacity={0.7}>
             <View style={styles.optionIconBg}>
-              <Bell color={colors.textPrimary} size={20} />
+              <Bell color={colors.textPrimary} size={19} />
             </View>
             <Text style={styles.optionText}>Notificaciones</Text>
-            <ChevronRight color={colors.textSecondary} size={20} />
+            <ChevronRight color={colors.textSecondary} size={18} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.optionRow, styles.optionRowDanger]} onPress={handleSignOut} activeOpacity={0.7}>
             <View style={[styles.optionIconBg, { backgroundColor: 'rgba(207, 102, 121, 0.1)' }]}>
-              <LogOut color={colors.destructive} size={20} />
+              <LogOut color={colors.destructive} size={19} />
             </View>
             <Text style={[styles.optionText, { color: colors.destructive }]}>Cerrar sesión</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* === Edit Profile Modal === */}
       <Modal visible={editModalVisible} animationType="slide" transparent>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -225,6 +216,7 @@ export default function PerfilScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* === Avatar Modal === */}
       <Modal visible={avatarModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -276,49 +268,213 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: 24, paddingBottom: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
-  content: { paddingHorizontal: 24, flexGrow: 1 },
-  userSection: { alignItems: 'center', marginBottom: 32, marginTop: 16 },
+  header: { paddingHorizontal: 20, paddingBottom: 20 },
+  title: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 26,
+    letterSpacing: 0.3,
+    color: colors.textPrimary,
+  },
+  content: { paddingHorizontal: 20, flexGrow: 1 },
+
+  // --- User hero ---
+  userHero: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
   avatarWrapper: { position: 'relative', marginBottom: 16 },
-  avatarOuterRing: { width: 116, height: 116, borderRadius: 58, justifyContent: 'center', alignItems: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
-  avatarContainer: { width: 108, height: 108, borderRadius: 54, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center', overflow: 'hidden', borderWidth: 4, borderColor: colors.background },
-  editAvatarButton: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.accent, width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: colors.background },
+  avatarOuterRing: {
+    width: 108,
+    height: 108,
+    borderRadius: 54,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: colors.background,
+  },
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.accent,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: colors.background,
+  },
   avatar: { width: '100%', height: '100%' },
-  username: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 24, color: colors.textPrimary, marginBottom: 4 },
-  email: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary },
-  
-  bentoGrid: { flexDirection: 'row', gap: 16, marginBottom: 32 },
-  bentoCard: { borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', overflow: 'hidden' },
-  bentoCardLarge: { flex: 1, justifyContent: 'center' },
-  bentoCol: { flex: 1, gap: 16 },
-  bentoCardSmall: { flex: 1, justifyContent: 'center' },
-  bentoIconContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 26, color: colors.textPrimary, marginBottom: 4 },
-  bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 0.5, textTransform: 'uppercase' },
-  
-  optionsList: { gap: 12 },
-  optionRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  optionRowDanger: { borderColor: 'rgba(207, 102, 121, 0.2)', backgroundColor: 'rgba(207, 102, 121, 0.02)' },
-  optionIconBg: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  optionText: { flex: 1, fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary },
-  
+  userInfo: { alignItems: 'center' },
+  username: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 22,
+    color: colors.textPrimary,
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  email: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+  },
+
+  // --- Inline stats card (Symmetry style) ---
+  statsCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginVertical: 4,
+  },
+  statNumber: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 26,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+
+  // --- Options list ---
+  optionsList: { gap: 10 },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  optionRowDanger: {
+    borderColor: 'rgba(207, 102, 121, 0.2)',
+    backgroundColor: 'rgba(207, 102, 121, 0.03)',
+  },
+  optionIconBg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surfaceElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  optionText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+
+  // --- Modals ---
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: colors.surface, padding: 24, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  modalContent: {
+    backgroundColor: colors.surface,
+    padding: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingBottom: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary },
-  closeButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  inputLabel: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary, marginBottom: 8, marginLeft: 4 },
-  inputContainer: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 24 },
+  modalTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 20,
+    color: colors.textPrimary,
+    letterSpacing: 0.2,
+  },
+  closeButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.surfaceElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputLabel: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: colors.textSecondary,
+    marginBottom: 8,
+    marginLeft: 2,
+  },
+  inputContainer: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
   inputFocused: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.05)' },
-  input: { color: colors.textPrimary, height: 60, paddingHorizontal: 16, fontFamily: typography.fontFamily.regular, ...typography.scale.body },
-  
-  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32, justifyContent: 'center' },
-  avatarOption: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 3, borderColor: 'transparent', overflow: 'hidden' },
+  input: {
+    color: colors.textPrimary,
+    height: 56,
+    paddingHorizontal: 16,
+    fontFamily: typography.fontFamily.regular,
+    ...typography.scale.body,
+  },
+
+  avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 28, justifyContent: 'center' },
+  avatarOption: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    overflow: 'hidden',
+  },
   avatarOptionSelected: { borderColor: colors.accent, backgroundColor: 'rgba(180, 240, 60, 0.1)' },
   avatarOptionImage: { width: '100%', height: '100%' },
-  
-  saveButton: { height: 60, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+
+  saveButton: {
+    height: 56,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
   saveButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  saveButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.background },
+  saveButtonText: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 16,
+    color: colors.background,
+  },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -22,6 +22,8 @@ function formatTime(ms: number) {
 export default function EntrenarScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+
   const { 
     exercises, 
     isActive, 
@@ -117,13 +119,16 @@ export default function EntrenarScreen() {
     }
   };
 
+  // Responsive: on narrow screens reduce control group horizontal margin
+  const controlMargin = width < 370 ? 3 : 6;
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()} activeOpacity={0.7}>
-          <X color={colors.textPrimary} size={28} />
+          <X color={colors.textPrimary} size={26} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Sesión Activa</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>Sesión Activa</Text>
         
         <View style={styles.headerRight}>
           {restTimerEndsAt && timeLeft > 0 && (
@@ -132,7 +137,7 @@ export default function EntrenarScreen() {
               animate={{ opacity: 1, scale: 1 }}
               style={styles.timerBadge}
             >
-              <Clock color={colors.accent} size={16} />
+              <Clock color={colors.accent} size={15} />
               <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
             </MotiView>
           )}
@@ -143,7 +148,7 @@ export default function EntrenarScreen() {
         {exercises.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyIconBg}>
-              <Plus color={colors.accent} size={32} />
+              <Plus color={colors.accent} size={28} />
             </View>
             <Text style={styles.emptyText}>Añade ejercicios para comenzar tu rutina.</Text>
           </View>
@@ -164,7 +169,7 @@ export default function EntrenarScreen() {
                   <Text style={styles.exerciseTitle} numberOfLines={2}>{ex.exercise.name}</Text>
                 </View>
                 <TouchableOpacity onPress={() => removeExercise(ex.exercise.id)} style={styles.trashButton}>
-                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={18} />
+                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={17} />
                 </TouchableOpacity>
               </View>
 
@@ -189,23 +194,23 @@ export default function EntrenarScreen() {
                   >
                     <Text style={[styles.setIndex, isCompleted && styles.setIndexCompleted]}>{setIndex + 1}</Text>
                     
-                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted]}>
+                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted, { marginHorizontal: controlMargin }]}>
                       <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', -2.5)} style={styles.controlBtn}>
-                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={16} />
+                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
                       </TouchableOpacity>
                       <Text style={[styles.controlValue, isCompleted && styles.controlValueCompleted]}>{set.weight}</Text>
                       <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', 2.5)} style={styles.controlBtn}>
-                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={16} />
+                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
                       </TouchableOpacity>
                     </View>
 
-                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted]}>
+                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted, { marginHorizontal: controlMargin }]}>
                       <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', -1)} style={styles.controlBtn}>
-                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={16} />
+                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
                       </TouchableOpacity>
                       <Text style={[styles.controlValue, isCompleted && styles.controlValueCompleted]}>{set.reps}</Text>
                       <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', 1)} style={styles.controlBtn}>
-                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={16} />
+                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
                       </TouchableOpacity>
                     </View>
 
@@ -223,7 +228,7 @@ export default function EntrenarScreen() {
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                         >
-                          <Check color={colors.background} size={16} strokeWidth={3} />
+                          <Check color={colors.background} size={15} strokeWidth={3} />
                         </MotiView>
                       )}
                     </TouchableOpacity>
@@ -232,7 +237,7 @@ export default function EntrenarScreen() {
               })}
 
               <TouchableOpacity style={styles.addSetButton} onPress={() => addSet(ex.exercise.id)} activeOpacity={0.7}>
-                <Plus color={colors.textSecondary} size={18} />
+                <Plus color={colors.textSecondary} size={16} />
                 <Text style={styles.addSetText}>Añadir Serie</Text>
               </TouchableOpacity>
             </MotiView>
@@ -244,7 +249,7 @@ export default function EntrenarScreen() {
           onPress={() => router.push('/ejercicios')}
           activeOpacity={0.8}
         >
-          <Plus color={colors.accent} size={24} />
+          <Plus color={colors.accent} size={22} />
           <Text style={styles.addExerciseText}>Añadir ejercicio</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -271,54 +276,232 @@ export default function EntrenarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  closeButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, flex: 1 },
-  headerRight: { width: 100, alignItems: 'flex-end' },
-  timerBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  timerText: { fontFamily: typography.fontFamily.bold, color: colors.accent, ...typography.scale.body, fontSize: 16 },
-  scrollContent: { padding: 24, paddingBottom: 140 },
-  emptyState: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginBottom: 24 },
-  emptyIconBg: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
-  
-  exerciseCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 16 },
-  indexBadge: { width: 28, height: 28, borderRadius: 8, backgroundColor: 'rgba(180, 240, 60, 0.15)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  indexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 13 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, fontSize: 17, color: colors.textPrimary, textTransform: 'capitalize', flex: 1 },
-  trashButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.03)', justifyContent: 'center', alignItems: 'center' },
-  
-  tableHeader: { flexDirection: 'row', marginBottom: 12, paddingHorizontal: 8 },
-  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center', letterSpacing: 1 },
-  colSet: { width: 40 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  closeButton: {
+    marginRight: 14,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 20,
+    color: colors.textPrimary,
+    flex: 1,
+    letterSpacing: 0.2,
+  },
+  headerRight: { width: 90, alignItems: 'flex-end' },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.2)',
+  },
+  timerText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 14 },
+  scrollContent: { padding: 20, paddingBottom: 140 },
+  emptyState: {
+    padding: 36,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 20,
+  },
+  emptyIconBg: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+
+  exerciseCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 12 },
+  indexBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: 'rgba(180, 240, 60, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    flexShrink: 0,
+  },
+  indexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 12 },
+  exerciseTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 15,
+    color: colors.textPrimary,
+    textTransform: 'capitalize',
+    flex: 1,
+  },
+  trashButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.surfaceElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+
+  tableHeader: { flexDirection: 'row', marginBottom: 10, paddingHorizontal: 4 },
+  columnHeader: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  colSet: { width: 36 },
   colKg: { flex: 1 },
   colReps: { flex: 1 },
-  colCheck: { width: 40 },
-  
-  setRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: 'transparent' },
-  setRowCompleted: { backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' },
-  setIndex: { width: 40, fontFamily: typography.fontFamily.bold, color: colors.textPrimary, textAlign: 'center', fontSize: 16 },
+  colCheck: { width: 38 },
+
+  setRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  setRowCompleted: {},
+  setIndex: {
+    width: 36,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    fontSize: 15,
+  },
   setIndexCompleted: { color: colors.accent },
-  
-  controlGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, marginHorizontal: 6, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.02)' },
-  controlGroupCompleted: { backgroundColor: 'rgba(0,0,0,0.2)', borderColor: 'transparent' },
-  controlBtn: { padding: 8 },
-  controlValue: { width: 36, textAlign: 'center', fontFamily: typography.fontFamily.bold, color: colors.textPrimary, fontSize: 16 },
+
+  controlGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: 10,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  controlGroupCompleted: { backgroundColor: 'rgba(0,0,0,0.25)', borderColor: 'transparent' },
+  controlBtn: { padding: 7 },
+  controlValue: {
+    width: 32,
+    textAlign: 'center',
+    fontFamily: typography.fontFamily.bold,
+    color: colors.textPrimary,
+    fontSize: 15,
+  },
   controlValueCompleted: { color: colors.textSecondary },
-  
-  checkbox: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
-  checkboxActive: { backgroundColor: colors.accent, borderColor: colors.accent, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  
-  addSetButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, marginTop: 8, gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  addSetText: { fontFamily: typography.fontFamily.bold, color: colors.textSecondary, fontSize: 15 },
-  
-  addExerciseButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, backgroundColor: 'rgba(180, 240, 60, 0.1)', borderRadius: 16, gap: 10, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  addExerciseText: { fontFamily: typography.fontFamily.bold, color: colors.accent, ...typography.scale.body, fontSize: 18 },
-  
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
-  finishButton: { height: 60, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+
+  checkbox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+    flexShrink: 0,
+  },
+  checkboxActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  addSetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 13,
+    marginTop: 6,
+    gap: 7,
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  addSetText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, fontSize: 14 },
+
+  addExerciseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    backgroundColor: 'rgba(180, 240, 60, 0.08)',
+    borderRadius: 16,
+    gap: 8,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.2)',
+  },
+  addExerciseText: { fontFamily: typography.fontFamily.semibold, color: colors.accent, fontSize: 16 },
+
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  finishButton: {
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
+  },
   finishButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  finishButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.background },
+  finishButtonText: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 16,
+    color: colors.background,
+  },
 });

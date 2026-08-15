@@ -59,6 +59,7 @@ export default function FeedScreen() {
         transition={{ type: 'timing', duration: 250, delay: reduceMotion ? 0 : index * 40 }}
       >
         <View style={styles.card}>
+          {/* Author row */}
           <TouchableOpacity 
             style={styles.authorHeader}
             activeOpacity={0.7}
@@ -72,54 +73,54 @@ export default function FeedScreen() {
               )}
             </View>
             <View style={styles.authorInfo}>
-              <Text style={styles.authorName}>{item.profiles?.username}</Text>
+              <Text style={styles.authorName} numberOfLines={1}>{item.profiles?.username}</Text>
               <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
             </View>
           </TouchableOpacity>
 
+          {/* Workout name — main hero text (Symmetry: bold, largest element) */}
           <TouchableOpacity 
             activeOpacity={0.7}
             onPress={() => router.push(`/entrenos/${item.id}`)}
           >
-            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
 
-            <View style={styles.tagsContainer}>
-              {tags.map(tag => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-              {muscleGroups.size > 3 && (
-                <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-              )}
-            </View>
+            {tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {tags.map(tag => (
+                  <View key={tag} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+                {muscleGroups.size > 3 && (
+                  <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+                )}
+              </View>
+            )}
 
-            <View style={styles.statsContainer}>
-              <View style={styles.stat}>
-                <View style={styles.statIconBg}>
-                  <Dumbbell color={colors.accent} size={16} />
-                </View>
-                <View>
-                  <Text style={styles.statTextHighlight}>{exerciseCount}</Text>
-                  <Text style={styles.statText}>Ejercicios</Text>
+            {/* Stats strip — Symmetry style: label on top, value on bottom */}
+            <View style={styles.statsStrip}>
+              <View style={styles.stripStat}>
+                <Text style={styles.stripLabel}>Ejercicios</Text>
+                <View style={styles.stripValueRow}>
+                  <Dumbbell color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                  <Text style={styles.stripValue}>{exerciseCount}</Text>
                 </View>
               </View>
-              <View style={styles.stat}>
-                <View style={styles.statIconBg}>
-                  <Repeat color={colors.accent} size={16} />
-                </View>
-                <View>
-                  <Text style={styles.statTextHighlight}>{totalSets}</Text>
-                  <Text style={styles.statText}>Series</Text>
+              <View style={styles.stripDivider} />
+              <View style={styles.stripStat}>
+                <Text style={styles.stripLabel}>Series</Text>
+                <View style={styles.stripValueRow}>
+                  <Repeat color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                  <Text style={styles.stripValue}>{totalSets}</Text>
                 </View>
               </View>
-              <View style={styles.stat}>
-                <View style={styles.statIconBg}>
-                  <Activity color={colors.accent} size={16} />
-                </View>
-                <View>
-                  <Text style={styles.statTextHighlight}>{totalVolume}</Text>
-                  <Text style={styles.statText}>Vol (kg)</Text>
+              <View style={styles.stripDivider} />
+              <View style={styles.stripStat}>
+                <Text style={styles.stripLabel}>Volumen</Text>
+                <View style={styles.stripValueRow}>
+                  <Activity color={colors.accent} size={13} style={{ marginRight: 4 }} />
+                  <Text style={styles.stripValue} numberOfLines={1}>{totalVolume} kg</Text>
                 </View>
               </View>
             </View>
@@ -131,13 +132,13 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <View>
           <Text style={styles.title}>Actividad</Text>
           <Text style={styles.subtitle}>Explora lo que hacen tus amigos</Text>
         </View>
         <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
-          <UserPlus color={colors.textPrimary} size={24} />
+          <UserPlus color={colors.textPrimary} size={22} />
         </TouchableOpacity>
       </View>
 
@@ -148,18 +149,18 @@ export default function FeedScreen() {
           <FlashList
             data={workouts || []}
             renderItem={renderItem}
-            estimatedItemSize={250}
+            estimatedItemSize={260}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <MotiView 
-                from={{ opacity: 0, scale: 0.9 }}
+                from={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={styles.emptyState}
               >
                 <View style={styles.emptyIconContainer}>
-                  <Users color={colors.accent} size={48} />
+                  <Users color={colors.accent} size={40} />
                 </View>
                 {hasFriends ? (
                   <>
@@ -186,32 +187,179 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 16 },
-  title: { fontFamily: typography.fontFamily.bold, ...typography.scale.display, fontSize: 28, color: colors.textPrimary },
-  subtitle: { fontFamily: typography.fontFamily.medium, ...typography.scale.body, color: colors.textSecondary, marginTop: 4 },
-  headerButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  title: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 26,
+    letterSpacing: 0.3,
+    color: colors.textPrimary,
+  },
+  subtitle: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.body,
+    color: colors.textSecondary,
+    marginTop: 3,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   listContainer: { flex: 1 },
-  listContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 16 },
-  card: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  authorHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  avatarContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 20 },
+
+  // Card
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  authorHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  avatarContainer: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
   avatar: { width: '100%', height: '100%' },
   authorInfo: { flex: 1 },
-  authorName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 16, color: colors.textPrimary },
-  cardTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, marginBottom: 12 },
-  cardDate: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.textSecondary },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  tag: { backgroundColor: 'rgba(180, 240, 60, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  tagText: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.accent, textTransform: 'uppercase', letterSpacing: 0.5 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 16, padding: 16 },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  statIconBg: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  statText: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, marginTop: 2 },
-  statTextHighlight: { fontFamily: typography.fontFamily.bold, fontSize: 14, color: colors.textPrimary },
-  emptyState: { padding: 40, alignItems: 'center', marginTop: 40, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  emptyIconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
-  emptyTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
-  emptyText: { fontFamily: typography.fontFamily.regular, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, fontSize: 16, lineHeight: 24 },
-  emptyButton: { backgroundColor: colors.accent, paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
-  emptyButtonText: { fontFamily: typography.fontFamily.bold, color: colors.background, ...typography.scale.body, fontSize: 16 }
+  authorName: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  cardDate: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: colors.textSecondary,
+  },
+
+  // Workout title — the hero element (Symmetry: bold, prominent)
+  cardTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 18,
+    color: colors.textPrimary,
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+
+  // Tags
+  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
+  tag: {
+    backgroundColor: 'rgba(180, 240, 60, 0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.18)',
+  },
+  tagText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 10,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Symmetry-style stats strip
+  statsStrip: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  stripStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  stripDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    marginVertical: 4,
+  },
+  stripLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginBottom: 5,
+  },
+  stripValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stripValue: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+
+  // Empty
+  emptyState: {
+    padding: 36,
+    alignItems: 'center',
+    marginTop: 40,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  emptyIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 17,
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontFamily: typography.fontFamily.regular,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  emptyButton: {
+    backgroundColor: colors.accent,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 14,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  emptyButtonText: {
+    fontFamily: typography.fontFamily.semibold,
+    color: colors.background,
+    fontSize: 15,
+  },
 });
