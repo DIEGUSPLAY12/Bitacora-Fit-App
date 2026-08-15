@@ -180,6 +180,9 @@ export function useFriendsFeed() {
               weight_kg,
               reps
             )
+          ),
+          likes:workout_likes (
+            user_id
           )
         `)
         .in('user_id', friendIds)
@@ -222,3 +225,37 @@ export function useFriends() {
   });
 }
 
+export function useSuggestedProfiles() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['suggestedProfiles', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data: friendships, error: friendError } = await supabase
+        .from('friendships')
+        .select('user_id, friend_id')
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
+
+      if (friendError) throw friendError;
+
+      const excludeIds = new Set([
+        user.id,
+        ...friendships.map(f => f.user_id === user.id ? f.friend_id : f.user_id)
+      ]);
+
+      const excludeString = `(${Array.from(excludeIds).join(',')})`;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .not('id', 'in', excludeString)
+        .limit(6);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+}

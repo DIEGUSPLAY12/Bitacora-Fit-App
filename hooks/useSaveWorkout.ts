@@ -13,12 +13,14 @@ export function useSaveWorkout() {
       name,
       startedAt,
       finishedAt,
-      exercises
+      exercises,
+      visibility
     }: {
       name: string;
       startedAt: number;
       finishedAt: number;
       exercises: WorkoutExercise[];
+      visibility?: 'friends' | 'public';
     }) => {
       if (!user) throw new Error('Usuario no autenticado');
 
@@ -40,6 +42,7 @@ export function useSaveWorkout() {
           name,
           started_at: new Date(startedAt).toISOString(),
           finished_at: new Date(finishedAt).toISOString(),
+          visibility: visibility || 'friends',
         })
         .select('id')
         .single();

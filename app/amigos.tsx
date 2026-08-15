@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, FlatList, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { ArrowLeft, User, Search, Check, X as XIcon, UserPlus } from 'lucide-react-native';
-import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends } from '../hooks/useFriends';
+import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends, useSuggestedProfiles } from '../hooks/useFriends';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
@@ -21,6 +21,7 @@ export default function AmigosScreen() {
   const { data: searchResults, isLoading: isSearching } = useSearchUsers(searchQuery);
   const { data: requests, isLoading: isRequestsLoading } = useFriendRequests();
   const { data: friends, isLoading: isFriendsLoading } = useFriends();
+  const { data: suggestedProfiles } = useSuggestedProfiles();
   
   const { mutateAsync: sendRequest, isPending: isSending } = useSendFriendRequest();
   const { mutateAsync: acceptRequest, isPending: isAccepting } = useAcceptFriendRequest();
@@ -144,6 +145,38 @@ export default function AmigosScreen() {
           <UserPlus color={colors.textPrimary} size={24} />
         </TouchableOpacity>
       </View>
+
+      {!isSearchFocused && suggestedProfiles && suggestedProfiles.length > 0 && (
+        <View style={styles.suggestionsSection}>
+          <Text style={styles.suggestionsTitle}>Sugerencias para ti</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestionsScroll}>
+            {suggestedProfiles.map((profile) => {
+              const isPending = pendingUserIds.has(profile.id);
+              return (
+                <View key={profile.id} style={styles.suggestionCard}>
+                  <View style={styles.suggestionAvatarContainer}>
+                    {profile.avatar_url ? (
+                      <Image source={profile.avatar_url} style={styles.avatar} contentFit="cover" />
+                    ) : (
+                      <User color={colors.accent} size={28} />
+                    )}
+                  </View>
+                  <Text style={styles.suggestionUsername} numberOfLines={1}>{profile.username}</Text>
+                  <TouchableOpacity 
+                    style={[styles.suggestionButton, isPending && styles.suggestionButtonPending]}
+                    onPress={() => handleSendRequest(profile.id)}
+                    disabled={isPending || isSending}
+                  >
+                    <Text style={[styles.suggestionButtonText, isPending && styles.suggestionButtonTextPending]}>
+                      {isPending ? 'Pendiente' : 'Añadir'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
         <Search color={isSearchFocused ? colors.accent : colors.textSecondary} size={20} style={styles.searchIcon} />
@@ -278,4 +311,15 @@ const styles = StyleSheet.create({
   
   emptyState: { padding: 40, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginTop: 20 },
   emptyText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, textAlign: 'center', fontSize: 16 },
+  
+  suggestionsSection: { marginBottom: 16 },
+  suggestionsTitle: { fontFamily: typography.fontFamily.bold, color: colors.textPrimary, fontSize: 14, marginLeft: 24, marginBottom: 12 },
+  suggestionsScroll: { paddingHorizontal: 20, gap: 12 },
+  suggestionCard: { width: 120, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 16, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  suggestionAvatarContainer: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.3)', overflow: 'hidden' },
+  suggestionUsername: { fontFamily: typography.fontFamily.medium, color: colors.textPrimary, fontSize: 13, marginBottom: 10, textAlign: 'center' },
+  suggestionButton: { backgroundColor: colors.accent, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, width: '100%', alignItems: 'center' },
+  suggestionButtonPending: { backgroundColor: 'rgba(255,255,255,0.05)' },
+  suggestionButtonText: { fontFamily: typography.fontFamily.bold, color: colors.background, fontSize: 12 },
+  suggestionButtonTextPending: { color: colors.textSecondary },
 });

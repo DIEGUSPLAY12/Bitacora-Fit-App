@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView,
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { typography } from '../theme/typography';
 import { colors } from '../theme/colors';
-import { CheckCircle2, Flame, Weight, Hash } from 'lucide-react-native';
+import { CheckCircle2, Flame, Weight, Hash, Globe, Users } from 'lucide-react-native';
 import { useStreak } from '../hooks/useStreak';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { MotiView } from 'moti';
@@ -29,6 +29,7 @@ export default function WorkoutCompletedScreen() {
   // Local state for editable fields
   const [workoutName, setWorkoutName] = useState('Entrenamiento Libre');
   const [durationStrState, setDurationStrState] = useState(duration || '0');
+  const [visibility, setVisibility] = useState<'friends' | 'public'>('friends');
   const [focusedInput, setFocusedInput] = useState<'name' | 'duration' | null>(null);
 
   const handleSaveAndHome = async () => {
@@ -41,7 +42,8 @@ export default function WorkoutCompletedScreen() {
         name: workoutName.trim() || 'Entrenamiento Libre',
         startedAt: st,
         finishedAt,
-        exercises
+        exercises,
+        visibility
       });
 
       // Limpiar store y volver a casa
@@ -105,6 +107,29 @@ export default function WorkoutCompletedScreen() {
                 onFocus={() => setFocusedInput('duration')}
                 onBlur={() => setFocusedInput(null)}
               />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>VISIBILIDAD</Text>
+            <View style={styles.visibilitySelector}>
+              <TouchableOpacity
+                style={[styles.visibilityOption, visibility === 'friends' && styles.visibilityOptionActive]}
+                onPress={() => setVisibility('friends')}
+                activeOpacity={0.7}
+              >
+                <Users color={visibility === 'friends' ? colors.accent : colors.textSecondary} size={18} />
+                <Text style={[styles.visibilityOptionText, visibility === 'friends' && styles.visibilityOptionTextActive]}>Amigos</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.visibilityOption, visibility === 'public' && styles.visibilityOptionActive]}
+                onPress={() => setVisibility('public')}
+                activeOpacity={0.7}
+              >
+                <Globe color={visibility === 'public' ? colors.accent : colors.textSecondary} size={18} />
+                <Text style={[styles.visibilityOptionText, visibility === 'public' && styles.visibilityOptionTextActive]}>Público</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -224,6 +249,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     height: 56,
     paddingHorizontal: 16,
+  },
+  visibilitySelector: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+    height: 56,
+  },
+  visibilityOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  visibilityOptionActive: {
+    backgroundColor: 'rgba(180, 240, 60, 0.05)',
+  },
+  visibilityOptionText: {
+    fontFamily: typography.fontFamily.medium,
+    color: colors.textSecondary,
+    fontSize: 15,
+  },
+  visibilityOptionTextActive: {
+    color: colors.textPrimary,
+    fontFamily: typography.fontFamily.bold,
   },
 
   // Stats strip — Symmetry style: all 3 stats in one horizontal card

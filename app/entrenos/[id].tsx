@@ -67,24 +67,39 @@ export default function WorkoutDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Resumen Superior Bento-like */}
+        {/* Resumen Superior Sleek (Stats Strip) */}
         <MotiView 
-          style={styles.summaryContainer}
+          style={styles.statsStrip}
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'spring', delay: 100 }}
         >
-          <View style={styles.statBox}>
-            <Clock color={colors.accent} size={20} style={styles.statIcon} />
-            <Text style={styles.statValue}>{durationMin} m</Text>
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Tiempo</Text>
+            <View style={styles.stripValueRow}>
+              <Clock color={colors.accent} size={14} style={{ marginRight: 6 }} />
+              <Text style={styles.stripValue}>{durationMin} m</Text>
+            </View>
           </View>
-          <View style={styles.statBox}>
-            <Weight color={colors.accent} size={20} style={styles.statIcon} />
-            <Text style={styles.statValue}>{totalVolume} kg</Text>
+          
+          <View style={styles.stripDivider} />
+          
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Volumen</Text>
+            <View style={styles.stripValueRow}>
+              <Weight color={colors.accent} size={14} style={{ marginRight: 6 }} />
+              <Text style={styles.stripValue}>{totalVolume} kg</Text>
+            </View>
           </View>
-          <View style={styles.statBox}>
-            <Hash color={colors.accent} size={20} style={styles.statIcon} />
-            <Text style={styles.statValue}>{totalSets} s</Text>
+
+          <View style={styles.stripDivider} />
+          
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Series</Text>
+            <View style={styles.stripValueRow}>
+              <Hash color={colors.accent} size={14} style={{ marginRight: 6 }} />
+              <Text style={styles.stripValue}>{totalSets}</Text>
+            </View>
           </View>
         </MotiView>
 
@@ -97,31 +112,28 @@ export default function WorkoutDetailScreen() {
             transition={{ type: 'spring', delay: 200 + (index * 100) }}
           >
             <View style={styles.exerciseHeader}>
-              <Text style={styles.exerciseTitle}>{index + 1}. {we.exercises?.name}</Text>
+              <View style={styles.exerciseNumberBadge}>
+                <Text style={styles.exerciseNumberText}>{index + 1}</Text>
+              </View>
+              <Text style={styles.exerciseTitle}>{we.exercises?.name}</Text>
             </View>
 
             <View style={styles.tableHeader}>
               <Text style={[styles.columnHeader, styles.colSet]}>SET</Text>
               <Text style={[styles.columnHeader, styles.colKg]}>KG</Text>
               <Text style={[styles.columnHeader, styles.colReps]}>REPS</Text>
-              <Text style={[styles.columnHeader, styles.colCheck]}>{/* Check */}</Text>
             </View>
 
             {we.sets?.map((set: any, setIndex: number) => (
-              <View key={set.id} style={styles.setRowCompleted}>
-                <Text style={styles.setIndexCompleted}>{setIndex + 1}</Text>
+              <View key={set.id} style={styles.setRow}>
+                <View style={styles.colSet}>
+                  <View style={styles.setIndexBadge}>
+                    <Text style={styles.setIndexText}>{setIndex + 1}</Text>
+                  </View>
+                </View>
                 
-                <View style={styles.controlGroup}>
-                  <Text style={styles.controlValue}>{set.weight_kg}</Text>
-                </View>
-
-                <View style={styles.controlGroup}>
-                  <Text style={styles.controlValue}>{set.reps}</Text>
-                </View>
-
-                <View style={styles.checkboxActive}>
-                  <Check color={colors.background} size={16} strokeWidth={3} />
-                </View>
+                <Text style={styles.setValue}>{set.weight_kg}</Text>
+                <Text style={styles.setValue}>{set.reps}</Text>
               </View>
             ))}
           </MotiView>
@@ -139,28 +151,43 @@ const styles = StyleSheet.create({
   backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, flex: 1 },
   templateButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 24, paddingBottom: 60 },
-  summaryContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32, gap: 12 },
-  statBox: { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.1)', padding: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  statIcon: { marginBottom: 8 },
-  statValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary },
+  scrollContent: { padding: 20, paddingBottom: 60 },
   
-  exerciseCard: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 24, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, lineHeight: 28, color: colors.textPrimary, textTransform: 'capitalize', flex: 1 },
+  // Stats Strip (Sleek)
+  statsStrip: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    marginBottom: 24,
+  },
+  stripStat: { flex: 1, alignItems: 'center' },
+  stripDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: 4 },
+  stripLabel: { fontFamily: typography.fontFamily.medium, fontSize: 11, color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  stripValueRow: { flexDirection: 'row', alignItems: 'center' },
+  stripValue: { fontFamily: typography.fontFamily.bold, fontSize: 18, color: colors.textPrimary },
   
-  tableHeader: { flexDirection: 'row', marginBottom: 12, paddingHorizontal: 8 },
-  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, textAlign: 'center', letterSpacing: 1 },
-  colSet: { width: 40 },
-  colKg: { flex: 1 },
-  colReps: { flex: 1 },
-  colCheck: { width: 40 },
+  // Exercise Card
+  exerciseCard: { backgroundColor: colors.surface, borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
+  exerciseHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingRight: 8 },
+  exerciseNumberBadge: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', alignItems: 'center', marginRight: 12, marginTop: 0 },
+  exerciseNumberText: { fontFamily: typography.fontFamily.bold, color: colors.textPrimary, fontSize: 13 },
+  exerciseTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, lineHeight: 26, color: colors.textPrimary, flex: 1, textTransform: 'capitalize' },
   
-  setRowCompleted: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 12, marginBottom: 8, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
-  setIndexCompleted: { width: 40, fontFamily: typography.fontFamily.bold, color: colors.accent, textAlign: 'center', fontSize: 16 },
+  // Table
+  tableHeader: { flexDirection: 'row', marginBottom: 8, paddingHorizontal: 8, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
+  columnHeader: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1 },
+  colSet: { width: 50 },
+  colKg: { flex: 1, textAlign: 'center' },
+  colReps: { flex: 1, textAlign: 'center' },
   
-  controlGroup: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 12, marginHorizontal: 6, paddingVertical: 10 },
-  controlValue: { textAlign: 'center', fontFamily: typography.fontFamily.bold, color: colors.textSecondary, fontSize: 16 },
+  // Rows
+  setRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.02)' },
+  setIndexBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(180, 240, 60, 0.1)', justifyContent: 'center', alignItems: 'center' },
+  setIndexText: { fontFamily: typography.fontFamily.bold, color: colors.accent, fontSize: 12 },
   
-  checkboxActive: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.accent, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  setValue: { flex: 1, textAlign: 'center', fontFamily: typography.fontFamily.semibold, color: colors.textPrimary, fontSize: 16 },
 });

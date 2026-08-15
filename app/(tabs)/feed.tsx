@@ -1,10 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
+import { useDiscoverFeed } from '../../hooks/useDiscoverFeed';
+import { useToggleLike } from '../../hooks/useWorkoutLikes';
+import { useAuth } from '../../hooks/useAuth';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
 import { MotiView, AnimatePresence } from 'moti';
@@ -29,10 +32,21 @@ function getRelativeTime(dateString: string) {
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { data: workouts, isLoading } = useFriendsFeed();
+  
+  const [activeTab, setActiveTab] = useState<'amigos' | 'descubrir'>('amigos');
+  
+  const { data: friendsWorkouts, isLoading: isFriendsLoading } = useFriendsFeed();
+  const { data: discoverWorkouts, isLoading: isDiscoverLoading } = useDiscoverFeed();
+  
+  const workouts = activeTab === 'amigos' ? friendsWorkouts : discoverWorkouts;
+  const isLoading = activeTab === 'amigos' ? isFriendsLoading : isDiscoverLoading;
+
   const { data: friends } = useFriends();
   const reduceMotion = useReduceMotion();
   const hasFriends = friends && friends.length > 0;
+  
+  const { user } = useAuth();
+  const { mutate: toggleLike } = useToggleLike();
 
   const renderItem = useCallback(({ item, index }: { item: any, index: number }) => {
     let totalVolume = 0;
@@ -51,6 +65,9 @@ export default function FeedScreen() {
     });
 
     const tags = Array.from(muscleGroups).slice(0, 3);
+    
+    const likesCount = item.likes?.length || 0;
+    const hasLiked = item.likes?.some((l: any) => l.user_id === user?.id);
 
     return (
       <MotiView
@@ -125,10 +142,28 @@ export default function FeedScreen() {
               </View>
             </View>
           </TouchableOpacity>
+          
+          {/* Like Footer */}
+          <View style={styles.cardFooter}>
+            <TouchableOpacity 
+              style={styles.likeButton}
+              activeOpacity={0.7}
+              onPress={() => toggleLike({ workoutId: item.id, hasLiked })}
+            >
+              <Heart 
+                size={22} 
+                color={hasLiked ? colors.accent : colors.textSecondary} 
+                fill={hasLiked ? colors.accent : 'transparent'} 
+              />
+              <Text style={[styles.likeText, hasLiked && styles.likeTextActive]}>
+                {likesCount} {likesCount === 1 ? 'Me gusta' : 'Me gustas'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </MotiView>
     );
-  }, [router, reduceMotion]);
+  }, [router, reduceMotion, user?.id, toggleLike]);
 
   return (
     <View style={styles.container}>
@@ -143,6 +178,23 @@ export default function FeedScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
             <UserPlus color={colors.textPrimary} size={20} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.tabsContainer}>
+        <View style={styles.tabsWrapper}>
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'amigos' && styles.activeTab]}
+            onPress={() => setActiveTab('amigos')}
+          >
+            <Text style={[styles.tabText, activeTab === 'amigos' && styles.activeTabText]}>Amigos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tab, activeTab === 'descubrir' && styles.activeTab]}
+            onPress={() => setActiveTab('descubrir')}
+          >
+            <Text style={[styles.tabText, activeTab === 'descubrir' && styles.activeTabText]}>Descubrir</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -167,7 +219,12 @@ export default function FeedScreen() {
                 <View style={styles.emptyIconContainer}>
                   <Users color={colors.accent} size={40} />
                 </View>
-                {hasFriends ? (
+                {activeTab === 'descubrir' ? (
+                  <>
+                    <Text style={styles.emptyTitle}>Sin descubrimientos</Text>
+                    <Text style={styles.emptyText}>Aún no hay entrenos públicos de otros usuarios para mostrar.</Text>
+                  </>
+                ) : hasFriends ? (
                   <>
                     <Text style={styles.emptyTitle}>Sin actividad reciente</Text>
                     <Text style={styles.emptyText}>Tus amigos no han registrado entrenos últimamente.</Text>
@@ -219,8 +276,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  tabsContainer: { paddingHorizontal: 20, marginBottom: 12 },
+  tabsWrapper: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
+  activeTab: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  tabText: { fontFamily: typography.fontFamily.medium, color: colors.textSecondary, ...typography.scale.body, fontSize: 14 },
+  activeTabText: { color: colors.textPrimary, fontFamily: typography.fontFamily.bold },
   listContainer: { flex: 1 },
-  listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 20 },
+  listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 10 },
 
   // Card
   card: {
@@ -315,6 +378,30 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bold,
     fontSize: 13,
     color: colors.textPrimary,
+  },
+  
+  // Likes
+  cardFooter: {
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
+    flexDirection: 'row',
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 16,
+  },
+  likeText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  likeTextActive: {
+    color: colors.accent,
+    fontFamily: typography.fontFamily.semibold,
   },
 
   // Empty
