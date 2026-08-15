@@ -94,13 +94,13 @@ export default function AjustesScreen() {
         <Text style={styles.sectionLabel}>PERFIL Y CUENTA</Text>
         <View style={styles.section}>
           <SettingRow
-            icon={<Lock color={colors.textPrimary} size={19} />}
+            icon={<Lock color={colors.accent} size={19} />}
             label="Cambiar contraseña"
             onPress={() => setPwModal(true)}
           />
           <View style={styles.rowDivider} />
           <SettingRow
-            icon={<Scale color={colors.textPrimary} size={19} />}
+            icon={<Scale color={colors.accent} size={19} />}
             label="Registro de peso"
             onPress={() => router.push('/peso')}
           />
@@ -111,7 +111,7 @@ export default function AjustesScreen() {
         <View style={styles.section}>
           <View style={styles.toggleRow}>
             <View style={styles.toggleIconBg}>
-              <Scale color={colors.textPrimary} size={19} />
+              <Scale color={colors.accent} size={19} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>Unidad de peso</Text>
@@ -133,7 +133,7 @@ export default function AjustesScreen() {
           <View style={styles.rowDivider} />
           <View style={styles.toggleRow}>
             <View style={styles.toggleIconBg}>
-              <Globe color={colors.textPrimary} size={19} />
+              <Globe color={colors.accent} size={19} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>Perfil público</Text>
@@ -152,7 +152,7 @@ export default function AjustesScreen() {
           <View style={styles.rowDivider} />
           <View style={styles.toggleRow}>
             <View style={styles.toggleIconBg}>
-              <Bell color={colors.textPrimary} size={19} />
+              <Bell color={colors.accent} size={19} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>Notificaciones push</Text>
@@ -172,13 +172,13 @@ export default function AjustesScreen() {
         <Text style={styles.sectionLabel}>INFORMACIÓN</Text>
         <View style={styles.section}>
           <SettingRow
-            icon={<ShieldCheck color={colors.textPrimary} size={19} />}
+            icon={<ShieldCheck color={colors.accent} size={19} />}
             label="Política de privacidad"
             onPress={() => router.push('/politica-privacidad')}
           />
           <View style={styles.rowDivider} />
           <SettingRow
-            icon={<Info color={colors.textPrimary} size={19} />}
+            icon={<Info color={colors.accent} size={19} />}
             label="Términos de uso"
             onPress={() => router.push('/terminos-uso')}
           />
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   toggleIconBg: {
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: 'rgba(180, 240, 60, 0.1)',
     justifyContent: 'center', alignItems: 'center', flexShrink: 0,
   },
   rowLabel: {

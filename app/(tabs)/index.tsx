@@ -198,8 +198,8 @@ export default function HomeScreen() {
             onPress={() => router.push('/template/crear')}
             activeOpacity={0.8}
           >
-            <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-              <Folder color={colors.textPrimary} size={22} />
+            <View style={[styles.actionIcon, { backgroundColor: 'rgba(180, 240, 60, 0.1)' }]}>
+              <Folder color={colors.accent} size={22} />
             </View>
             <View style={styles.actionTextContainer}>
               <Text style={styles.actionTitle}>Crear plantilla</Text>
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   templateCardBadge: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(180, 240, 60, 0.15)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   templateCardBadgeText: {
     fontFamily: typography.fontFamily.semibold,
     fontSize: 12,
-    color: colors.textPrimary,
+    color: colors.accent,
   },
   templateCardTitle: {
     fontFamily: typography.fontFamily.bold,
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   templateCardButton: {
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.accent,
     paddingVertical: 14,
     borderRadius: 100,
     alignItems: 'center',
