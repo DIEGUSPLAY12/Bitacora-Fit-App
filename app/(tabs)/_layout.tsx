@@ -1,11 +1,12 @@
 import { Tabs } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { Home, History, User, Users } from 'lucide-react-native';
+import { Home, History, User, Users, MessageCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform, TouchableOpacity, View, Text } from 'react-native';
 import { MotiView } from 'moti';
 import { useFriendRequests } from '../../hooks/useFriends';
+import { useChats } from '../../hooks/useChats';
 
 function TabIcon({ Icon, focused, badgeCount = 0 }: { Icon: any, focused: boolean, badgeCount?: number }) {
   return (
@@ -62,6 +63,9 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { data: requests } = useFriendRequests();
   const pendingCount = requests?.length || 0;
+  
+  const { data: chats } = useChats();
+  const unreadChatsCount = chats?.reduce((total, chat) => total + (chat.unreadCount > 0 ? 1 : 0), 0) || 0;
 
   return (
     <Tabs
@@ -109,6 +113,13 @@ export default function TabLayout() {
         options={{
           title: 'Feed',
           tabBarIcon: ({ focused }) => <TabIcon Icon={Users} focused={focused} badgeCount={pendingCount} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: 'Chats',
+          tabBarIcon: ({ focused }) => <TabIcon Icon={MessageCircle} focused={focused} badgeCount={unreadChatsCount} />,
         }}
       />
       <Tabs.Screen

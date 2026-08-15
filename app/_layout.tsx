@@ -63,6 +63,10 @@ function RootLayoutNav() {
       <Stack.Screen name="notificaciones" options={{ headerShown: false, animation: 'slide_from_right' }} />
       <Stack.Screen name="peso" options={{ headerShown: false, animation: 'slide_from_right' }} />
       <Stack.Screen name="records" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="chats/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="chats/nuevo" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="compartir" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="entrenos/[id]/comentarios" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }

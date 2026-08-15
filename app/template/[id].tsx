@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { ArrowLeft, Play, LayoutGrid } from 'lucide-react-native';
+import { ArrowLeft, Play, LayoutGrid, Send } from 'lucide-react-native';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { useWorkoutStore, WorkoutExercise } from '../../store/workout-store';
 import { Image } from 'expo-image';
@@ -94,10 +94,18 @@ export default function TemplateDetailScreen() {
             <ArrowLeft color={colors.textPrimary} size={24} />
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.adaptButton}>
-            <SparklesIcon />
-            <Text style={styles.adaptButtonText}>Adaptar</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity 
+              style={styles.iconButton}
+              onPress={() => router.push({ pathname: '/compartir', params: { workoutId: template.id } })}
+            >
+              <Send color={colors.textPrimary} size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.adaptButton}>
+              <SparklesIcon />
+              <Text style={styles.adaptButtonText}>Adaptar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Title Area */}

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
-import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle } from 'lucide-react-native';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useDiscoverFeed } from '../../hooks/useDiscoverFeed';
 import { useToggleLike } from '../../hooks/useWorkoutLikes';
@@ -143,10 +143,10 @@ export default function FeedScreen() {
             </View>
           </TouchableOpacity>
           
-          {/* Like Footer */}
+          {/* Footer: Likes and Comments */}
           <View style={styles.cardFooter}>
             <TouchableOpacity 
-              style={styles.likeButton}
+              style={styles.actionButton}
               activeOpacity={0.7}
               onPress={() => toggleLike({ workoutId: item.id, hasLiked })}
             >
@@ -155,8 +155,19 @@ export default function FeedScreen() {
                 color={hasLiked ? colors.accent : colors.textSecondary} 
                 fill={hasLiked ? colors.accent : 'transparent'} 
               />
-              <Text style={[styles.likeText, hasLiked && styles.likeTextActive]}>
-                {likesCount} {likesCount === 1 ? 'Me gusta' : 'Me gustas'}
+              <Text style={[styles.actionText, hasLiked && styles.actionTextActive]}>
+                {likesCount}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              activeOpacity={0.7}
+              onPress={() => router.push(`/entrenos/${item.id}/comentarios`)}
+            >
+              <MessageCircle size={22} color={colors.textSecondary} />
+              <Text style={styles.actionText}>
+                {item.comments?.length > 0 ? item.comments.length : 'Comentar'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -382,26 +393,26 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   
-  // Likes
+  // Actions (Likes/Comments)
   cardFooter: {
     marginTop: rs(16),
     paddingTop: rs(14),
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
     flexDirection: 'row',
+    gap: rs(24),
   },
-  likeButton: {
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: rs(8),
-    paddingRight: rs(16),
   },
-  likeText: {
+  actionText: {
     fontFamily: typography.fontFamily.medium,
     fontSize: rs(14),
     color: colors.textSecondary,
   },
-  likeTextActive: {
+  actionTextActive: {
     color: colors.accent,
     fontFamily: typography.fontFamily.semibold,
   },

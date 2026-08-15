@@ -50,7 +50,8 @@ export function useDiscoverFeed() {
           ),
           likes:workout_likes (
             user_id
-          )
+          ),
+          comments:workout_comments(id)
         `)
         .eq('visibility', 'public')
         .not('user_id', 'in', `(${excludeIds.join(',')})`)

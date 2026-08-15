@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
-import { ArrowLeft, Check, Clock, Weight, Hash, Bookmark } from 'lucide-react-native';
+import { ArrowLeft, Check, Clock, Weight, Hash, Bookmark, Send } from 'lucide-react-native';
 import { useToggleTemplate } from '../../hooks/useTemplates';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
@@ -51,18 +51,27 @@ export default function WorkoutDetailScreen() {
           <ArrowLeft color={colors.textPrimary} size={28} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{workout.name}</Text>
-        <TouchableOpacity 
-          style={styles.templateButton} 
-          onPress={() => toggleTemplate.mutate({ id: workout.id, is_template: !workout.is_template })}
-          disabled={toggleTemplate.isPending}
-          activeOpacity={0.7}
-        >
-          <Bookmark 
-            color={workout.is_template ? colors.accent : colors.textSecondary} 
-            size={22} 
-            fill={workout.is_template ? colors.accent : 'transparent'} 
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity 
+            style={styles.templateButton} 
+            onPress={() => router.push({ pathname: '/compartir', params: { workoutId: workout.id } })}
+            activeOpacity={0.7}
+          >
+            <Send color={colors.textPrimary} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.templateButton} 
+            onPress={() => toggleTemplate.mutate({ id: workout.id, is_template: !workout.is_template })}
+            disabled={toggleTemplate.isPending}
+            activeOpacity={0.7}
+          >
+            <Bookmark 
+              color={workout.is_template ? colors.accent : colors.textSecondary} 
+              size={22} 
+              fill={workout.is_template ? colors.accent : 'transparent'} 
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

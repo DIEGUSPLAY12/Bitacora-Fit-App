@@ -183,7 +183,8 @@ export function useFriendsFeed() {
           ),
           likes:workout_likes (
             user_id
-          )
+          ),
+          comments:workout_comments(id)
         `)
         .in('user_id', friendIds)
         .order('started_at', { ascending: false })
