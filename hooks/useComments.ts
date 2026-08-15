@@ -43,7 +43,8 @@ export function usePostComment() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.workoutId] });
-      // We should probably also invalidate the feed to update comment counts if we had them
+      queryClient.invalidateQueries({ queryKey: ['friendsFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['discoverFeed'] });
     }
   });
 }
@@ -64,6 +65,8 @@ export function useDeleteComment() {
     onSuccess: (_, variables) => {
       // Invalidate all comments just to be safe, or we could pass workoutId to invalidate specifically
       queryClient.invalidateQueries({ queryKey: ['comments'] });
+      queryClient.invalidateQueries({ queryKey: ['friendsFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['discoverFeed'] });
     }
   });
 }
