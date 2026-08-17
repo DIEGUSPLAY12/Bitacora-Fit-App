@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
@@ -60,8 +60,27 @@ export default function WorkoutDetailScreen() {
             <Send color={colors.textPrimary} size={20} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.templateButton} 
-            onPress={() => toggleTemplate.mutate({ id: workout.id, is_template: !workout.is_template })}
+            style={[
+              styles.templateButton,
+              workout.is_template && styles.templateButtonActive
+            ]} 
+            onPress={() => {
+              const newValue = !workout.is_template;
+              toggleTemplate.mutate({ id: workout.id, is_template: newValue });
+              if (newValue) {
+                Alert.alert(
+                  '¡Guardado como plantilla! 📌',
+                  'Este entrenamiento ahora aparece en tus plantillas y puedes usarlo cuando quieras.',
+                  [{ text: 'Entendido', style: 'default' }]
+                );
+              } else {
+                Alert.alert(
+                  'Eliminado de plantillas',
+                  'Este entrenamiento ya no aparece en tus plantillas.',
+                  [{ text: 'OK', style: 'default' }]
+                );
+              }
+            }}
             disabled={toggleTemplate.isPending}
             activeOpacity={0.7}
           >
@@ -160,6 +179,7 @@ const styles = StyleSheet.create({
   backButton: { marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: rs(22), color: colors.textPrimary, flex: 1 },
   templateButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' },
+  templateButtonActive: { backgroundColor: 'rgba(180, 240, 60, 0.12)', borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.3)' },
   scrollContent: { padding: rs(20), paddingBottom: rs(60) },
   
   // Stats Strip (Sleek)
