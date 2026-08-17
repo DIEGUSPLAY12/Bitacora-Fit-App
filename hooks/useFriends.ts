@@ -260,3 +260,31 @@ export function useSuggestedProfiles() {
     enabled: !!user,
   });
 }
+
+export function useRemoveFriend() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (friendId: string) => {
+      if (!user) throw new Error('No auth');
+
+      // La amistad puede estar en cualquier sentido: user_id/friend_id o friend_id/user_id
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .or(
+          `and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`
+        );
+
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friendsFeed'] });
+      queryClient.invalidateQueries({ queryKey: ['suggestedProfiles'] });
+    },
+  });
+}
+

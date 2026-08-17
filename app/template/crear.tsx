@@ -87,7 +87,6 @@ export default function CrearPlantillaScreen() {
             set_number: sIdx + 1,
             weight_kg: s.weight,
             reps: s.reps,
-            is_warmup: false
           });
         });
       });

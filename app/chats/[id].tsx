@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   timeTextMe: {
-    color: 'rgba(0,0,0,0.5)',
+    color: 'rgba(0,0,0,0.7)',
   },
   timeTextOther: {
     color: colors.textSecondary,

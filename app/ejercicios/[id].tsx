@@ -101,17 +101,17 @@ export default function ExerciseDetailScreen() {
             <View style={[styles.bentoCol, { flex: 1 }]}>
               <View style={[styles.bentoCard, styles.bentoCardSmall]}>
                 <Dumbbell color={colors.textSecondary} size={16} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.bentoLabelSmall}>EQUIPO</Text>
-                  <Text style={styles.bentoValueSmall} numberOfLines={1}>{exercise.equipment}</Text>
+                <View style={{ flex: 1, overflow: 'hidden' }}>
+                  <Text style={styles.bentoLabelSmall} numberOfLines={1}>EQUIPO</Text>
+                  <Text style={styles.bentoValueSmall} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{exercise.equipment}</Text>
                 </View>
               </View>
               
               <View style={[styles.bentoCard, styles.bentoCardSmall, { backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.1)' }]}>
                 <Zap color={colors.accent} size={16} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.bentoLabelSmall, { color: colors.accent }]}>OBJETIVO</Text>
-                  <Text style={[styles.bentoValueSmall, { color: colors.textPrimary }]} numberOfLines={1}>{exercise.target}</Text>
+                <View style={{ flex: 1, overflow: 'hidden' }}>
+                  <Text style={[styles.bentoLabelSmall, { color: colors.accent }]} numberOfLines={1}>OBJETIVO</Text>
+                  <Text style={[styles.bentoValueSmall, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{exercise.target}</Text>
                 </View>
               </View>
             </View>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   bentoLabel: { fontFamily: typography.fontFamily.bold, ...typography.scale.caption, color: colors.textSecondary, letterSpacing: 1, marginBottom: 4 },
   bentoValue: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 20, color: colors.textPrimary, textTransform: 'capitalize' },
   
-  bentoLabelSmall: { fontFamily: typography.fontFamily.bold, fontSize: 10, color: colors.textSecondary, letterSpacing: 0.5, marginBottom: 2 },
+  bentoLabelSmall: { fontFamily: typography.fontFamily.bold, fontSize: 9, color: colors.textSecondary, letterSpacing: 0.5, marginBottom: 2 },
   bentoValueSmall: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 14, color: colors.textPrimary, textTransform: 'capitalize' },
 
   sectionTitle: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 22, color: colors.textPrimary, marginBottom: 20 },

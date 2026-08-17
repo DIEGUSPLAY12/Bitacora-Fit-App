@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { ArrowLeft, User, Search, Check, X as XIcon, UserPlus } from 'lucide-react-native';
-import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends, useSuggestedProfiles } from '../hooks/useFriends';
+import { ArrowLeft, User, Search, Check, X as XIcon, UserPlus, UserMinus } from 'lucide-react-native';
+import { useSearchUsers, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useRejectFriendRequest, useFriends, useSuggestedProfiles, useRemoveFriend } from '../hooks/useFriends';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
@@ -26,6 +26,7 @@ export default function AmigosScreen() {
   const { mutateAsync: sendRequest, isPending: isSending } = useSendFriendRequest();
   const { mutateAsync: acceptRequest, isPending: isAccepting } = useAcceptFriendRequest();
   const { mutateAsync: rejectRequest, isPending: isRejecting } = useRejectFriendRequest();
+  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriend();
 
   const [pendingUserIds, setPendingUserIds] = useState<Set<string>>(new Set());
 
@@ -121,6 +122,15 @@ export default function AmigosScreen() {
             )}
           </View>
           <Text style={styles.username}>{item.username}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.unfollowButton}
+          onPress={() => removeFriend(item.id)}
+          disabled={isRemoving}
+          activeOpacity={0.7}
+        >
+          <UserMinus color={colors.textSecondary} size={18} />
         </TouchableOpacity>
       </View>
     );
@@ -303,6 +313,7 @@ const styles = StyleSheet.create({
   acceptButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, gap: 6 },
   acceptText: { fontFamily: typography.fontFamily.bold, color: colors.background, fontSize: 14 },
   rejectButton: { padding: 10, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)' },
+  unfollowButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', flexShrink: 0 },
   
   addButton: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   addButtonPending: { backgroundColor: 'rgba(255,255,255,0.05)' },
