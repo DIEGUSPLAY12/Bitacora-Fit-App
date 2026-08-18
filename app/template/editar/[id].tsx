@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../../theme/colors';
@@ -11,6 +11,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWorkoutDetail } from '../../../hooks/useWorkouts';
+import { customAlert } from '../../../store/alert-store';
 
 export default function EditarPlantillaScreen() {
   const { id } = useLocalSearchParams();
@@ -68,9 +69,9 @@ export default function EditarPlantillaScreen() {
   }, []);
 
   const handleSave = async () => {
-    if (!name.trim()) { Alert.alert('Error', 'Debes darle un nombre a la plantilla.'); return; }
-    if (exercises.length === 0) { Alert.alert('Error', 'Debes anadir al menos un ejercicio.'); return; }
-    if (!user || !id) { Alert.alert('Error', 'Datos invalidos.'); return; }
+    if (!name.trim()) { customAlert('Error', 'Debes darle un nombre a la plantilla.'); return; }
+    if (exercises.length === 0) { customAlert('Error', 'Debes anadir al menos un ejercicio.'); return; }
+    if (!user || !id) { customAlert('Error', 'Datos invalidos.'); return; }
     try {
       setIsSaving(true);
       const { error: workoutError } = await supabase.from('workouts').update({ name: name.trim() }).eq('id', id);
@@ -94,7 +95,8 @@ export default function EditarPlantillaScreen() {
       reset();
       router.back();
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo guardar la plantilla: ' + error.message);
+      console.error(error);
+      customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
     } finally {
       setIsSaving(false);
     }

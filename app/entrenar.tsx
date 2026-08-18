@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useWorkoutStore } from '../store/workout-store';
+import { customAlert } from '../store/alert-store';
 import { Plus, Minus, Check, Clock, Trash2, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useReduceMotion } from '../hooks/useReduceMotion';
@@ -88,7 +89,7 @@ export default function EntrenarScreen() {
       , 0);
 
       if (totalSets === 0) {
-        Alert.alert(
+        customAlert(
           'Entrenamiento vacío',
           'No has completado ninguna serie. ¿Qué quieres hacer?',
           [
@@ -115,7 +116,7 @@ export default function EntrenarScreen() {
       });
 
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo finalizar el entreno: ' + error.message);
+      customAlert('Error', 'No se pudo finalizar el entreno: ' + error.message);
     }
   };
 

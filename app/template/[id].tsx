@@ -3,18 +3,21 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { ArrowLeft, Play, Send, Pencil, Dumbbell } from "lucide-react-native";
+import { ArrowLeft, Play, Send, Pencil, Dumbbell, Trash2 } from "lucide-react-native";
 import { useWorkoutDetail } from "../../hooks/useWorkouts";
+import { useDeleteTemplate } from "../../hooks/useTemplates";
 import { useWorkoutStore, WorkoutExercise } from "../../store/workout-store";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { customAlert } from "../../store/alert-store";
 
 export default function TemplateDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: template, isLoading } = useWorkoutDetail(id as string);
+  const deleteTemplate = useDeleteTemplate();
   const loadFromTemplate = useWorkoutStore((state) => state.loadFromTemplate);
 
   if (isLoading) {
@@ -123,6 +126,32 @@ export default function TemplateDetailScreen() {
                 onPress={() => router.push({ pathname: "/template/editar/[id]", params: { id: template.id } })}
               >
                 <Pencil color={colors.textPrimary} size={19} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.iconButtonRed}
+                onPress={() => {
+                  customAlert(
+                    "Eliminar plantilla",
+                    `¿Estás seguro de que quieres eliminar "${template.name}"? Esta acción no se puede deshacer.`,
+                    [
+                      { text: "Cancelar", style: "cancel" },
+                      {
+                        text: "Eliminar",
+                        style: "destructive",
+                        onPress: async () => {
+                          try {
+                            await deleteTemplate.mutateAsync(template.id);
+                            router.back();
+                          } catch (e: any) {
+                            customAlert("Error", "No se pudo eliminar la plantilla: " + e.message);
+                          }
+                        },
+                      },
+                    ]
+                  );
+                }}
+              >
+                <Trash2 color={colors.destructive} size={19} />
               </TouchableOpacity>
             </View>
           </View>
@@ -253,6 +282,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.1)",
+  },
+  iconButtonRed: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(207,102,121,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(207,102,121,0.2)",
   },
   heroTitleBlock: { paddingHorizontal: 20 },
   heroBadge: {

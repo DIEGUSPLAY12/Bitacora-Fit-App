@@ -72,6 +72,7 @@ function RootLayoutNav() {
 }
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CustomAlert } from '../components/CustomAlert';
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ export default function RootLayout() {
       <PaperProvider theme={theme}>
         <AuthProvider>
           <RootLayoutNav />
+          <CustomAlert />
         </AuthProvider>
       </PaperProvider>
     </QueryClientProvider>

@@ -10,6 +10,7 @@ import { ArrowLeft, Plus, Dumbbell, Pencil, Trash2 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTemplates, useDeleteTemplate } from "../../hooks/useTemplates";
+import { customAlert } from "../../store/alert-store";
 import { MotiView } from "moti";
 
 export default function PlantillasScreen() {
@@ -20,9 +21,9 @@ export default function PlantillasScreen() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = (id: string, name: string) => {
-    Alert.alert(
+    customAlert(
       "Eliminar plantilla",
-      `Estas seguro de que quieres eliminar "${name}"? Esta accion no se puede deshacer.`,
+      `¿Estás seguro de que quieres eliminar "${name}"? Esta acción no se puede deshacer.`,
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -33,7 +34,7 @@ export default function PlantillasScreen() {
             try {
               await deleteTemplate.mutateAsync(id);
             } catch (e: any) {
-              Alert.alert("Error", "No se pudo eliminar la plantilla: " + e.message);
+              customAlert("Error", "No se pudo eliminar la plantilla: " + e.message);
             } finally {
               setDeletingId(null);
             }

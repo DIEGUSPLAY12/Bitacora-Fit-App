@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWorkoutStore } from '../store/workout-store';
 import { useSaveWorkout } from '../hooks/useSaveWorkout';
 import { LinearGradient } from 'expo-linear-gradient';
+import { customAlert } from '../store/alert-store';
 
 export default function WorkoutCompletedScreen() {
   const insets = useSafeAreaInsets();
@@ -50,7 +51,8 @@ export default function WorkoutCompletedScreen() {
       endWorkout();
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo guardar el entreno: ' + error.message);
+      console.error(error);
+      customAlert('Error', 'No se pudo guardar el entreno: ' + error.message);
     }
   };
 

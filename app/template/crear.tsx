@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
+import { customAlert } from "../../store/alert-store";
 
 export default function CrearPlantillaScreen() {
   const insets = useSafeAreaInsets();
@@ -33,15 +34,15 @@ export default function CrearPlantillaScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Debes darle un nombre a la plantilla.');
+      customAlert('Error', 'Debes darle un nombre a la plantilla.');
       return;
     }
     if (exercises.length === 0) {
-      Alert.alert('Error', 'Debes añadir al menos un ejercicio.');
+      customAlert('Error', 'Debes añadir al menos un ejercicio.');
       return;
     }
     if (!user) {
-      Alert.alert('Error', 'Debes iniciar sesión.');
+      customAlert('Error', 'Debes iniciar sesión.');
       return;
     }
 
@@ -100,10 +101,11 @@ export default function CrearPlantillaScreen() {
       // Success
       queryClient.invalidateQueries({ queryKey: ['templates', user.id] });
       reset();
-      router.back();
+      router.replace(`/template/${workoutData.id}`);
       
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo guardar la plantilla: ' + error.message);
+      console.error(error);
+      customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
     } finally {
       setIsSaving(false);
     }

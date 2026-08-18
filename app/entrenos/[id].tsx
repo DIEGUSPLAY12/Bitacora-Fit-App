@@ -1,20 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { ArrowLeft, Check, Clock, Weight, Hash, Bookmark, Send } from 'lucide-react-native';
-import { useToggleTemplate } from '../../hooks/useTemplates';
+import { useToggleTemplate, useCloneToTemplates } from '../../hooks/useTemplates';
+import { useAuth } from '../../hooks/useAuth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { customAlert } from '../../store/alert-store';
 import { MotiView } from 'moti';
 
 export default function WorkoutDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const { data: workout, isLoading } = useWorkoutDetail(id);
   const toggleTemplate = useToggleTemplate();
+  const cloneToTemplates = useCloneToTemplates();
+  const [hasCloned, setHasCloned] = useState(false);
 
   if (isLoading) {
     return (
@@ -62,32 +67,49 @@ export default function WorkoutDetailScreen() {
           <TouchableOpacity 
             style={[
               styles.templateButton,
-              workout.is_template && styles.templateButtonActive
+              (workout.is_template || hasCloned) && styles.templateButtonActive
             ]} 
-            onPress={() => {
-              const newValue = !workout.is_template;
-              toggleTemplate.mutate({ id: workout.id, is_template: newValue });
-              if (newValue) {
-                Alert.alert(
-                  '¡Guardado como plantilla! 📌',
-                  'Este entrenamiento ahora aparece en tus plantillas y puedes usarlo cuando quieras.',
-                  [{ text: 'Entendido', style: 'default' }]
-                );
+            onPress={async () => {
+              if (workout.user_id !== user?.id) {
+                if (hasCloned) return; // Prevent multiple clones
+                // Clonar entreno de otro usuario
+                try {
+                  await cloneToTemplates.mutateAsync(workout);
+                  setHasCloned(true);
+                  customAlert(
+                    'Plantilla guardada',
+                    'Este entrenamiento se ha copiado a tu biblioteca de plantillas.',
+                    [{ text: 'Aceptar', style: 'default' }]
+                  );
+                } catch (e: any) {
+                  customAlert('Error', 'No se pudo guardar la plantilla: ' + e.message);
+                }
               } else {
-                Alert.alert(
-                  'Eliminado de plantillas',
-                  'Este entrenamiento ya no aparece en tus plantillas.',
-                  [{ text: 'OK', style: 'default' }]
-                );
+                // Alternar entreno propio
+                const newValue = !workout.is_template;
+                toggleTemplate.mutate({ id: workout.id, is_template: newValue });
+                if (newValue) {
+                  customAlert(
+                    'Plantilla guardada',
+                    'Este entrenamiento se ha añadido a tu biblioteca de plantillas.',
+                    [{ text: 'Aceptar', style: 'default' }]
+                  );
+                } else {
+                  customAlert(
+                    'Eliminada de plantillas',
+                    'Este entrenamiento ya no aparece en tu biblioteca.',
+                    [{ text: 'Aceptar', style: 'default' }]
+                  );
+                }
               }
             }}
-            disabled={toggleTemplate.isPending}
+            disabled={toggleTemplate.isPending || cloneToTemplates.isPending || hasCloned}
             activeOpacity={0.7}
           >
             <Bookmark 
-              color={workout.is_template ? colors.accent : colors.textSecondary} 
+              color={(workout.is_template || hasCloned) ? colors.accent : colors.textSecondary} 
               size={22} 
-              fill={workout.is_template ? colors.accent : 'transparent'} 
+              fill={(workout.is_template || hasCloned) ? colors.accent : 'transparent'} 
             />
           </TouchableOpacity>
         </View>
