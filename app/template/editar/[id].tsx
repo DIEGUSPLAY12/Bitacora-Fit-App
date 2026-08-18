@@ -95,7 +95,6 @@ export default function EditarPlantillaScreen() {
       reset();
       router.back();
     } catch (error: any) {
-      console.error(error);
       customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
     } finally {
       setIsSaving(false);

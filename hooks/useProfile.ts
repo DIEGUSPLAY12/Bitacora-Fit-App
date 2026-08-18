@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
-export type Profile = {
+type Profile = {
   id: string;
   username: string;
   avatar_url?: string | null;
@@ -61,9 +61,3 @@ export function useUpdateProfile() {
   });
 }
 
-/** Checks if the current user's profile is complete (onboarding done) */
-export function useIsOnboardingComplete() {
-  const { data: profile, isLoading } = useProfile();
-  const isComplete = !isLoading && !!profile?.full_name && !!profile?.goal && !!profile?.experience_level;
-  return { isComplete, isLoading };
-}

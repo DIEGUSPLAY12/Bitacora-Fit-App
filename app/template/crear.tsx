@@ -104,7 +104,6 @@ export default function CrearPlantillaScreen() {
       router.replace(`/template/${workoutData.id}`);
       
     } catch (error: any) {
-      console.error(error);
       customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
     } finally {
       setIsSaving(false);

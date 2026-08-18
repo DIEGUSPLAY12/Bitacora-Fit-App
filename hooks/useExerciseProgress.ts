@@ -4,7 +4,7 @@ import { useAuth } from './useAuth';
 
 export type Timeframe = 'Semana' | 'Mes' | 'Año';
 
-export interface ProgressDataPoint {
+interface ProgressDataPoint {
   date: Date;
   maxWeight: number;
   label: string; // MM/DD

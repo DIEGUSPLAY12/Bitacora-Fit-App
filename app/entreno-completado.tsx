@@ -51,7 +51,6 @@ export default function WorkoutCompletedScreen() {
       endWorkout();
       router.replace('/(tabs)');
     } catch (error: any) {
-      console.error(error);
       customAlert('Error', 'No se pudo guardar el entreno: ' + error.message);
     }
   };

@@ -13,7 +13,7 @@ export interface Exercise {
   gif_url: string;
 }
 
-export interface WorkoutSet {
+interface WorkoutSet {
   id: string;
   weight: number;
   reps: number;
