@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { ArrowLeft, Play, LayoutGrid, Send } from 'lucide-react-native';
+import { ArrowLeft, Play, LayoutGrid, Send, Pencil } from 'lucide-react-native';
 import { useWorkoutDetail } from '../../hooks/useWorkouts';
 import { useWorkoutStore, WorkoutExercise } from '../../store/workout-store';
 import { Image } from 'expo-image';
@@ -101,9 +101,11 @@ export default function TemplateDetailScreen() {
             >
               <Send color={colors.textPrimary} size={20} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.adaptButton}>
-              <SparklesIcon />
-              <Text style={styles.adaptButtonText}>Adaptar</Text>
+            <TouchableOpacity 
+              style={styles.iconButton}
+              onPress={() => router.push({ pathname: '/template/editar/[id]', params: { id: template.id } })}
+            >
+              <Pencil color={colors.textPrimary} size={20} />
             </TouchableOpacity>
           </View>
         </View>
@@ -181,13 +183,7 @@ export default function TemplateDetailScreen() {
   );
 }
 
-function SparklesIcon() {
-  return (
-    <View style={{ marginRight: 6 }}>
-       <Text style={{ fontSize: 14 }}>✨</Text>
-    </View>
-  );
-}
+
 
 const styles = StyleSheet.create({
   container: {
@@ -217,21 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
   },
-  adaptButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(60, 140, 255, 0.15)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(60, 140, 255, 0.3)',
-  },
-  adaptButtonText: {
-    color: '#6495ED',
-    fontFamily: typography.fontFamily.semibold,
-    fontSize: 14,
-  },
+
   headerArea: {
     paddingHorizontal: 20,
     marginBottom: 32,

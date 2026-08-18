@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
-import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle, Send } from 'lucide-react-native';
+import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle, Send, Clock } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
 import { useDiscoverFeed } from '../../hooks/useDiscoverFeed';
 import { useToggleLike } from '../../hooks/useWorkoutLikes';
@@ -64,10 +65,25 @@ export default function FeedScreen() {
       });
     });
 
-    const tags = Array.from(muscleGroups).slice(0, 3);
-    
+    // Duration
+    let durationText = '';
+    if (item.started_at && item.finished_at) {
+      const diffMs = new Date(item.finished_at).getTime() - new Date(item.started_at).getTime();
+      const diffMins = Math.max(1, Math.floor(diffMs / 60000));
+      const h = Math.floor(diffMins / 60);
+      const m = diffMins % 60;
+      durationText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+
     const likesCount = item.likes?.length || 0;
     const hasLiked = item.likes?.some((l: any) => l.user_id === user?.id);
+
+    // First 3 exercise names for preview
+    const exerciseNames = (item.workout_exercises || [])
+      .slice(0, 3)
+      .map((we: any) => we.exercises?.name)
+      .filter(Boolean);
+    const extraCount = exerciseCount - 3;
 
     return (
       <MotiView
@@ -75,111 +91,126 @@ export default function FeedScreen() {
         animate={{ opacity: 1, translateY: 0 }}
         transition={{ type: 'timing', duration: 250, delay: reduceMotion ? 0 : index * 40 }}
       >
-        <View style={styles.card}>
-          {/* Author row */}
-          <TouchableOpacity 
-            style={styles.authorHeader}
-            activeOpacity={0.7}
-            onPress={() => router.push(`/perfil-usuario/${item.user_id}`)}
-          >
-            <View style={styles.avatarContainer}>
-              {item.profiles?.avatar_url ? (
-                <Image source={{ uri: item.profiles.avatar_url }} style={styles.avatar} contentFit="cover" />
-              ) : (
-                <User color={colors.background} size={16} />
-              )}
-            </View>
-            <View style={styles.authorInfo}>
-              <Text style={styles.authorName} numberOfLines={1}>{item.profiles?.username}</Text>
-              <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
-            </View>
-          </TouchableOpacity>
+        {/* Author row above the card */}
+        <TouchableOpacity
+          style={styles.authorHeader}
+          activeOpacity={0.7}
+          onPress={() => router.push(`/perfil-usuario/${item.user_id}`)}
+        >
+          <View style={styles.avatarContainer}>
+            {item.profiles?.avatar_url ? (
+              <Image source={{ uri: item.profiles.avatar_url }} style={styles.avatar} contentFit="cover" />
+            ) : (
+              <User color={colors.background} size={16} />
+            )}
+          </View>
+          <View style={styles.authorInfo}>
+            <Text style={styles.authorName} numberOfLines={1}>{item.profiles?.username}</Text>
+            <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
+          </View>
+        </TouchableOpacity>
 
-          {/* Workout name — main hero text (Symmetry: bold, largest element) */}
-          <TouchableOpacity 
-            activeOpacity={0.7}
-            onPress={() => router.push(`/entrenos/${item.id}`)}
-          >
+        {/* Premium gradient card */}
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.88}
+          onPress={() => router.push(`/entrenos/${item.id}`)}
+        >
+          <LinearGradient
+            colors={['#1F2514', '#10140A']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)']}
+            style={StyleSheet.absoluteFill}
+            locations={[0.3, 1]}
+          />
+
+          <View style={styles.cardContent}>
+            {/* Badge */}
+            <View style={styles.cardBadge}>
+              <Text style={styles.cardBadgeText}>Entreno</Text>
+            </View>
+
+            {/* Title */}
             <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
 
-            {tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {tags.map(tag => (
-                  <View key={tag} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
+            {/* Stats strip */}
+            <View style={styles.statsStrip}>
+              <View style={styles.stripStat}>
+                <Dumbbell color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                <Text style={styles.stripValue}>{exerciseCount} ejerc.</Text>
+              </View>
+              <View style={styles.stripDot} />
+              <View style={styles.stripStat}>
+                <Repeat color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                <Text style={styles.stripValue}>{totalSets} series</Text>
+              </View>
+              {durationText ? (
+                <>
+                  <View style={styles.stripDot} />
+                  <View style={styles.stripStat}>
+                    <Clock color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                    <Text style={styles.stripValue}>{durationText}</Text>
                   </View>
+                </>
+              ) : null}
+            </View>
+
+            {/* Exercise preview list */}
+            {exerciseNames.length > 0 && (
+              <View style={styles.exerciseList}>
+                {exerciseNames.map((name: string, i: number) => (
+                  <Text key={i} style={styles.exerciseListItem} numberOfLines={1}>
+                    · {name}
+                  </Text>
                 ))}
-                {muscleGroups.size > 3 && (
-                  <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
+                {extraCount > 0 && (
+                  <Text style={styles.exerciseListExtra}>+{extraCount} más</Text>
                 )}
               </View>
             )}
 
-            {/* Stats strip — Symmetry style: label on top, value on bottom */}
-            <View style={styles.statsStrip}>
-              <View style={styles.stripStat}>
-                <Text style={styles.stripLabel}>Ejercicios</Text>
-                <View style={styles.stripValueRow}>
-                  <Dumbbell color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                  <Text style={styles.stripValue}>{exerciseCount}</Text>
-                </View>
-              </View>
-              <View style={styles.stripDivider} />
-              <View style={styles.stripStat}>
-                <Text style={styles.stripLabel}>Series</Text>
-                <View style={styles.stripValueRow}>
-                  <Repeat color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                  <Text style={styles.stripValue}>{totalSets}</Text>
-                </View>
-              </View>
-              <View style={styles.stripDivider} />
-              <View style={styles.stripStat}>
-                <Text style={styles.stripLabel}>Volumen</Text>
-                <View style={styles.stripValueRow}>
-                  <Activity color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                  <Text style={styles.stripValue} numberOfLines={1}>{totalVolume} kg</Text>
-                </View>
-              </View>
+            {/* Footer: likes, comments, share */}
+            <View style={styles.cardFooter}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                activeOpacity={0.7}
+                onPress={() => toggleLike({ workoutId: item.id, hasLiked })}
+              >
+                <Heart
+                  size={20}
+                  color={hasLiked ? colors.accent : 'rgba(255,255,255,0.5)'}
+                  fill={hasLiked ? colors.accent : 'transparent'}
+                />
+                <Text style={[styles.actionText, hasLiked && styles.actionTextActive]}>
+                  {likesCount}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/entrenos/${item.id}/comentarios`)}
+              >
+                <MessageCircle size={20} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.actionText}>
+                  {item.comments?.length > 0 ? item.comments.length : 'Comentar'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, { marginLeft: 'auto' }]}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/compartir?workoutId=${item.id}`)}
+              >
+                <Send size={18} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-          
-          {/* Footer: Likes and Comments */}
-          <View style={styles.cardFooter}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              activeOpacity={0.7}
-              onPress={() => toggleLike({ workoutId: item.id, hasLiked })}
-            >
-              <Heart 
-                size={22} 
-                color={hasLiked ? colors.accent : colors.textSecondary} 
-                fill={hasLiked ? colors.accent : 'transparent'} 
-              />
-              <Text style={[styles.actionText, hasLiked && styles.actionTextActive]}>
-                {likesCount}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              activeOpacity={0.7}
-              onPress={() => router.push(`/entrenos/${item.id}/comentarios`)}
-            >
-              <MessageCircle size={22} color={colors.textSecondary} />
-              <Text style={styles.actionText}>
-                {item.comments?.length > 0 ? item.comments.length : 'Comentar'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.actionButton, { marginLeft: 'auto' }]}
-              activeOpacity={0.7}
-              onPress={() => router.push(`/compartir?workoutId=${item.id}`)}
-            >
-              <Send size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       </MotiView>
     );
   }, [router, reduceMotion, user?.id, toggleLike]);
@@ -305,26 +336,56 @@ const styles = StyleSheet.create({
   listContainer: { flex: 1 },
   listContent: { paddingHorizontal: rs(20), paddingBottom: rs(100), paddingTop: rs(10) },
 
-  // Card
+  // Card (premium gradient style)
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: rs(20),
-    padding: rs(20),
-    marginBottom: rs(16),
+    borderRadius: rs(24),
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: rs(20),
+    minHeight: 280,
   },
-  authorHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: rs(14) },
+  cardContent: {
+    flex: 1,
+    padding: rs(20),
+    justifyContent: 'space-between',
+    zIndex: 2,
+    gap: rs(14),
+  },
+  cardBadge: {
+    backgroundColor: 'rgba(180, 240, 60, 0.15)',
+    paddingHorizontal: rs(12),
+    paddingVertical: rs(6),
+    borderRadius: rs(20),
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.25)',
+  },
+  cardBadgeText: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: rs(11),
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  authorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: rs(8),
+    paddingHorizontal: rs(4),
+  },
   avatarContainer: {
-    width: rs(38),
-    height: rs(38),
-    borderRadius: rs(19),
+    width: rs(36),
+    height: rs(36),
+    borderRadius: rs(18),
     backgroundColor: colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: rs(10),
     overflow: 'hidden',
     flexShrink: 0,
+    borderWidth: 2,
+    borderColor: 'rgba(180, 240, 60, 0.4)',
   },
   avatar: { width: '100%', height: '100%' },
   authorInfo: { flex: 1 },
@@ -336,89 +397,71 @@ const styles = StyleSheet.create({
   },
   cardDate: {
     fontFamily: typography.fontFamily.medium,
-    ...typography.scale.caption,
     fontSize: rs(12),
     color: colors.textSecondary,
   },
-
-  // Workout title — the hero element (Symmetry: bold, prominent)
   cardTitle: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: rs(18),
+    fontSize: rs(26),
     color: colors.textPrimary,
-    marginBottom: rs(12),
-    lineHeight: rs(24),
-  },
-
-  // Tags
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: rs(6), marginBottom: rs(16) },
-  tag: {
-    backgroundColor: 'rgba(180, 240, 60, 0.08)',
-    paddingHorizontal: rs(10),
-    paddingVertical: rs(4),
-    borderRadius: rs(6),
-    borderWidth: 1,
-    borderColor: 'rgba(180, 240, 60, 0.18)',
-  },
-  tagText: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: rs(10),
-    color: colors.accent,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    lineHeight: rs(32),
   },
-
-  // Symmetry-style stats strip
   statsStrip: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: rs(14),
-    paddingVertical: rs(12),
-    paddingHorizontal: rs(8),
+    alignItems: 'center',
+    gap: rs(12),
+    flexWrap: 'wrap',
   },
   stripStat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  stripDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    marginVertical: rs(4),
-  },
-  stripLabel: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: rs(11),
-    color: colors.textSecondary,
-    marginBottom: rs(5),
-  },
-  stripValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  stripDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
   stripValue: {
-    fontFamily: typography.fontFamily.bold,
+    fontFamily: typography.fontFamily.semibold,
     fontSize: rs(13),
-    color: colors.textPrimary,
+    color: 'rgba(255,255,255,0.7)',
   },
-  
-  // Actions (Likes/Comments)
+  exerciseList: {
+    gap: rs(4),
+  },
+  exerciseListItem: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: rs(13),
+    color: 'rgba(255,255,255,0.55)',
+    textTransform: 'capitalize',
+  },
+  exerciseListExtra: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: rs(12),
+    color: colors.accent,
+    marginTop: rs(2),
+  },
   cardFooter: {
-    marginTop: rs(16),
+    marginTop: rs(4),
     paddingTop: rs(14),
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    borderTopColor: 'rgba(255,255,255,0.08)',
     flexDirection: 'row',
-    gap: rs(24),
+    gap: rs(20),
+    alignItems: 'center',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rs(8),
+    gap: rs(7),
   },
   actionText: {
     fontFamily: typography.fontFamily.medium,
     fontSize: rs(14),
-    color: colors.textSecondary,
+    color: 'rgba(255,255,255,0.5)',
   },
   actionTextActive: {
     color: colors.accent,

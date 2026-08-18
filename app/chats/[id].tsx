@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList, Keyboard
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { ArrowLeft, Send, Users, User, Dumbbell, Check, CheckCheck } from 'lucide-react-native';
+import { ArrowLeft, Send, Users, User, Dumbbell, Check, CheckCheck, Repeat } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useChats, useChatMessages, useSendMessage, useMarkChatRead } from '../../hooks/useChats';
 import { useAuth } from '../../hooks/useAuth';
@@ -122,31 +123,67 @@ export default function ChatDetailScreen() {
             )}
             <TouchableOpacity 
               style={[styles.workoutCard, isMe ? styles.workoutCardMe : styles.workoutCardOther]}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={() => router.push(item.workouts.is_template ? `/template/${item.workouts.id}` : `/entrenos/${item.workouts.id}`)}
             >
-              <View style={styles.workoutCardHeader}>
+              {/* Gradient background */}
+              <LinearGradient
+                colors={['#1F2514', '#10140A']}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.65)']}
+                style={StyleSheet.absoluteFill}
+                locations={[0.2, 1]}
+              />
+
+              <View style={styles.workoutCardInner}>
+                {/* Badge */}
                 <View style={styles.workoutBadge}>
-                  <Text style={styles.workoutBadgeText}>{item.workouts.is_template ? 'Plantilla' : 'Entreno'}</Text>
+                  <Text style={styles.workoutBadgeText}>
+                    {item.workouts.is_template ? 'Plantilla' : 'Entreno'}
+                  </Text>
                 </View>
-              </View>
-              <Text style={styles.workoutCardTitle} numberOfLines={2}>{item.workouts.name}</Text>
-              
-              <View style={styles.workoutCardStats}>
-                <View style={styles.workoutCardStat}>
-                  <Dumbbell color={colors.textSecondary} size={14} style={{ marginRight: 6 }} />
-                  <Text style={styles.workoutCardStatText}>{item.workouts.workout_exercises?.length || 0} ejercicios</Text>
-                </View>
-              </View>
-              
-              <View style={styles.workoutCardButton}>
-                <Text style={styles.workoutCardButtonText}>Ver detalle</Text>
-              </View>
-              
-              <View style={styles.timeContainer}>
-                <Text style={[styles.timeText, isMe ? styles.timeTextMe : styles.timeTextOther]}>
-                  {getMessageTime(item.created_at)}
+
+                {/* Title */}
+                <Text style={styles.workoutCardTitle} numberOfLines={2}>
+                  {item.workouts.name}
                 </Text>
+
+                {/* Stats row */}
+                <View style={styles.workoutCardStats}>
+                  <View style={styles.workoutCardStat}>
+                    <Dumbbell color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                    <Text style={styles.workoutCardStatText}>
+                      {item.workouts.workout_exercises?.length || 0} ejercicios
+                    </Text>
+                  </View>
+                  {(item.workouts.workout_exercises || []).reduce((acc: number, we: any) => acc + (we.sets?.length || 0), 0) > 0 && (
+                    <>
+                      <View style={styles.workoutStatDot} />
+                      <View style={styles.workoutCardStat}>
+                        <Repeat color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                        <Text style={styles.workoutCardStatText}>
+                          {(item.workouts.workout_exercises || []).reduce((acc: number, we: any) => acc + (we.sets?.length || 0), 0)} series
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+
+                {/* CTA Button */}
+                <View style={styles.workoutCardButton}>
+                  <Text style={styles.workoutCardButtonText}>Ver detalle</Text>
+                </View>
+
+                {/* Time */}
+                <View style={styles.timeContainer}>
+                  <Text style={[styles.timeText, styles.timeTextOther]}>
+                    {getMessageTime(item.created_at)}
+                  </Text>
+                </View>
               </View>
             </TouchableOpacity>
           </View>
@@ -390,62 +427,69 @@ const styles = StyleSheet.create({
   
   // Shared Workout Card in chat
   workoutCard: {
-    width: '75%',
+    width: '78%',
     borderRadius: 20,
-    padding: 16,
+    overflow: 'hidden',
     borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.2)',
   },
   workoutCardMe: {
-    backgroundColor: 'rgba(180, 240, 60, 0.1)',
-    borderColor: 'rgba(180, 240, 60, 0.3)',
     borderBottomRightRadius: 4,
   },
   workoutCardOther: {
-    backgroundColor: colors.surfaceElevated,
-    borderColor: 'rgba(255,255,255,0.1)',
     borderBottomLeftRadius: 4,
   },
-  workoutCardHeader: {
-    flexDirection: 'row',
-    marginBottom: 10,
+  workoutCardInner: {
+    padding: 16,
+    gap: 12,
+    zIndex: 2,
   },
   workoutBadge: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(180, 240, 60, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(180, 240, 60, 0.3)',
   },
   workoutBadgeText: {
     fontFamily: typography.fontFamily.bold,
     fontSize: 10,
-    color: colors.textPrimary,
+    color: colors.accent,
     textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   workoutCardTitle: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 18,
+    fontSize: 20,
     color: colors.textPrimary,
-    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    lineHeight: 26,
   },
   workoutCardStats: {
     flexDirection: 'row',
-    marginBottom: 16,
+    alignItems: 'center',
+    gap: 10,
   },
   workoutCardStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+  },
+  workoutStatDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   workoutCardStatText: {
     fontFamily: typography.fontFamily.medium,
     fontSize: 12,
-    color: colors.textPrimary,
+    color: 'rgba(255,255,255,0.6)',
   },
   workoutCardButton: {
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.accent,
     paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
