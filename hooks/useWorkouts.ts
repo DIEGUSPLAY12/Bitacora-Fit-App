@@ -47,7 +47,7 @@ export function useWorkoutDetail(id: string) {
           workout_exercises (
             id,
             order_index,
-            exercises ( id, name, category, muscle_group, image_url, gif_url ),
+            exercises ( id, name, category, target, muscle_group, image_url, gif_url ),
             sets ( id, set_number, weight_kg, reps )
           ),
           likes:workout_likes ( user_id ),

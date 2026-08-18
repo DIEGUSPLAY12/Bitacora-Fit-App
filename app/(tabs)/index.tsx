@@ -135,7 +135,7 @@ export default function HomeScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Tu Plan</Text>
             {templates && templates.length > 0 && (
-              <TouchableOpacity onPress={() => { /* Navigate to all templates */ }}>
+              <TouchableOpacity onPress={() => router.push('/plantillas')}>
                 <Text style={styles.sectionSubtitle}>Más planes <ChevronRight size={14} color={colors.textSecondary} /></Text>
               </TouchableOpacity>
             )}

@@ -16,7 +16,7 @@ export function useTemplates() {
           id,
           name,
           workout_exercises (
-            exercises ( name, muscle_group )
+            exercises ( name, target, category, muscle_group )
           )
         `)
         .eq('user_id', user.id)
@@ -48,5 +48,25 @@ export function useToggleTemplate() {
       queryClient.invalidateQueries({ queryKey: ['templates', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['workout'] });
     }
+  });
+}
+
+export function useDeleteTemplate() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('workouts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['templates', user?.id] });
+    },
   });
 }
