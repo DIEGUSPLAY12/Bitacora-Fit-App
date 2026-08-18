@@ -6,9 +6,10 @@ import { typography } from '../../theme/typography';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import { FlashList } from '@shopify/flash-list';
-import { Clock, Weight, Dumbbell, ChevronRight, History, Send } from 'lucide-react-native';
+import { Clock, Dumbbell, Repeat, History, Send } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function getRelativeTime(dateString: string) {
   const diffInDays = Math.round((new Date().getTime() - new Date(dateString).getTime()) / (1000 * 60 * 60 * 24));
@@ -34,22 +35,25 @@ export default function HistorialScreen() {
   const workouts = data?.pages.flat() || [];
 
   const renderItem = useCallback(({ item, index }: { item: any, index: number }) => {
-    let totalVolume = 0;
+    let totalSets = 0;
     let exerciseCount = item.workout_exercises?.length || 0;
-    let muscleGroups = new Set<string>();
 
     item.workout_exercises?.forEach((we: any) => {
-      if (we.exercises?.muscle_group) {
-        muscleGroups.add(we.exercises.muscle_group);
-      }
-      we.sets?.forEach((s: any) => {
-        totalVolume += (Number(s.weight_kg) * Number(s.reps));
-      });
+      we.sets?.forEach(() => { totalSets += 1; });
     });
 
-    const tags = Array.from(muscleGroups).slice(0, 3);
     const durationMs = new Date(item.finished_at).getTime() - new Date(item.started_at).getTime();
     const durationMin = Math.max(1, Math.floor(durationMs / 60000));
+    const h = Math.floor(durationMin / 60);
+    const m = durationMin % 60;
+    const durationText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+
+    // First 3 exercise names for preview
+    const exerciseNames = (item.workout_exercises || [])
+      .slice(0, 3)
+      .map((we: any) => we.exercises?.name)
+      .filter(Boolean);
+    const extraCount = exerciseCount - 3;
 
     return (
       <MotiView
@@ -57,69 +61,78 @@ export default function HistorialScreen() {
         animate={{ opacity: 1, translateY: 0 }}
         transition={{ type: 'timing', duration: 250, delay: reduceMotion ? 0 : index * 40 }}
       >
-        <TouchableOpacity 
-          style={styles.card} 
-          activeOpacity={0.7}
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.88}
           onPress={() => router.push(`/entrenos/${item.id}`)}
         >
-          {/* Card header: title + date + chevron */}
-          <View style={styles.cardHeader}>
-            <View style={{ flex: 1, marginRight: 12 }}>
-              <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+          {/* Gradient background */}
+          <LinearGradient
+            colors={['#1F2514', '#10140A']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)']}
+            style={StyleSheet.absoluteFill}
+            locations={[0.3, 1]}
+          />
+
+          <View style={styles.cardContent}>
+            {/* Badge + Date row */}
+            <View style={styles.cardTopRow}>
+              <View style={styles.cardBadge}>
+                <Text style={styles.cardBadgeText}>Entreno</Text>
+              </View>
               <Text style={styles.cardDate}>{getRelativeTime(item.started_at)}</Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <TouchableOpacity 
+
+            {/* Title */}
+            <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
+
+            {/* Stats strip */}
+            <View style={styles.statsStrip}>
+              <View style={styles.stripStat}>
+                <Dumbbell color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                <Text style={styles.stripValue}>{exerciseCount} ejerc.</Text>
+              </View>
+              <View style={styles.stripDot} />
+              <View style={styles.stripStat}>
+                <Repeat color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                <Text style={styles.stripValue}>{totalSets} series</Text>
+              </View>
+              <View style={styles.stripDot} />
+              <View style={styles.stripStat}>
+                <Clock color={colors.accent} size={13} style={{ marginRight: 5 }} />
+                <Text style={styles.stripValue}>{durationText}</Text>
+              </View>
+            </View>
+
+            {/* Exercise preview list */}
+            {exerciseNames.length > 0 && (
+              <View style={styles.exerciseList}>
+                {exerciseNames.map((name: string, i: number) => (
+                  <Text key={i} style={styles.exerciseListItem} numberOfLines={1}>
+                    · {name}
+                  </Text>
+                ))}
+                {extraCount > 0 && (
+                  <Text style={styles.exerciseListExtra}>+{extraCount} más</Text>
+                )}
+              </View>
+            )}
+
+            {/* Footer */}
+            <View style={styles.cardFooter}>
+              <TouchableOpacity
                 style={styles.shareButton}
                 activeOpacity={0.7}
                 onPress={() => router.push(`/compartir?workoutId=${item.id}`)}
               >
-                <Send color={colors.textPrimary} size={18} />
+                <Send size={18} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.shareButtonText}>Compartir</Text>
               </TouchableOpacity>
-              <View style={styles.chevronBg}>
-                <ChevronRight color={colors.accent} size={18} />
-              </View>
-            </View>
-          </View>
-
-          {/* Muscle group tags */}
-          {tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {tags.map(tag => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-              {muscleGroups.size > 3 && (
-                <View style={styles.tag}><Text style={styles.tagText}>+{muscleGroups.size - 3}</Text></View>
-              )}
-            </View>
-          )}
-
-          {/* Stats row — label above, value below (Symmetry style) */}
-          <View style={styles.statsContainer}>
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>Tiempo</Text>
-              <View style={styles.statValueRow}>
-                <Clock color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                <Text style={styles.statValue}>{durationMin}m</Text>
-              </View>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>Volumen</Text>
-              <View style={styles.statValueRow}>
-                <Weight color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                <Text style={styles.statValue}>{totalVolume} kg</Text>
-              </View>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statLabel}>Ejercicios</Text>
-              <View style={styles.statValueRow}>
-                <Dumbbell color={colors.accent} size={13} style={{ marginRight: 4 }} />
-                <Text style={styles.statValue}>{exerciseCount}</Text>
-              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -190,99 +203,106 @@ const styles = StyleSheet.create({
   listContainer: { flex: 1 },
   listContent: { paddingHorizontal: 20, paddingBottom: 100, paddingTop: 20 },
 
-  // Card
+  // Card (premium gradient style, matching feed — compact height)
   card: {
-    backgroundColor: colors.surface,
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 14,
   },
-  cardHeader: {
+  cardContent: {
+    flex: 1,
+    padding: 16,
+    gap: 10,
+    zIndex: 2,
+  },
+  cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  cardTitle: {
-    fontFamily: typography.fontFamily.semibold,
-    fontSize: 17,
-    color: colors.textPrimary,
-    marginBottom: 3,
-  },
-  cardDate: {
-    fontFamily: typography.fontFamily.medium,
-    ...typography.scale.caption,
-    color: colors.textSecondary,
-  },
-  chevronBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(180, 240, 60, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  shareButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  // Tags
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
-  tag: {
-    backgroundColor: 'rgba(180, 240, 60, 0.08)',
+  cardBadge: {
+    backgroundColor: 'rgba(180, 240, 60, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(180, 240, 60, 0.18)',
+    borderColor: 'rgba(180, 240, 60, 0.25)',
   },
-  tagText: {
-    fontFamily: typography.fontFamily.bold,
+  cardBadgeText: {
+    fontFamily: typography.fontFamily.semibold,
     fontSize: 10,
     color: colors.accent,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
-
-  // Stats — Symmetry style: label top, icon+value bottom
-  statsContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  cardTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 20,
+    color: colors.textPrimary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    lineHeight: 26,
   },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    marginVertical: 2,
-  },
-  statLabel: {
+  cardDate: {
     fontFamily: typography.fontFamily.medium,
     fontSize: 11,
-    color: colors.textSecondary,
-    marginBottom: 5,
+    color: 'rgba(255,255,255,0.45)',
   },
-  statValueRow: {
+  statsStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  stripStat: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statValue: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: 14,
-    color: colors.textPrimary,
+  stripDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+  stripValue: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  exerciseList: {
+    gap: 3,
+  },
+  exerciseListItem: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.55)',
+    textTransform: 'capitalize',
+  },
+  exerciseListExtra: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 11,
+    color: colors.accent,
+    marginTop: 2,
+  },
+  cardFooter: {
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  shareButtonText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
   },
 
   // Empty
