@@ -25,7 +25,7 @@ export default function UserProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { data: profile, isLoading: profileLoading } = useProfile(id);
+  const { data: profile, isLoading: profileLoading, isError } = useProfile(id);
   const { data: stats, isLoading: statsLoading } = useStreak(id);
   const { data: recentWorkouts, isLoading: workoutsLoading } = useRecentWorkouts(id, 5);
 
@@ -96,10 +96,22 @@ export default function UserProfileScreen() {
     );
   }, [router]);
 
-  if (profileLoading) {
+  if (profileLoading || id === 'undefined') {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (isError || !profile) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <User color={colors.textSecondary} size={48} style={{ marginBottom: 16 }} />
+        <Text style={{ color: colors.textPrimary, fontSize: 18, fontFamily: typography.fontFamily.bold, marginBottom: 24 }}>Perfil no encontrado</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ backgroundColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20 }}>
+          <Text style={{ color: colors.background, fontFamily: typography.fontFamily.bold, fontSize: 16 }}>Volver</Text>
+        </TouchableOpacity>
       </View>
     );
   }

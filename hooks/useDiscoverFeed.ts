@@ -27,6 +27,7 @@ export function useDiscoverFeed() {
         .from('workouts')
         .select(`
           id,
+          user_id,
           name,
           started_at,
           finished_at,
