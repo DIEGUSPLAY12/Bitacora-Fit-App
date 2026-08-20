@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
@@ -11,6 +11,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence, MotiText } from 'moti';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -46,19 +47,50 @@ export default function LoginScreen() {
     if (hasError) return;
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    setLoading(false);
-
+    
     if (error) {
+      setLoading(false);
       if (error.message.includes('Invalid login credentials')) {
         setErrorMsg('Correo o contraseña incorrectos.');
+      } else if (error.message.includes('Email not confirmed')) {
+        Alert.alert(
+          'Cuenta no verificada',
+          'Revisa tu bandeja de entrada (o carpeta de spam) y haz clic en el enlace de confirmación.'
+        );
       } else {
         setErrorMsg('Ocurrió un error al iniciar sesión. Inténtalo de nuevo.');
       }
+      return;
     }
+
+    if (data?.session && data.user) {
+      try {
+        const pendingStr = await AsyncStorage.getItem('pending_profile');
+        if (pendingStr) {
+          const profileData = JSON.parse(pendingStr);
+          await supabase
+            .from('profiles')
+            .update({
+              full_name: profileData.fullName,
+              username: profileData.username,
+              birth_date: profileData.birthDate,
+              goal: profileData.goal,
+              experience_level: profileData.level,
+            })
+            .eq('id', data.user.id);
+          
+          await AsyncStorage.removeItem('pending_profile');
+        }
+      } catch (e) {
+        console.error('Error aplicando perfil pendiente', e);
+      }
+    }
+    
+    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {

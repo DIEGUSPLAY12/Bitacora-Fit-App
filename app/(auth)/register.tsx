@@ -11,6 +11,7 @@ import { ArrowLeft, Check, User, AtSign, Calendar, ArrowRight } from 'lucide-rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence, MotiText } from 'moti';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -176,8 +177,28 @@ export default function RegisterScreen() {
       return;
     }
 
-    // 2. Wait a moment for trigger to create profile, then update profile
-    // En supabase, el trigger de new_user puede tardar unos milisegundos en ejecutar.
+    // Check if email confirmation is required (session is null)
+    if (!authData.session) {
+      const pendingProfile = {
+        fullName: fullName.trim(),
+        username: username.trim().toLowerCase(),
+        birthDate: parseDateToISO(birthDate),
+        goal: goal,
+        level: level,
+      };
+      await AsyncStorage.setItem('pending_profile', JSON.stringify(pendingProfile));
+      
+      setLoading(false);
+      Alert.alert(
+        '¡Casi listo!',
+        'Hemos enviado un enlace de confirmación a tu correo. Por favor, haz clic en él para verificar tu cuenta antes de iniciar sesión.'
+      );
+      router.replace('/(auth)/login');
+      return;
+    }
+
+    // If session is present (email confirmation disabled in Supabase), update profile immediately
+    // Wait a moment for trigger to create profile, then update profile
     setTimeout(async () => {
       const { error: profileError } = await supabase
         .from('profiles')
@@ -195,7 +216,7 @@ export default function RegisterScreen() {
       if (profileError) {
         Alert.alert('Registro completado con advertencias', 'Tu cuenta fue creada pero hubo un problema guardando tus detalles. Puedes editarlos luego en tu perfil.');
       }
-      // Automáticamente será redirigido por _layout.tsx a los tabs porque la sesión se activa
+      // Redirigido automáticamente por _layout.tsx
     }, 1000);
   };
 
