@@ -208,6 +208,14 @@ export default function LoginScreen() {
         </AnimatePresence>
 
         <TouchableOpacity 
+          style={styles.forgotPassword} 
+          onPress={() => router.push('/(auth)/recover')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.forgotPasswordText}>¿Has olvidado tu contraseña?</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
           style={styles.primaryButton} 
           onPress={handleLogin}
           disabled={loading || googleLoading}
@@ -319,6 +327,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontFamily: typography.fontFamily.regular,
     ...typography.scale.body,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 8,
+  },
+  forgotPasswordText: {
+    fontFamily: typography.fontFamily.medium,
+    ...typography.scale.caption,
+    color: colors.accent,
   },
   primaryButton: {
     height: 60,

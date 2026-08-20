@@ -25,7 +25,7 @@ export function useChats() {
         .from('chats')
         .select(`
           id, type, name, created_at,
-          chat_members(user_id, last_read_at, profiles(username, avatar_url)),
+          chat_members(user_id, last_read_at, profiles(username, avatar_url, last_seen_at)),
           chat_messages(id, user_id, content, created_at, shared_workout_id)
         `)
         .in('id', chatIds)

@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useChats, useChatMessages, useSendMessage, useMarkChatRead } from '../../hooks/useChats';
 import { useAuth } from '../../hooks/useAuth';
 import { Image } from 'expo-image';
+import { useQueryClient } from '@tanstack/react-query';
 
 function getMessageTime(dateString: string) {
   if (!dateString) return '';
@@ -42,6 +43,7 @@ export default function ChatDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -60,6 +62,34 @@ export default function ChatDetailScreen() {
     }
   }, [chatId, messages?.length]);
 
+  // Suscripción en tiempo real a mensajes, lecturas y última conexión
+  useEffect(() => {
+    if (!chatId) return;
+    
+    let channel = supabase.channel(`chat_${chatId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: `chat_id=eq.${chatId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['chat_messages', chatId] });
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
+        markRead(chatId); // Si estamos dentro del chat y llega un mensaje, lo leemos
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_members', filter: `chat_id=eq.${chatId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
+      });
+
+    // Si sabemos quién es el otro miembro, escuchamos su "última vez visto"
+    if (otherMember?.user_id) {
+      channel = channel.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${otherMember.user_id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
+      });
+    }
+
+    channel.subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId, otherMember?.user_id]);
+
   const handleSend = () => {
     if (!inputText.trim()) return;
     sendMessage({ chatId, content: inputText.trim() });
@@ -70,11 +100,12 @@ export default function ChatDetailScreen() {
   let chatName = chat?.name;
   let isGroup = chat?.type === 'group';
   
-  if (!isGroup) {
-    const otherMember = chat?.chat_members?.find((m: any) => m.user_id !== user?.id);
-    if (otherMember) {
-      chatName = otherMember.profiles?.username || 'Usuario';
-    }
+  const otherMember = chat?.chat_members?.find((m: any) => m.user_id !== user?.id);
+  const otherLastReadAt = otherMember?.last_read_at;
+  const otherLastSeenAt = otherMember?.profiles?.last_seen_at;
+
+  if (!isGroup && otherMember) {
+    chatName = otherMember.profiles?.username || 'Usuario';
   }
 
   const renderMessage = ({ item, index }: { item: any, index: number }) => {
@@ -98,6 +129,26 @@ export default function ChatDetailScreen() {
       isSameDateAsNext && 
       !item.shared_workout_id && 
       !nextItem?.shared_workout_id;
+      
+    // Lógica de Checks
+    const isDirect = chat?.type === 'direct';
+    let statusIcon = null;
+    if (isMe && isDirect) {
+      const msgDate = new Date(item.created_at).getTime();
+      const readDate = otherLastReadAt ? new Date(otherLastReadAt).getTime() : 0;
+      const seenDate = otherLastSeenAt ? new Date(otherLastSeenAt).getTime() : 0;
+
+      if (msgDate <= readDate) {
+        // Leído
+        statusIcon = <CheckCheck color="#0A84FF" size={14} style={styles.statusIcon} />;
+      } else if (msgDate <= seenDate) {
+        // Entregado
+        statusIcon = <CheckCheck color="rgba(0,0,0,0.35)" size={14} style={styles.statusIcon} />;
+      } else {
+        // Enviado
+        statusIcon = <Check color="rgba(0,0,0,0.35)" size={14} style={styles.statusIcon} />;
+      }
+    }
     
     return (
       <View>
@@ -214,6 +265,7 @@ export default function ChatDetailScreen() {
                   <Text style={[styles.timeText, isMe ? styles.timeTextMe : styles.timeTextOther]}>
                     {getMessageTime(item.created_at)}
                   </Text>
+                  {statusIcon}
                 </View>
               </View>
             </View>
@@ -410,6 +462,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     alignSelf: 'flex-end',
     marginBottom: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusIcon: {
+    marginLeft: 2,
   },
   timeContainer: {
     alignSelf: 'flex-end',
