@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Home, History, User, Users, MessageCircle } from 'lucide-react-native';
@@ -7,6 +8,9 @@ import { Platform, TouchableOpacity, View, Text } from 'react-native';
 import { MotiView } from 'moti';
 import { useFriendRequests } from '../../hooks/useFriends';
 import { useChats } from '../../hooks/useChats';
+import { supabase } from '../../lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../hooks/useAuth';
 
 function TabIcon({ Icon, focused, badgeCount = 0 }: { Icon: any, focused: boolean, badgeCount?: number }) {
   return (
@@ -66,6 +70,31 @@ export default function TabLayout() {
   
   const { data: chats } = useChats();
   const unreadChatsCount = chats?.reduce((total, chat) => total + (chat.unreadCount > 0 ? 1 : 0), 0) || 0;
+
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Escucha global de mensajes para actualizar el contador de "no leídos" en tiempo real
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase.channel('global_chats_listener')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
+        // Solo recargamos si el mensaje no es nuestro (así no hacemos refetch doble al enviar)
+        if (payload.new.user_id !== user.id) {
+          queryClient.invalidateQueries({ queryKey: ['chats'] });
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_members' }, () => {
+        // Por si alguien marca como leído en otro dispositivo o hay cambios en miembros
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return (
     <Tabs
