@@ -6,10 +6,11 @@ import { typography } from '../../theme/typography';
 import { ArrowLeft, Send, Users, User, Dumbbell, Check, CheckCheck, Repeat } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useChats, useChatMessages, useSendMessage, useMarkChatRead } from '../../hooks/useChats';
+import { useChats, useChatMessages, useSendMessage, useMarkChatRead, useDeleteChat } from '../../hooks/useChats';
 import { useAuth } from '../../hooks/useAuth';
 import { Image } from 'expo-image';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabase';
 
 function getMessageTime(dateString: string) {
   if (!dateString) return '';
@@ -54,6 +55,7 @@ export default function ChatDetailScreen() {
   const { data: messages, isLoading } = useChatMessages(chatId);
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
   const { mutate: markRead } = useMarkChatRead();
+  const { mutate: deleteChat, isPending: isDeleting } = useDeleteChat();
 
   // Marcar como leído al entrar o al recibir mensajes
   useEffect(() => {
@@ -96,16 +98,22 @@ export default function ChatDetailScreen() {
     setInputText('');
   };
 
-  // Determine chat name
+  // Determine chat name and if it's a deleted user
   let chatName = chat?.name;
   let isGroup = chat?.type === 'group';
   
   const otherMember = chat?.chat_members?.find((m: any) => m.user_id !== user?.id);
+  const isDeletedUser = !isGroup && !otherMember && chat;
+  
   const otherLastReadAt = otherMember?.last_read_at;
   const otherLastSeenAt = otherMember?.profiles?.last_seen_at;
 
-  if (!isGroup && otherMember) {
-    chatName = otherMember.profiles?.username || 'Usuario';
+  if (!isGroup) {
+    if (otherMember) {
+      chatName = otherMember.profiles?.username || 'Usuario';
+    } else if (isDeletedUser) {
+      chatName = 'Usuario eliminado';
+    }
   }
 
   const renderMessage = ({ item, index }: { item: any, index: number }) => {
@@ -288,9 +296,33 @@ export default function ChatDetailScreen() {
         <View style={styles.headerInfo}>
           <Text style={styles.title} numberOfLines={1}>{chatName}</Text>
           {isGroup && <Text style={styles.subtitle}>{chat?.chat_members?.length} miembros</Text>}
+          {isDeletedUser && <Text style={styles.subtitle}>Cuenta eliminada</Text>}
         </View>
         <View style={{ width: 40 }} />
       </View>
+
+      {isDeletedUser && (
+        <View style={styles.deletedUserContainer}>
+          <Text style={styles.deletedUserText}>
+            Este usuario ya no existe. No puedes enviarle mensajes.
+          </Text>
+          <TouchableOpacity 
+            style={styles.deleteChatButton}
+            onPress={() => {
+              deleteChat(chatId as string, {
+                onSuccess: () => router.back()
+              });
+            }}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color={colors.destructive} size="small" />
+            ) : (
+              <Text style={styles.deleteChatButtonText}>Borrar chat</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
 
       {isLoading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ flex: 1 }} />
@@ -310,23 +342,24 @@ export default function ChatDetailScreen() {
       <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TextInput
           style={styles.textInput}
-          placeholder="Escribe un mensaje..."
+          placeholder={isDeletedUser ? "No puedes responder..." : "Escribe un mensaje..."}
           placeholderTextColor={colors.textSecondary}
           value={inputText}
           onChangeText={setInputText}
           multiline
           maxLength={500}
+          editable={!isDeletedUser}
         />
         <TouchableOpacity 
-          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]} 
+          style={[styles.sendButton, (!inputText.trim() || isDeletedUser) && styles.sendButtonDisabled]} 
           onPress={handleSend}
-          disabled={!inputText.trim() || isSending}
+          disabled={!inputText.trim() || isSending || isDeletedUser}
           activeOpacity={0.7}
         >
           {isSending ? (
             <ActivityIndicator size="small" color={colors.background} />
           ) : (
-            <Send color={!inputText.trim() ? colors.textSecondary : colors.background} size={20} />
+            <Send color={!inputText.trim() || isDeletedUser ? colors.textSecondary : colors.background} size={20} />
           )}
         </TouchableOpacity>
       </View>
@@ -595,5 +628,36 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: colors.surfaceElevated,
+  },
+  deletedUserContainer: {
+    backgroundColor: 'rgba(207, 102, 121, 0.05)',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(207, 102, 121, 0.2)',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  deletedUserText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  deleteChatButton: {
+    backgroundColor: 'rgba(207, 102, 121, 0.1)',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(207, 102, 121, 0.3)',
+  },
+  deleteChatButtonText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 13,
+    color: colors.destructive,
   }
 });

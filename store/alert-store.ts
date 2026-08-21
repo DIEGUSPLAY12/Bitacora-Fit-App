@@ -25,13 +25,15 @@ export const useAlertStore = create<AlertState>((set) => ({
 }));
 
 /**
- * Helper function that mimics React Native's Alert.alert API
+ * Helper object that mimics React Native's Alert API
  * but triggers our custom global modal instead.
  */
-export const customAlert = (title: string, message?: string, buttons?: AlertButton[]) => {
-  // Add a slight delay if this is called immediately after a previous alert closes
-  // to ensure state updates cleanly
-  setTimeout(() => {
-    useAlertStore.getState().show(title, message, buttons);
-  }, 10);
+export const customAlert = {
+  alert: (title: string, message?: string, buttons?: AlertButton[]) => {
+    // Add a slight delay if this is called immediately after a previous alert closes
+    // to ensure state updates cleanly
+    setTimeout(() => {
+      useAlertStore.getState().show(title, message, buttons);
+    }, 10);
+  }
 };

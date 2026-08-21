@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, } from 'react-native';
+import { customAlert as Alert } from '../store/alert-store';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';

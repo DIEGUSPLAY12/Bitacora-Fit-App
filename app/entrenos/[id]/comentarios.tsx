@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, } from 'react-native';
+import { customAlert as Alert } from '../../../store/alert-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../../theme/colors';
 import { typography, rs } from '../../../theme/typography';

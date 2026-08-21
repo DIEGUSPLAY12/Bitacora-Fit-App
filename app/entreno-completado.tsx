@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { customAlert as Alert } from '../store/alert-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { typography, rs } from '../theme/typography';
 import { colors } from '../theme/colors';

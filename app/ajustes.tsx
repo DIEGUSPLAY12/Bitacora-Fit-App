@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  Switch, Alert, ActivityIndicator, Modal, TextInput,
-  KeyboardAvoidingView, Platform
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  Switch, ActivityIndicator, Modal, TextInput,
+  KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { customAlert as Alert } from '../store/alert-store';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useAuth } from '../hooks/useAuth';

@@ -74,6 +74,18 @@ ON chats FOR INSERT
 TO authenticated
 WITH CHECK (true);
 
+-- Puedes borrar chats si eres el creador o un miembro
+DROP POLICY IF EXISTS "Borrado de chats" ON chats;
+CREATE POLICY "Borrado de chats"
+ON chats FOR DELETE
+TO authenticated
+USING (
+  created_by = auth.uid() OR
+  EXISTS (
+    SELECT 1 FROM chat_members WHERE chat_id = chats.id AND user_id = auth.uid()
+  )
+);
+
 -- ------------------------------------------
 -- Políticas para: CHAT_MEMBERS
 -- ------------------------------------------
