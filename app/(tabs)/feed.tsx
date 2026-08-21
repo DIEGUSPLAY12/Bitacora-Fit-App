@@ -5,7 +5,7 @@ import { colors } from '../../theme/colors';
 import { typography, rs } from '../../theme/typography';
 import { UserPlus, User, Users, Activity, Dumbbell, Repeat, Bell, Heart, MessageCircle, Send, Clock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFriendsFeed, useFriends } from '../../hooks/useFriends';
+import { useFriendsFeed, useFriends, useFriendRequests } from '../../hooks/useFriends';
 import { useDiscoverFeed } from '../../hooks/useDiscoverFeed';
 import { useToggleLike } from '../../hooks/useWorkoutLikes';
 import { useAuth } from '../../hooks/useAuth';
@@ -43,6 +43,9 @@ export default function FeedScreen() {
   const isLoading = activeTab === 'amigos' ? isFriendsLoading : isDiscoverLoading;
 
   const { data: friends } = useFriends();
+  const { data: requests } = useFriendRequests();
+  const pendingCount = requests?.length || 0;
+  
   const reduceMotion = useReduceMotion();
   const hasFriends = friends && friends.length > 0;
   
@@ -224,7 +227,34 @@ export default function FeedScreen() {
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/notificaciones')} activeOpacity={0.7}>
-            <Bell color={colors.textPrimary} size={20} />
+            <View style={{ position: 'relative' }}>
+              <Bell color={colors.textPrimary} size={20} />
+              {pendingCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  backgroundColor: colors.destructive,
+                  minWidth: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: colors.background,
+                  zIndex: 10,
+                }}>
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 9,
+                    fontFamily: typography.fontFamily.bold,
+                    paddingHorizontal: 3,
+                  }}>
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/amigos')} activeOpacity={0.7}>
             <UserPlus color={colors.textPrimary} size={20} />
