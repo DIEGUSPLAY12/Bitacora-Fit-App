@@ -65,7 +65,7 @@ export default function ResetPasswordScreen() {
   return (
     <KeyboardAvoidingView 
       style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <MotiView 
         from={{ opacity: 0, translateY: 20 }}
