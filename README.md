@@ -13,6 +13,15 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
+<p align="center">
+  <a href="https://diegusplay12.github.io/Bitacora-Fit-Web/">
+    <img src="https://img.shields.io/badge/🌐_Sitio_Web-BitacoraFit_Web-FF5722?style=for-the-badge" alt="Sitio Web Oficial" />
+  </a>
+  <a href="https://diegusplay12.github.io/Bitacora-Fit-Web/">
+    <img src="https://img.shields.io/badge/📲_Descargar_APK-Android-2ea44f?style=for-the-badge&logo=android&logoColor=white" alt="Descargar APK" />
+  </a>
+</p>
+
 ---
 
 ## 📖 Índice
@@ -84,8 +93,9 @@ A diferencia de las hojas de cálculo tradicionales o cuadernos físicos, Bitaco
 ¡Puedes probar e instalar BitacoraFit directamente en tu dispositivo Android sin necesidad de compilar código!
 
 ### Opción 1: Desde la Web Oficial de la App
-Puedes acceder al sitio web oficial de BitacoraFit donde siempre encontrarás el botón directo para descargar el archivo instalador `.apk` con la versión estable más reciente:
-> 🌐 **Web oficial / Descarga:** [BitacoraFit Web](https://github.com/DIEGUSPLAY12/Bitacora-Fit-App) *(Disponible en la sección de descargas del portal)*
+Puedes acceder a la web oficial de BitacoraFit donde encontrarás la presentación de la app y el botón directo para descargar el instalador `.apk` con la versión más reciente:
+> 🌐 **Web oficial:** [BitacoraFit Web](https://diegusplay12.github.io/Bitacora-Fit-Web/)  
+> 📲 **Descarga directa:** Haz clic en el botón de descarga del APK disponible en la página principal.
 
 ### Opción 2: Desde los Releases de GitHub
 1. Ve a la sección de **[Releases del Repositorio](https://github.com/DIEGUSPLAY12/Bitacora-Fit-App/releases)**.
