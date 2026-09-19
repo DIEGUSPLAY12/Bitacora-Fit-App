@@ -70,8 +70,10 @@ CREATE TABLE friendships (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
+  -- Usamos un placeholder seguro en lugar del email para evitar exposición pública del email.
+  -- El username real se actualiza en el paso 2 del flujo de registro.
   INSERT INTO public.profiles (id, username)
-  VALUES (new.id, new.email); -- Usamos el email como username provisional
+  VALUES (new.id, 'user_' || SUBSTR(REPLACE(new.id::TEXT, '-', ''), 1, 8));
   RETURN new;
 END;
 $$ LANGUAGE plpgsql 

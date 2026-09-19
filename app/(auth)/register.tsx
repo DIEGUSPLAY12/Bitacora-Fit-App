@@ -253,7 +253,10 @@ export default function RegisterScreen() {
           const { params, errorCode } = QueryParams.getQueryParams(res.url);
           if (errorCode) return Promise.reject(new Error(errorCode));
           
-          if (params?.access_token && params?.refresh_token) {
+          // Guard defensivo: Supabase valida el JWT en el servidor,
+          // pero verificamos que el tipo sea OAuth para no actuar sobre deeplinks inesperados
+          const isOAuthCallback = params?.token_type === 'bearer' || params?.access_token;
+          if (isOAuthCallback && params?.access_token && params?.refresh_token) {
             await supabase.auth.setSession({
               access_token: params.access_token,
               refresh_token: params.refresh_token,

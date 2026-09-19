@@ -43,6 +43,16 @@ CREATE TABLE IF NOT EXISTS workout_comments (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+-- 5. TABLA: chat_message_deletions
+-- IMPORTANTE: debe crearse ANTES de las políticas de chat_messages que la referencian.
+-- Permite a cada usuario "borrar para mí" mensajes sin afectar a los demás.
+CREATE TABLE IF NOT EXISTS chat_message_deletions (
+  message_id UUID REFERENCES chat_messages(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  PRIMARY KEY (message_id, user_id)
+);
+
 -- ==========================================
 -- ROW LEVEL SECURITY (RLS)
 -- ==========================================
@@ -51,6 +61,7 @@ ALTER TABLE chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workout_comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_message_deletions ENABLE ROW LEVEL SECURITY;
 
 -- ------------------------------------------
 -- Políticas para: CHATS
@@ -74,17 +85,13 @@ ON chats FOR INSERT
 TO authenticated
 WITH CHECK (created_by = auth.uid());
 
--- Puedes borrar chats si eres el creador o un miembro
+-- Solo el creador puede borrar el chat para todos.
+-- Para "borrar para mí" los mensajes, se usa la tabla chat_message_deletions.
 DROP POLICY IF EXISTS "Borrado de chats" ON chats;
 CREATE POLICY "Borrado de chats"
 ON chats FOR DELETE
 TO authenticated
-USING (
-  created_by = auth.uid() OR
-  EXISTS (
-    SELECT 1 FROM chat_members WHERE chat_id = chats.id AND user_id = auth.uid()
-  )
-);
+USING (created_by = auth.uid());
 
 -- ------------------------------------------
 -- Políticas para: CHAT_MEMBERS
@@ -125,13 +132,20 @@ WITH CHECK (
 -- Políticas para: CHAT_MESSAGES
 -- ------------------------------------------
 -- Puedes leer mensajes si eres miembro del chat
+-- y no has marcado el mensaje como "borrado para ti"
 DROP POLICY IF EXISTS "Lectura de mensajes" ON chat_messages;
 CREATE POLICY "Lectura de mensajes"
 ON chat_messages FOR SELECT
 TO authenticated
 USING (
+  -- Debes ser miembro del chat
   EXISTS (
     SELECT 1 FROM chat_members WHERE chat_id = chat_messages.chat_id AND user_id = auth.uid()
+  )
+  -- Y no haber marcado este mensaje como borrado para ti
+  AND NOT EXISTS (
+    SELECT 1 FROM chat_message_deletions
+    WHERE message_id = chat_messages.id AND user_id = auth.uid()
   )
 );
 
@@ -170,3 +184,14 @@ CREATE POLICY "Borrado de comentarios propios"
 ON workout_comments FOR DELETE
 TO authenticated
 USING (user_id = auth.uid());
+
+-- ------------------------------------------
+-- Políticas para: CHAT_MESSAGE_DELETIONS
+-- ------------------------------------------
+-- Cada usuario solo puede ver y gestionar sus propios registros de borrado
+DROP POLICY IF EXISTS "Gestión de borrados propios" ON chat_message_deletions;
+CREATE POLICY "Gestión de borrados propios"
+ON chat_message_deletions FOR ALL
+TO authenticated
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
