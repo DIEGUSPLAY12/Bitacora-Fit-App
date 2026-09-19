@@ -159,11 +159,16 @@ export default function AmigosScreen() {
       {!isSearchFocused && suggestedProfiles && suggestedProfiles.length > 0 && (
         <View style={styles.suggestionsSection}>
           <Text style={styles.suggestionsTitle}>Sugerencias para ti</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestionsScroll}>
-            {suggestedProfiles.map((profile) => {
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.suggestionsScroll}
+            data={suggestedProfiles}
+            keyExtractor={item => item.id}
+            renderItem={({ item: profile }) => {
               const isPending = pendingUserIds.has(profile.id);
               return (
-                <View key={profile.id} style={styles.suggestionCard}>
+                <View style={styles.suggestionCard}>
                   <View style={styles.suggestionAvatarContainer}>
                     {profile.avatar_url ? (
                       <Image source={profile.avatar_url} style={styles.avatar} contentFit="cover" />
@@ -183,8 +188,8 @@ export default function AmigosScreen() {
                   </TouchableOpacity>
                 </View>
               );
-            })}
-          </ScrollView>
+            }}
+          />
         </View>
       )}
 

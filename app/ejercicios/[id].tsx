@@ -126,7 +126,7 @@ export default function ExerciseDetailScreen() {
             <View style={styles.instructionsContainer}>
               {instructionsList.length > 0 ? (
                 instructionsList.map((instruction, index) => (
-                  <View key={index} style={styles.instructionRow}>
+                  <View key={instruction.substring(0, 20) + index} style={styles.instructionRow}>
                     <View style={styles.instructionNumberBg}>
                       <Text style={styles.instructionNumber}>{index + 1}</Text>
                     </View>
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   instructionText: { flex: 1, fontFamily: typography.fontFamily.regular, ...typography.scale.body, fontSize: 16, color: colors.textSecondary, lineHeight: 24 },
   
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
-  primaryButton: { height: 60, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+  primaryButton: { height: 60, borderRadius: 16, overflow: 'hidden', boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)' },
   primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   primaryButtonText: { fontFamily: typography.fontFamily.bold, ...typography.scale.title, fontSize: 18, color: colors.background },
 });

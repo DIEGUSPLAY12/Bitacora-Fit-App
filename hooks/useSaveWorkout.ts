@@ -51,9 +51,7 @@ export function useSaveWorkout() {
       const workoutId = workoutData.id;
 
       // 2. Insert Workout Exercises & Sets
-      for (let i = 0; i < validExercises.length; i++) {
-        const ex = validExercises[i];
-        
+      const wePromises = validExercises.map(async (ex, i) => {
         const { data: weData, error: weError } = await supabase
           .from('workout_exercises')
           .insert({
@@ -82,7 +80,9 @@ export function useSaveWorkout() {
 
           if (setsError) throw setsError;
         }
-      }
+      });
+
+      await Promise.all(wePromises);
 
       return true;
     },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, ActivityIndicator, Alert,
+  FlatList, ActivityIndicator, Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { colors } from "../../theme/colors";
@@ -33,10 +33,10 @@ export default function PlantillasScreen() {
             setDeletingId(id);
             try {
               await deleteTemplate.mutateAsync(id);
-            } catch (e: any) {
-              customAlert("Error", "No se pudo eliminar la plantilla: " + e.message);
-            } finally {
               setDeletingId(null);
+            } catch (e: any) {
+              setDeletingId(null);
+              customAlert("Error", "No se pudo eliminar la plantilla: " + e.message);
             }
           },
         },
@@ -121,18 +121,18 @@ export default function PlantillasScreen() {
           </TouchableOpacity>
         </MotiView>
       ) : (
-        <ScrollView
+        <FlatList
+          data={templates}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-        >
-          {templates.map((template: any, index: number) => {
+          renderItem={({ item: template, index }) => {
             const exerciseCount = template.workout_exercises?.length || 0;
             const muscleGroups = getMuscleGroups(template);
             const isDeleting = deletingId === template.id;
 
             return (
               <MotiView
-                key={template.id}
                 from={{ opacity: 0, translateY: 10 }}
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: "timing", duration: 220, delay: index * 35 }}
@@ -208,8 +208,8 @@ export default function PlantillasScreen() {
                 </TouchableOpacity>
               </MotiView>
             );
-          })}
-        </ScrollView>
+          }}
+        />
       )}
     </View>
   );

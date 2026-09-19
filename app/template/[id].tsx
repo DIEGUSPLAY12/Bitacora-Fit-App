@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
@@ -41,18 +41,18 @@ export default function TemplateDetailScreen() {
 
   const numExercises = template.workout_exercises?.length || 0;
 
-  const distribution: Record<string, number> = {};
-  let totalEx = 0;
-  template.workout_exercises?.forEach((we: any) => {
-    // target = primary muscle ("lats", "chest"...) | category = body part ("back", "chest"...)
-    // muscle_group = secondary muscles (wrong for distribution)
-    const group = we.exercises?.target || we.exercises?.category;
-    if (group) {
-      const key = group.toLowerCase();
-      distribution[key] = (distribution[key] || 0) + 1;
-      totalEx++;
-    }
-  });
+  const { distribution, totalEx } = (template.workout_exercises || []).reduce(
+    (acc: { distribution: Record<string, number>; totalEx: number }, we: any) => {
+      const group = we.exercises?.target || we.exercises?.category;
+      if (group) {
+        const key = group.toLowerCase();
+        acc.distribution[key] = (acc.distribution[key] || 0) + 1;
+        acc.totalEx++;
+      }
+      return acc;
+    },
+    { distribution: {}, totalEx: 0 }
+  );
 
   const distArray = Object.entries(distribution)
     .map(([group, count]) => ({ group, count, percentage: Math.round((count / totalEx) * 100) }))
@@ -172,10 +172,14 @@ export default function TemplateDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Distribucion Muscular</Text>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.distPillsRow}>
-              {distArray.map((item, i) => (
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.distPillsRow}
+              data={distArray}
+              keyExtractor={item => item.group}
+              renderItem={({ item, index: i }) => (
                 <View
-                  key={item.group}
                   style={[
                     styles.distPill,
                     {
@@ -190,8 +194,8 @@ export default function TemplateDetailScreen() {
                   </Text>
                   <Text style={styles.distPillPct}> {item.percentage}%</Text>
                 </View>
-              ))}
-            </ScrollView>
+              )}
+            />
           </View>
         )}
 
@@ -465,11 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     height: 58,
     overflow: "hidden",
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.25)',
   },
   startButtonGradient: {
     flex: 1,

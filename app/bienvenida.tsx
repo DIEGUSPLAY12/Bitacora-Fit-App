@@ -32,7 +32,7 @@ export default function BienvenidaScreen() {
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'timing', delay: 200, duration: 600 }}
           >
-            <View style={[styles.iconWrapper, { backgroundColor: 'transparent', shadowColor: 'transparent', elevation: 0, transform: [] }]}>
+            <View style={[styles.iconWrapper, { backgroundColor: 'transparent', boxShadow: 'none', transform: [] }]}>
               <Image 
                 source={require('../assets/images/logo.png')} 
                 style={{ width: 140, height: 140, borderRadius: 32 }} 
@@ -125,11 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
+    boxShadow: '0px 10px 20px rgba(180, 240, 60, 0.4)',
     transform: [{ rotate: '-10deg' }]
   },
   wordmark: {
@@ -158,11 +154,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px rgba(180, 240, 60, 0.2)',
   },
   primaryButtonGradient: {
     flex: 1,

@@ -278,11 +278,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 4,
+    boxShadow: '0px 4px 10px rgba(180, 240, 60, 0.2)',
   },
   createButtonGradient: {
     flex: 1,

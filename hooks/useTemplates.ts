@@ -96,7 +96,7 @@ export function useCloneToTemplates() {
 
       // 2. Insert exercises and sets
       if (originalWorkout.workout_exercises) {
-        for (const we of originalWorkout.workout_exercises) {
+        const wePromises = originalWorkout.workout_exercises.map(async (we: any) => {
           const { data: newWe, error: weError } = await supabase
             .from('workout_exercises')
             .insert({
@@ -120,7 +120,8 @@ export function useCloneToTemplates() {
             const { error: sError } = await supabase.from('sets').insert(setsToInsert);
             if (sError) throw sError;
           }
-        }
+        });
+        await Promise.all(wePromises);
       }
 
       return newWorkout;

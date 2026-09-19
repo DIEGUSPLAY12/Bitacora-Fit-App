@@ -55,11 +55,11 @@ export function RadarChart({ data, size = 300, color = colors.accent }: RadarCha
           );
         })}
 
-        {keys.map((_, i) => {
+        {keys.map((keyName, i) => {
           const endPoint = getPoint(maxVal, i, maxVal);
           return (
             <Line
-              key={`axis-${i}`}
+              key={`axis-${keyName}`}
               x1={center}
               y1={center}
               x2={endPoint.x}
@@ -78,7 +78,7 @@ export function RadarChart({ data, size = 300, color = colors.accent }: RadarCha
           fillOpacity="0.3"
         />
 
-        {keys.map((key, i) => {
+        {keys.map((keyName, i) => {
           const labelPoint = getPoint(maxVal * 1.3, i, maxVal);
           
           let textAnchor = "middle" as any;
@@ -87,7 +87,7 @@ export function RadarChart({ data, size = 300, color = colors.accent }: RadarCha
 
           return (
             <SvgText
-              key={`label-${i}`}
+              key={`label-${keyName}`}
               x={labelPoint.x}
               y={labelPoint.y + 4}
               fill={colors.textSecondary}

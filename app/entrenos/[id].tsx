@@ -41,14 +41,10 @@ export default function WorkoutDetailScreen() {
   const durationMs = new Date(workout.finished_at).getTime() - new Date(workout.started_at).getTime();
   const durationMin = Math.max(1, Math.floor(durationMs / 60000));
   
-  let totalVolume = 0;
-  let totalSets = 0;
-  workout.workout_exercises?.forEach((we: any) => {
-    we.sets?.forEach((s: any) => {
-      totalVolume += (Number(s.weight_kg) * Number(s.reps));
-      totalSets++;
-    });
-  });
+  const totalVolume = (workout.workout_exercises || []).reduce((acc: number, we: any) => {
+    return acc + (we.sets || []).reduce((setAcc: number, s: any) => setAcc + (Number(s.weight_kg) * Number(s.reps)), 0);
+  }, 0);
+  const totalSets = (workout.workout_exercises || []).reduce((acc: number, we: any) => acc + (we.sets || []).length, 0);
 
   return (
     <View style={styles.container}>

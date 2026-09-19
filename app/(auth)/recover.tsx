@@ -34,22 +34,27 @@ export default function RecoverScreen() {
 
     setLoading(true);
     
-    const redirectUrl = makeRedirectUri({ scheme: 'bitacorafitapp', path: 'reset-password' });
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    });
-    
-    setLoading(false);
+    try {
+      const redirectUrl = makeRedirectUri({ scheme: 'bitacorafitapp', path: 'reset-password' });
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+      
+      setLoading(false);
 
-    if (error) {
-      if (error.message.includes('rate limit')) {
-        setErrorMsg('Has pedido demasiados correos. Espera unos minutos.');
+      if (error) {
+        if (error.message.includes('rate limit')) {
+          setErrorMsg('Has pedido demasiados correos. Espera unos minutos.');
+        } else {
+          setErrorMsg('Ocurrió un error al enviar el correo. Inténtalo de nuevo.');
+        }
       } else {
-        setErrorMsg('Ocurrió un error al enviar el correo. Inténtalo de nuevo.');
+        setSuccess(true);
       }
-    } else {
-      setSuccess(true);
+    } catch (e) {
+      setLoading(false);
+      setErrorMsg('Ocurrió un error de red.');
     }
   };
 
@@ -253,11 +258,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     marginTop: 24,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)',
   },
   primaryButtonGradient: {
     flex: 1,

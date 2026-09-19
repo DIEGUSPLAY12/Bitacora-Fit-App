@@ -124,26 +124,31 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    // Check if username is taken
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username.trim().toLowerCase())
-      .maybeSingle();
+    try {
+      // Check if username is taken
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username.trim().toLowerCase())
+        .maybeSingle();
 
-    setLoading(false);
+      setLoading(false);
 
-    if (error && error.code !== 'PGRST116') {
-      setErrorMsg('Error al verificar disponibilidad del alias.');
-      return;
+      if (error && error.code !== 'PGRST116') {
+        setErrorMsg('Error al verificar disponibilidad del alias.');
+        return;
+      }
+
+      if (data) {
+        setErrorMsg('Este alias ya está en uso. Por favor, elige otro.');
+        return;
+      }
+
+      setStep(3);
+    } catch (e) {
+      setLoading(false);
+      setErrorMsg('Error de red al verificar alias.');
     }
-
-    if (data) {
-      setErrorMsg('Este alias ya está en uso. Por favor, elige otro.');
-      return;
-    }
-
-    setStep(3);
   };
 
   const handleRegister = async () => {
@@ -154,71 +159,79 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    
-    // 1. Sign Up User
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      // 1. Sign Up User
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (authError) {
-      setLoading(false);
-      if (authError.message.includes('User already registered') || authError.message.includes('already exists')) {
-        setErrorMsg('Este correo ya está registrado.');
-        setStep(1); // Go back to step 1 to fix email
-      } else {
-        setErrorMsg('Ocurrió un error al registrarse: ' + authError.message);
+      if (authError) {
+        setLoading(false);
+        if (authError.message.includes('User already registered') || authError.message.includes('already exists')) {
+          setErrorMsg('Este correo ya está registrado.');
+          setStep(1); // Go back to step 1 to fix email
+        } else {
+          setErrorMsg('Ocurrió un error al registrarse: ' + authError.message);
+        }
+        return;
       }
-      return;
-    }
 
-    if (!authData.user) {
-      setLoading(false);
-      setErrorMsg('Ocurrió un error inesperado al registrarse.');
-      return;
-    }
+      if (!authData.user) {
+        setLoading(false);
+        setErrorMsg('Ocurrió un error inesperado al registrarse.');
+        return;
+      }
 
-    // Check if email confirmation is required (session is null)
-    if (!authData.session) {
-      const pendingProfile = {
-        fullName: fullName.trim(),
-        username: username.trim().toLowerCase(),
-        birthDate: parseDateToISO(birthDate),
-        goal: goal,
-        level: level,
-      };
-      await AsyncStorage.setItem('pending_profile', JSON.stringify(pendingProfile));
-      
-      setLoading(false);
-      Alert.alert(
-        '¡Casi listo!',
-        'Hemos enviado un enlace de confirmación a tu correo. Por favor, haz clic en él para verificar tu cuenta antes de iniciar sesión.'
-      );
-      router.replace('/(auth)/login');
-      return;
-    }
-
-    // If session is present (email confirmation disabled in Supabase), update profile immediately
-    // Wait a moment for trigger to create profile, then update profile
-    setTimeout(async () => {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName.trim(),
+      // Check if email confirmation is required (session is null)
+      if (!authData.session) {
+        const pendingProfile = {
+          fullName: fullName.trim(),
           username: username.trim().toLowerCase(),
-          birth_date: parseDateToISO(birthDate),
+          birthDate: parseDateToISO(birthDate),
           goal: goal,
-          experience_level: level,
-        })
-        .eq('id', authData.user!.id);
-
-      setLoading(false);
-
-      if (profileError) {
-        Alert.alert('Registro completado con advertencias', 'Tu cuenta fue creada pero hubo un problema guardando tus detalles. Puedes editarlos luego en tu perfil.');
+          level: level,
+        };
+        await AsyncStorage.setItem('pending_profile', JSON.stringify(pendingProfile));
+        
+        setLoading(false);
+        Alert.alert(
+          '¡Casi listo!',
+          'Hemos enviado un enlace de confirmación a tu correo. Por favor, haz clic en él para verificar tu cuenta antes de iniciar sesión.'
+        );
+        router.replace('/(auth)/login');
+        return;
       }
-      // Redirigido automáticamente por _layout.tsx
-    }, 1000);
+
+      // If session is present (email confirmation disabled in Supabase), update profile immediately
+      // Wait a moment for trigger to create profile, then update profile
+      setTimeout(async () => {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              full_name: fullName.trim(),
+              username: username.trim().toLowerCase(),
+              birth_date: parseDateToISO(birthDate),
+              goal: goal,
+              experience_level: level,
+            })
+            .eq('id', authData.user!.id);
+
+          setLoading(false);
+
+          if (profileError) {
+            Alert.alert('Registro completado con advertencias', 'Tu cuenta fue creada pero hubo un problema guardando tus detalles. Puedes editarlos luego en tu perfil.');
+          }
+        } catch (e) {
+          setLoading(false);
+        }
+        // Redirigido automáticamente por _layout.tsx
+      }, 1000);
+    } catch (e) {
+      setLoading(false);
+      setErrorMsg('Ocurrió un error de red al registrarse.');
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -233,12 +246,12 @@ export default function RegisterScreen() {
         },
       });
 
-      if (error) throw error;
+      if (error) return Promise.reject(error);
       if (data?.url) {
         const res = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
         if (res?.type === 'success' && res.url) {
           const { params, errorCode } = QueryParams.getQueryParams(res.url);
-          if (errorCode) throw new Error(errorCode);
+          if (errorCode) return Promise.reject(new Error(errorCode));
           
           if (params?.access_token && params?.refresh_token) {
             await supabase.auth.setSession({
@@ -250,251 +263,17 @@ export default function RegisterScreen() {
       }
     } catch (e) {
       setErrorMsg('Ocurrió un error con Google.');
-    } finally {
       setGoogleLoading(false);
     }
+    setGoogleLoading(false);
   };
 
   // Render Steps
-  const renderStep1 = () => (
-    <MotiView 
-      from={{ opacity: 0, translateX: 20 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      style={styles.form}
-    >
-      <Text style={styles.title}>Crear cuenta</Text>
-      <Text style={styles.formSubtitle}>Paso 1 de 3: Credenciales</Text>
-      
-      <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Correo electrónico"
-          placeholderTextColor={colors.textSecondary}
-          value={email}
-          onChangeText={(val) => { setEmail(val); setErrorMsg(''); }}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onFocus={() => setFocusedInput('email')}
-          onBlur={() => setFocusedInput(null)}
-        />
-      </View>
+  const renderStep1 = () => <Step1 email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} focusedInput={focusedInput} setFocusedInput={setFocusedInput} errorMsg={errorMsg} setErrorMsg={setErrorMsg} handleNextStep1={handleNextStep1} handleGoogleLogin={handleGoogleLogin} googleLoading={googleLoading} passwordReqs={passwordReqs} styles={styles} colors={colors} router={router} />
 
-      <View style={[styles.inputContainer, focusedInput === 'password' && styles.inputFocused]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor={colors.textSecondary}
-          value={password}
-          onChangeText={(val) => { setPassword(val); setErrorMsg(''); }}
-          secureTextEntry
-          onFocus={() => setFocusedInput('password')}
-          onBlur={() => setFocusedInput(null)}
-        />
-      </View>
-      
-      <View style={styles.reqsContainer}>
-        {passwordReqs.map((req, index) => {
-          const isMet = req.regex.test(password);
-          return (
-            <View key={req.id} style={[styles.reqRow, { opacity: password.length === 0 ? 0.5 : 1 }]}>
-              <View style={[styles.reqIconWrapper, { backgroundColor: isMet ? colors.accent : 'rgba(255,255,255,0.1)' }]}>
-                {isMet ? <Check color={colors.background} size={10} strokeWidth={4} /> : <View style={styles.reqDot} />}
-              </View>
-              <Text style={[styles.reqText, { color: isMet ? colors.textPrimary : colors.textSecondary }]}>
-                {req.text}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+  const renderStep2 = () => <Step2 fullName={fullName} setFullName={setFullName} username={username} setUsername={setUsername} birthDate={birthDate} setBirthDate={setBirthDate} focusedInput={focusedInput} setFocusedInput={setFocusedInput} errorMsg={errorMsg} setErrorMsg={setErrorMsg} handleNextStep2={handleNextStep2} loading={loading} formatDateInput={formatDateInput} styles={styles} colors={colors} />
 
-      <View style={[styles.inputContainer, focusedInput === 'confirmPassword' && styles.inputFocused, { marginTop: 8 }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Repetir contraseña"
-          placeholderTextColor={colors.textSecondary}
-          value={confirmPassword}
-          onChangeText={(val) => { setConfirmPassword(val); setErrorMsg(''); }}
-          secureTextEntry
-          onFocus={() => setFocusedInput('confirmPassword')}
-          onBlur={() => setFocusedInput(null)}
-        />
-      </View>
-
-      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleNextStep1} activeOpacity={0.9}>
-        <LinearGradient colors={[colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
-          <Text style={styles.primaryButtonText}>Siguiente paso</Text>
-          <ArrowRight color={colors.background} size={20} style={{ marginLeft: 8 }} />
-        </LinearGradient>
-      </TouchableOpacity>
-
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>o entra con</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin} disabled={googleLoading} activeOpacity={0.7}>
-        {googleLoading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <>
-            <Image source={require('../../assets/images/google-logo.png')} style={styles.googleIcon} />
-            <Text style={styles.googleButtonText}>Continuar con Google</Text>
-          </>
-        )}
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.loginLinkButton} onPress={() => router.back()} activeOpacity={0.7}>
-        <Text style={styles.loginLinkText}>
-          ¿Ya tienes cuenta? <Text style={styles.loginLinkTextBold}>Inicia sesión</Text>
-        </Text>
-      </TouchableOpacity>
-    </MotiView>
-  );
-
-  const renderStep2 = () => (
-    <MotiView 
-      from={{ opacity: 0, translateX: 20 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      style={styles.form}
-    >
-      <Text style={styles.title}>Identidad</Text>
-      <Text style={styles.formSubtitle}>Paso 2 de 3: Cuéntanos sobre ti</Text>
-      
-      <View style={styles.fieldGroup}>
-        <View style={styles.fieldLabel}>
-          <User color={colors.accent} size={15} />
-          <Text style={styles.labelText}>Nombre completo</Text>
-        </View>
-        <View style={[styles.inputContainer, focusedInput === 'name' && styles.inputFocused]}>
-          <TextInput
-            style={styles.input}
-            placeholder="Tu nombre real"
-            placeholderTextColor={colors.textSecondary}
-            value={fullName}
-            onChangeText={(v) => { setFullName(v); setErrorMsg(''); }}
-            onFocus={() => setFocusedInput('name')}
-            onBlur={() => setFocusedInput(null)}
-            autoCapitalize="words"
-          />
-        </View>
-      </View>
-
-      <View style={styles.fieldGroup}>
-        <View style={styles.fieldLabel}>
-          <AtSign color={colors.accent} size={15} />
-          <Text style={styles.labelText}>Alias (Username)</Text>
-        </View>
-        <View style={[styles.inputContainer, focusedInput === 'username' && styles.inputFocused, { flexDirection: 'row', alignItems: 'center' }]}>
-          <Text style={styles.atPrefix}>@</Text>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="tu_alias"
-            placeholderTextColor={colors.textSecondary}
-            value={username}
-            onChangeText={(v) => { setUsername(v.toLowerCase()); setErrorMsg(''); }}
-            onFocus={() => setFocusedInput('username')}
-            onBlur={() => setFocusedInput(null)}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-      </View>
-
-      <View style={styles.fieldGroup}>
-        <View style={styles.fieldLabel}>
-          <Calendar color={colors.accent} size={15} />
-          <Text style={styles.labelText}>Fecha de nacimiento</Text>
-        </View>
-        <View style={[styles.inputContainer, focusedInput === 'date' && styles.inputFocused]}>
-          <TextInput
-            style={styles.input}
-            placeholder="DD/MM/AAAA"
-            placeholderTextColor={colors.textSecondary}
-            value={birthDate}
-            onChangeText={(v) => { setBirthDate(formatDateInput(v)); setErrorMsg(''); }}
-            onFocus={() => setFocusedInput('date')}
-            onBlur={() => setFocusedInput(null)}
-            keyboardType="numeric"
-          />
-        </View>
-      </View>
-
-      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleNextStep2} disabled={loading} activeOpacity={0.9}>
-        <LinearGradient colors={loading ? ['#888', '#666'] : [colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
-          {loading ? <ActivityIndicator color={colors.background} /> : (
-            <>
-              <Text style={styles.primaryButtonText}>Siguiente paso</Text>
-              <ArrowRight color={colors.background} size={20} style={{ marginLeft: 8 }} />
-            </>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
-    </MotiView>
-  );
-
-  const renderStep3 = () => (
-    <MotiView 
-      from={{ opacity: 0, translateX: 20 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      style={styles.form}
-    >
-      <Text style={styles.title}>Metas y Nivel</Text>
-      <Text style={styles.formSubtitle}>Paso 3 de 3: Tu perfil atlético</Text>
-      
-      <Text style={styles.sectionLabel}>¿Cuál es tu objetivo principal?</Text>
-      <View style={styles.goalGrid}>
-        {GOALS.map((g) => {
-          const selected = goal === g.value;
-          return (
-            <TouchableOpacity
-              key={g.value}
-              style={[styles.goalCard, selected && styles.goalCardSelected]}
-              onPress={() => { setGoal(g.value); setErrorMsg(''); }}
-              activeOpacity={0.8}
-            >
-              {selected && <LinearGradient colors={['rgba(180,240,60,0.12)', 'rgba(180,240,60,0.04)']} style={StyleSheet.absoluteFill} />}
-              <Text style={styles.goalEmoji}>{g.emoji}</Text>
-              <Text style={[styles.goalLabel, selected && styles.goalLabelSelected]}>{g.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>¿Cuál es tu nivel de experiencia?</Text>
-      <View style={styles.levelList}>
-        {LEVELS.map((l) => {
-          const selected = level === l.value;
-          return (
-            <TouchableOpacity
-              key={l.value}
-              style={[styles.levelRow, selected && styles.levelRowSelected]}
-              onPress={() => { setLevel(l.value); setErrorMsg(''); }}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.levelRadio, selected && styles.levelRadioSelected]}>
-                {selected && <View style={styles.levelRadioDot} />}
-              </View>
-              <Text style={[styles.levelLabel, selected && styles.levelLabelSelected]}>{l.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleRegister} disabled={loading} activeOpacity={0.9}>
-        <LinearGradient colors={loading ? ['#888', '#666'] : [colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
-          {loading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>¡Crear cuenta y Empezar!</Text>}
-        </LinearGradient>
-      </TouchableOpacity>
-    </MotiView>
-  );
+  const renderStep3 = () => <Step3 selectedGoal={selectedGoal} setSelectedGoal={setSelectedGoal} selectedLevel={selectedLevel} setSelectedLevel={setSelectedLevel} GOALS={GOALS} LEVELS={LEVELS} handleRegister={handleRegister} loading={loading} errorMsg={errorMsg} styles={styles} colors={colors} />
 
   return (
     <KeyboardAvoidingView 
@@ -624,11 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     marginTop: 16,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)',
   },
   primaryButtonGradient: {
     flex: 1,
@@ -742,3 +517,246 @@ const styles = StyleSheet.create({
   },
   levelLabelSelected: { color: colors.accent },
 });
+
+const Step1 = ({ email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, focusedInput, setFocusedInput, errorMsg, setErrorMsg, handleNextStep1, handleGoogleLogin, googleLoading, passwordReqs, styles, colors, router }: any) => (
+
+    <MotiView 
+      from={{ opacity: 0, translateX: 20 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      style={styles.form}
+    >
+      <Text style={styles.title}>Crear cuenta</Text>
+      <Text style={styles.formSubtitle}>Paso 1 de 3: Credenciales</Text>
+      
+      <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Correo electrónico"
+          placeholderTextColor={colors.textSecondary}
+          value={email}
+          onChangeText={(val) => { setEmail(val); setErrorMsg(''); }}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          onFocus={() => setFocusedInput('email')}
+          onBlur={() => setFocusedInput(null)}
+        />
+      </View>
+
+      <View style={[styles.inputContainer, focusedInput === 'password' && styles.inputFocused]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          placeholderTextColor={colors.textSecondary}
+          value={password}
+          onChangeText={(val) => { setPassword(val); setErrorMsg(''); }}
+          secureTextEntry
+          onFocus={() => setFocusedInput('password')}
+          onBlur={() => setFocusedInput(null)}
+        />
+      </View>
+      
+      <View style={styles.reqsContainer}>
+        {passwordReqs.map((req, index) => {
+          const isMet = req.regex.test(password);
+          return (
+            <View key={req.id} style={[styles.reqRow, { opacity: password.length === 0 ? 0.5 : 1 }]}>
+              <View style={[styles.reqIconWrapper, { backgroundColor: isMet ? colors.accent : 'rgba(255,255,255,0.1)' }]}>
+                {isMet ? <Check color={colors.background} size={10} strokeWidth={4} /> : <View style={styles.reqDot} />}
+              </View>
+              <Text style={[styles.reqText, { color: isMet ? colors.textPrimary : colors.textSecondary }]}>
+                {req.text}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      <View style={[styles.inputContainer, focusedInput === 'confirmPassword' && styles.inputFocused, { marginTop: 8 }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="Repetir contraseña"
+          placeholderTextColor={colors.textSecondary}
+          value={confirmPassword}
+          onChangeText={(val) => { setConfirmPassword(val); setErrorMsg(''); }}
+          secureTextEntry
+          onFocus={() => setFocusedInput('confirmPassword')}
+          onBlur={() => setFocusedInput(null)}
+        />
+      </View>
+
+      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+
+      <TouchableOpacity style={styles.primaryButton} onPress={handleNextStep1} activeOpacity={0.9}>
+        <LinearGradient colors={[colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
+          <Text style={styles.primaryButtonText}>Siguiente paso</Text>
+          <ArrowRight color={colors.background} size={20} style={{ marginLeft: 8 }} />
+        </LinearGradient>
+      </TouchableOpacity>
+
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>o entra con</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin} disabled={googleLoading} activeOpacity={0.7}>
+        {googleLoading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <>
+            <Image source={require('../../assets/images/google-logo.png')} style={styles.googleIcon} />
+            <Text style={styles.googleButtonText}>Continuar con Google</Text>
+          </>
+        )}
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.loginLinkButton} onPress={() => router.back()} activeOpacity={0.7}>
+        <Text style={styles.loginLinkText}>
+          ¿Ya tienes cuenta? <Text style={styles.loginLinkTextBold}>Inicia sesión</Text>
+        </Text>
+      </TouchableOpacity>
+    </MotiView>
+);
+
+const Step2 = ({ fullName, setFullName, username, setUsername, birthDate, setBirthDate, focusedInput, setFocusedInput, errorMsg, setErrorMsg, handleNextStep2, loading, formatDateInput, styles, colors }: any) => (
+
+    <MotiView 
+      from={{ opacity: 0, translateX: 20 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      style={styles.form}
+    >
+      <Text style={styles.title}>Identidad</Text>
+      <Text style={styles.formSubtitle}>Paso 2 de 3: Cuéntanos sobre ti</Text>
+      
+      <View style={styles.fieldGroup}>
+        <View style={styles.fieldLabel}>
+          <User color={colors.accent} size={15} />
+          <Text style={styles.labelText}>Nombre completo</Text>
+        </View>
+        <View style={[styles.inputContainer, focusedInput === 'name' && styles.inputFocused]}>
+          <TextInput
+            style={styles.input}
+            placeholder="Tu nombre real"
+            placeholderTextColor={colors.textSecondary}
+            value={fullName}
+            onChangeText={(v) => { setFullName(v); setErrorMsg(''); }}
+            onFocus={() => setFocusedInput('name')}
+            onBlur={() => setFocusedInput(null)}
+            autoCapitalize="words"
+          />
+        </View>
+      </View>
+
+      <View style={styles.fieldGroup}>
+        <View style={styles.fieldLabel}>
+          <AtSign color={colors.accent} size={15} />
+          <Text style={styles.labelText}>Alias (Username)</Text>
+        </View>
+        <View style={[styles.inputContainer, focusedInput === 'username' && styles.inputFocused, { flexDirection: 'row', alignItems: 'center' }]}>
+          <Text style={styles.atPrefix}>@</Text>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="tu_alias"
+            placeholderTextColor={colors.textSecondary}
+            value={username}
+            onChangeText={(v) => { setUsername(v.toLowerCase()); setErrorMsg(''); }}
+            onFocus={() => setFocusedInput('username')}
+            onBlur={() => setFocusedInput(null)}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+      </View>
+
+      <View style={styles.fieldGroup}>
+        <View style={styles.fieldLabel}>
+          <Calendar color={colors.accent} size={15} />
+          <Text style={styles.labelText}>Fecha de nacimiento</Text>
+        </View>
+        <View style={[styles.inputContainer, focusedInput === 'date' && styles.inputFocused]}>
+          <TextInput
+            style={styles.input}
+            placeholder="DD/MM/AAAA"
+            placeholderTextColor={colors.textSecondary}
+            value={birthDate}
+            onChangeText={(v) => { setBirthDate(formatDateInput(v)); setErrorMsg(''); }}
+            onFocus={() => setFocusedInput('date')}
+            onBlur={() => setFocusedInput(null)}
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
+
+      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+
+      <TouchableOpacity style={styles.primaryButton} onPress={handleNextStep2} disabled={loading} activeOpacity={0.9}>
+        <LinearGradient colors={loading ? ['#888', '#666'] : [colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
+          {loading ? <ActivityIndicator color={colors.background} /> : (
+            <>
+              <Text style={styles.primaryButtonText}>Siguiente paso</Text>
+              <ArrowRight color={colors.background} size={20} style={{ marginLeft: 8 }} />
+            </>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    </MotiView>
+);
+
+const Step3 = ({ selectedGoal, setSelectedGoal, selectedLevel, setSelectedLevel, GOALS, LEVELS, handleRegister, loading, errorMsg, styles, colors }: any) => (
+
+    <MotiView 
+      from={{ opacity: 0, translateX: 20 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      style={styles.form}
+    >
+      <Text style={styles.title}>Metas y Nivel</Text>
+      <Text style={styles.formSubtitle}>Paso 3 de 3: Tu perfil atlético</Text>
+      
+      <Text style={styles.sectionLabel}>¿Cuál es tu objetivo principal?</Text>
+      <View style={styles.goalGrid}>
+        {GOALS.map((g) => {
+          const selected = goal === g.value;
+          return (
+            <TouchableOpacity
+              key={g.value}
+              style={[styles.goalCard, selected && styles.goalCardSelected]}
+              onPress={() => { setGoal(g.value); setErrorMsg(''); }}
+              activeOpacity={0.8}
+            >
+              {selected && <LinearGradient colors={['rgba(180,240,60,0.12)', 'rgba(180,240,60,0.04)']} style={StyleSheet.absoluteFill} />}
+              <Text style={styles.goalEmoji}>{g.emoji}</Text>
+              <Text style={[styles.goalLabel, selected && styles.goalLabelSelected]}>{g.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <Text style={[styles.sectionLabel, { marginTop: 24 }]}>¿Cuál es tu nivel de experiencia?</Text>
+      <View style={styles.levelList}>
+        {LEVELS.map((l) => {
+          const selected = level === l.value;
+          return (
+            <TouchableOpacity
+              key={l.value}
+              style={[styles.levelRow, selected && styles.levelRowSelected]}
+              onPress={() => { setLevel(l.value); setErrorMsg(''); }}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.levelRadio, selected && styles.levelRadioSelected]}>
+                {selected && <View style={styles.levelRadioDot} />}
+              </View>
+              <Text style={[styles.levelLabel, selected && styles.levelLabelSelected]}>{l.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {!!errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+
+      <TouchableOpacity style={styles.primaryButton} onPress={handleRegister} disabled={loading} activeOpacity={0.9}>
+        <LinearGradient colors={loading ? ['#888', '#666'] : [colors.accent, '#90D41C']} style={styles.primaryButtonGradient}>
+          {loading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>¡Crear cuenta y Empezar!</Text>}
+        </LinearGradient>
+      </TouchableOpacity>
+    </MotiView>
+);

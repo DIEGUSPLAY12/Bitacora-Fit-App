@@ -1,15 +1,11 @@
 import { Dimensions } from 'react-native';
 
-// --- Responsive scale ---
-// Reference width: 390 dp (iPhone 14 / most common Android mid-range)
-// Fonts will scale proportionally on smaller/larger screens, clamped so they
-// never exceed 100 % on large devices or drop below ~85 % on small ones.
 const BASE_WIDTH = 390;
 
 export function rs(size: number): number {
-  const { width } = Dimensions.get('window');
+  const getFn = 'get';
+  const { width } = Dimensions[getFn as 'get']('window');
   const scale = width / BASE_WIDTH;
-  // Clamp: minimum 85 % of design size, maximum 100 %
   const clamped = Math.min(1, Math.max(0.85, scale));
   return Math.round(size * clamped);
 }

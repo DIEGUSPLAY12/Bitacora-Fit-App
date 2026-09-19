@@ -44,14 +44,14 @@ export function CustomAlert() {
           </View>
 
           <View style={styles.buttonContainer}>
-            {alertButtons.map((btn, index) => {
+            {alertButtons.map((btn) => {
               const isDefault = btn.style === 'default' || !btn.style;
               const isDestructive = btn.style === 'destructive';
               const isCancel = btn.style === 'cancel';
 
               return (
                 <TouchableOpacity
-                  key={index}
+                  key={btn.text}
                   style={[
                     styles.button,
                     isDefault && styles.buttonDefault,
@@ -100,11 +100,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
+    boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.5)',
   },
   content: {
     padding: 24,

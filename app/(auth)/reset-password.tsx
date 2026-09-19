@@ -44,21 +44,25 @@ export default function ResetPasswordScreen() {
     }
 
     setLoading(true);
-    
-    const { error } = await supabase.auth.updateUser({
-      password: password
-    });
-    
-    setLoading(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
+      
+      setLoading(false);
 
-    if (error) {
-      setErrorMsg('No se pudo actualizar la contraseña. Inténtalo de nuevo.');
-    } else {
-      Alert.alert(
-        '¡Contraseña actualizada!',
-        'Tu contraseña se ha cambiado correctamente.',
-        [{ text: 'Entrar', onPress: () => router.replace('/(tabs)') }]
-      );
+      if (error) {
+        setErrorMsg('No se pudo actualizar la contraseña. Inténtalo de nuevo.');
+      } else {
+        Alert.alert(
+          '¡Contraseña actualizada!',
+          'Tu contraseña se ha cambiado correctamente.',
+          [{ text: 'Entrar', onPress: () => router.replace('/(tabs)') }]
+        );
+      }
+    } catch (e) {
+      setLoading(false);
+      setErrorMsg('Ocurrió un error de red.');
     }
   };
 
@@ -215,11 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     marginTop: 24,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)',
   },
   primaryButtonGradient: {
     flex: 1,

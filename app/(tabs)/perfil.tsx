@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { RecentWorkoutsMini } from '../../components/perfil/RecentWorkoutsMini';
+import { AvatarModal } from '../../components/perfil/AvatarModal';
+import { EditProfileModal } from '../../components/perfil/EditProfileModal';
+import { PerfilStats } from '../../components/perfil/PerfilStats';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { customAlert as Alert } from '../../store/alert-store';
 import { useRouter } from 'expo-router';
@@ -69,7 +73,8 @@ export default function PerfilScreen() {
   return (
     <ScrollView 
       style={styles.container}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 32 }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
+      contentInset={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
@@ -112,29 +117,7 @@ export default function PerfilScreen() {
           </View>
         </View>
 
-        {/* === Inline Stats Row (Symmetry style) === */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber} adjustsFontSizeToFit numberOfLines={1}>
-              {statsLoading ? '-' : totalWorkouts}
-            </Text>
-            <Text style={styles.statLabel}>Entrenos</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.accent }]} adjustsFontSizeToFit numberOfLines={1}>
-              {statsLoading ? '-' : currentStreak}
-            </Text>
-            <Text style={styles.statLabel}>Racha actual</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber} adjustsFontSizeToFit numberOfLines={1}>
-              {statsLoading ? '-' : longestStreak}
-            </Text>
-            <Text style={styles.statLabel}>Racha máx.</Text>
-          </View>
-        </View>
+        <PerfilStats statsLoading={statsLoading} totalWorkouts={totalWorkouts} currentStreak={currentStreak} longestStreak={longestStreak} />
 
         {/* === Options List === */}
         <View style={styles.optionsList}>
@@ -166,127 +149,13 @@ export default function PerfilScreen() {
         {/* === Recent Workouts Mini === */}
         <View style={styles.recentSection}>
           <Text style={styles.sectionTitle}>Entrenos recientes</Text>
-          {recentWorkouts && recentWorkouts.length > 0 ? (
-            <View style={styles.recentList}>
-              {recentWorkouts.map((workout: any) => (
-                <TouchableOpacity 
-                  key={workout.id} 
-                  style={styles.recentCard}
-                  onPress={() => router.push(`/entrenos/${workout.id}`)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.recentIconBg}>
-                    <Activity color={colors.accent} size={16} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.recentName} numberOfLines={1}>{workout.name}</Text>
-                    <Text style={styles.recentDate}>
-                      {new Date(workout.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                    </Text>
-                  </View>
-                  <ChevronRight color={colors.textSecondary} size={16} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.recentEmpty}>
-              <Text style={styles.recentEmptyText}>Aún no has registrado entrenamientos.</Text>
-            </View>
-          )}
+          <RecentWorkoutsMini recentWorkouts={recentWorkouts} />
         </View>
       </View>
 
-      {/* === Edit Profile Modal === */}
-      <Modal visible={editModalVisible} animationType="slide" transparent>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Editar Perfil</Text>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.closeButton}>
-                <X color={colors.textPrimary} size={20} />
-              </TouchableOpacity>
-            </View>
-            
-            <Text style={styles.inputLabel}>Nombre de usuario</Text>
-            <View style={[styles.inputContainer, focusedInput && styles.inputFocused]}>
-              <TextInput
-                style={styles.input}
-                value={newUsername}
-                onChangeText={setNewUsername}
-                placeholder="Escribe un alias único"
-                placeholderTextColor={colors.textSecondary}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onFocus={() => setFocusedInput(true)}
-                onBlur={() => setFocusedInput(false)}
-              />
-            </View>
+      <EditProfileModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} newUsername={newUsername} setNewUsername={setNewUsername} onSave={saveProfile} isUpdating={isUpdating} />
 
-            <TouchableOpacity 
-              style={styles.saveButton} 
-              onPress={saveProfile}
-              disabled={isUpdating}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={isUpdating ? ['#888', '#666'] : [colors.accent, '#90D41C']}
-                style={styles.saveButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar cambios</Text>}
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* === Avatar Modal === */}
-      <Modal visible={avatarModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Cambiar Avatar</Text>
-              <TouchableOpacity onPress={() => setAvatarModalVisible(false)} style={styles.closeButton}>
-                <X color={colors.textPrimary} size={20} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.avatarGrid}>
-              {AVATAR_SEEDS.map((seed) => {
-                const url = `https://api.dicebear.com/9.x/shapes/svg?seed=${seed}&backgroundColor=transparent&shape1Color=b4f03c&shape2Color=90d41c&shape3Color=ffffff`;
-                const isSelected = newAvatarUrl === url;
-                return (
-                  <TouchableOpacity
-                    key={seed}
-                    style={[styles.avatarOption, isSelected && styles.avatarOptionSelected]}
-                    onPress={() => setNewAvatarUrl(url)}
-                    activeOpacity={0.8}
-                  >
-                    <Image source={{ uri: url }} style={styles.avatarOptionImage} contentFit="contain" />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            
-            <TouchableOpacity 
-              style={styles.saveButton} 
-              onPress={saveAvatar}
-              disabled={isUpdating}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={isUpdating ? ['#888', '#666'] : [colors.accent, '#90D41C']}
-                style={styles.saveButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                {isUpdating ? <ActivityIndicator color={colors.background} /> : <Text style={styles.saveButtonText}>Guardar avatar</Text>}
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <AvatarModal visible={avatarModalVisible} onClose={() => setAvatarModalVisible(false)} newAvatarUrl={newAvatarUrl} setNewAvatarUrl={setNewAvatarUrl} onSave={saveAvatar} isUpdating={isUpdating} />
     </ScrollView>
   );
 }
@@ -319,11 +188,7 @@ const styles = StyleSheet.create({
     borderRadius: 54,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
+    boxShadow: '0px 4px 10px rgba(180, 240, 60, 0.25)',
   },
   avatarContainer: {
     width: 100,
@@ -535,11 +400,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 14,
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 4,
+    boxShadow: '0px 4px 10px rgba(180, 240, 60, 0.2)',
   },
   saveButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   saveButtonText: {

@@ -145,121 +145,29 @@ export default function ProgresoScreen() {
         </View>
 
         {activeTab === 'ejercicio' ? (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-            <TouchableOpacity style={styles.selector} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
-              <View style={styles.selectorTextContainer}>
-                <Text style={styles.selectorLabel}>Ejercicio a analizar</Text>
-                <Text style={styles.selectorValue}>
-                  {selectedExercise ? selectedExercise.name : 'Selecciona un ejercicio'}
-                </Text>
-              </View>
-              <ChevronDown color={colors.accent} size={24} />
-            </TouchableOpacity>
-
-            {selectedExercise ? (
-              isProgressLoading ? (
-                <View style={styles.centered}>
-                  <ActivityIndicator color={colors.accent} size="large" />
-                </View>
-              ) : progressData && progressData.length >= 2 ? (
-                <View style={styles.resultsContainer}>
-                  <View style={styles.chartContainer}>
-                    <LineChart
-                      data={chartData}
-                      width={chartWidth}
-                      spacing={chartSpacing}
-                      height={220}
-                      thickness={3}
-                      color={colors.accent}
-                      hideRules
-                      yAxisColor={colors.textSecondary}
-                      xAxisColor={colors.textSecondary}
-                      yAxisTextStyle={{ color: colors.textSecondary, fontSize: 11 }}
-                      xAxisLabelTextStyle={{ color: colors.textSecondary, fontSize: 11 }}
-                      dataPointsColor={colors.accent}
-                      dataPointsRadius={5}
-                      curved
-                      isAnimated
-                      animationDuration={1200}
-                      initialSpacing={20}
-                      endSpacing={20}
-                    />
-                  </View>
-
-                  <View style={styles.bentoGrid}>
-                    <View style={[styles.bentoCard, { flex: 1 }]}>
-                      <View style={styles.bentoIconBg}>
-                        <Zap color={colors.accent} size={20} fill={colors.accent} />
-                      </View>
-                      <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{stats.pr} kg</Text>
-                      <Text style={styles.bentoLabel}>RÉCORD ACTUAL</Text>
-                    </View>
-                    <View style={[styles.bentoCard, { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
-                      <View style={[styles.bentoIconBg, { backgroundColor: 'rgba(180, 240, 60, 0.15)' }]}>
-                        <TrendingUp color={colors.accent} size={20} />
-                      </View>
-                      {stats.improvement !== null ? (
-                        <Text style={[styles.bentoValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]} adjustsFontSizeToFit numberOfLines={1}>
-                          {stats.improvement >= 0 ? '+' : ''}{stats.improvement.toFixed(1)}%
-                        </Text>
-                      ) : (
-                        <Text style={[styles.bentoValue, { color: colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>N/A</Text>
-                      )}
-                      <Text style={[styles.bentoLabel, { color: colors.accent }]}>MEJORA</Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.emptyState}>
-                  <View style={styles.emptyIconBg}>
-                    <TrendingUp color={colors.accent} size={32} />
-                  </View>
-                  <Text style={styles.emptyText}>Necesitas al menos 2 sesiones con este ejercicio para ver gráficos.</Text>
-                </View>
-              )
-            ) : (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconBg}>
-                  <Target color={colors.accent} size={32} />
-                </View>
-                <Text style={styles.emptyText}>Selecciona un ejercicio arriba para ver tu historial de levantamientos.</Text>
-              </View>
-            )}
-          </ScrollView>
+          <ProgressTabContent 
+            selectedExercise={selectedExercise} 
+            isProgressLoading={isProgressLoading} 
+            progressData={progressData} 
+            chartData={chartData} 
+            chartWidth={chartWidth} 
+            chartSpacing={chartSpacing} 
+            stats={stats} 
+            styles={styles} 
+            colors={colors}
+            setModalVisible={setModalVisible}
+          />
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-            {isMuscleLoading ? (
-               <View style={styles.centered}>
-                 <ActivityIndicator color={colors.accent} size="large" />
-               </View>
-            ) : muscleData && totalVolume > 0 ? (
-               <View style={styles.resultsContainer}>
-                 <View style={styles.chartContainer}>
-                   <RadarChart data={muscleData} size={width - 80} />
-                 </View>
-                 
-                 <View style={styles.bentoGrid}>
-                    <View style={[styles.bentoCard, { flex: 1 }]}>
-                      <View style={styles.bentoIconBg}>
-                        <Weight color={colors.accent} size={20} />
-                      </View>
-                      <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{totalVolume.toLocaleString()} kg</Text>
-                      <Text style={styles.bentoLabel}>VOLUMEN GLOBAL MOVIDO</Text>
-                    </View>
-                  </View>
-               </View>
-            ) : (
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconBg}>
-                  <TrendingUp color={colors.accent} size={32} />
-                </View>
-                <Text style={styles.emptyText}>No hay datos de entrenamiento en este periodo.</Text>
-              </View>
-            )}
-          </ScrollView>
+          <RadarTabContent 
+            isMuscleLoading={isMuscleLoading} 
+            muscleData={muscleData} 
+            totalVolume={totalVolume} 
+            width={width} 
+            styles={styles} 
+            colors={colors} 
+          />
         )}
       </View>
-
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
@@ -364,3 +272,124 @@ const styles = StyleSheet.create({
   exerciseName: { fontFamily: typography.fontFamily.bold, ...typography.scale.body, fontSize: 18, color: colors.textPrimary, textTransform: 'capitalize', marginBottom: 4 },
   muscleGroup: { fontFamily: typography.fontFamily.medium, ...typography.scale.caption, color: colors.accent, textTransform: 'uppercase' },
 });
+
+const ProgressTabContent = ({ selectedExercise, isProgressLoading, progressData, chartData, chartWidth, chartSpacing, stats, styles, colors, setModalVisible }: any) => {
+  const { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } = require('react-native');
+  const { Zap, TrendingUp, Target, ChevronDown } = require('lucide-react-native');
+  const { LineChart } = require('react-native-gifted-charts');
+
+  const renderContent = () => {
+    if (!selectedExercise) {
+      return <EmptyStateCard icon={Target} text='Selecciona un ejercicio arriba para ver tu historial de levantamientos.' colors={colors} styles={styles} />;
+    }
+    
+    if (isProgressLoading) {
+      return (
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.accent} size="large" />
+        </View>
+      );
+    }
+    
+    if (progressData && progressData.length >= 2) {
+      return (
+        <View style={styles.resultsContainer}>
+          <View style={styles.chartContainer}>
+            <LineChart
+              data={chartData} width={chartWidth} spacing={chartSpacing} height={220} thickness={3}
+              color={colors.accent} hideRules yAxisColor={colors.textSecondary} xAxisColor={colors.textSecondary}
+              yAxisTextStyle={{ color: colors.textSecondary, fontSize: 11 }} xAxisLabelTextStyle={{ color: colors.textSecondary, fontSize: 11 }}
+              dataPointsColor={colors.accent} dataPointsRadius={5} curved isAnimated animationDuration={1200}
+              initialSpacing={20} endSpacing={20}
+            />
+          </View>
+          <View style={styles.bentoGrid}>
+            <View style={[styles.bentoCard, { flex: 1 }]}>
+              <View style={styles.bentoIconBg}>
+                <Zap color={colors.accent} size={20} fill={colors.accent} />
+              </View>
+              <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{stats.pr} kg</Text>
+              <Text style={styles.bentoLabel}>RÉCORD ACTUAL</Text>
+            </View>
+            <View style={[styles.bentoCard, { flex: 1, backgroundColor: 'rgba(180, 240, 60, 0.05)', borderColor: 'rgba(180, 240, 60, 0.2)' }]}>
+              <View style={[styles.bentoIconBg, { backgroundColor: 'rgba(180, 240, 60, 0.15)' }]}>
+                <TrendingUp color={colors.accent} size={20} />
+              </View>
+              {stats.improvement !== null ? (
+                <Text style={[styles.bentoValue, { color: stats.improvement >= 0 ? colors.accent : colors.destructive }]} adjustsFontSizeToFit numberOfLines={1}>
+                  {stats.improvement >= 0 ? '+' : ''}{stats.improvement.toFixed(1)}%
+                </Text>
+              ) : (
+                <Text style={[styles.bentoValue, { color: colors.textSecondary }]} adjustsFontSizeToFit numberOfLines={1}>N/A</Text>
+              )}
+              <Text style={[styles.bentoLabel, { color: colors.accent }]}>MEJORA</Text>
+            </View>
+          </View>
+        </View>
+      );
+    }
+    
+    return <EmptyStateCard icon={TrendingUp} text='Necesitas al menos 2 sesiones con este ejercicio para ver gráficos.' colors={colors} styles={styles} />;
+  };
+
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      <TouchableOpacity style={styles.selector} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
+        <View style={styles.selectorTextContainer}>
+          <Text style={styles.selectorLabel}>Ejercicio a analizar</Text>
+          <Text style={styles.selectorValue}>
+            {selectedExercise ? selectedExercise.name : 'Selecciona un ejercicio'}
+          </Text>
+        </View>
+        <ChevronDown color={colors.accent} size={24} />
+      </TouchableOpacity>
+      {renderContent()}
+    </ScrollView>
+  );
+};
+
+const RadarTabContent = ({ isMuscleLoading, muscleData, totalVolume, width, styles, colors }: any) => {
+  const { View, Text, ActivityIndicator, ScrollView } = require('react-native');
+  const { Weight, TrendingUp, Target } = require('lucide-react-native');
+  const RadarChart = require('../components/RadarChart').default;
+
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      {isMuscleLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.accent} size="large" />
+        </View>
+      ) : muscleData && totalVolume > 0 ? (
+        <View style={styles.resultsContainer}>
+          <View style={styles.chartContainer}>
+            <RadarChart data={muscleData} size={width - 80} />
+          </View>
+          <View style={styles.bentoGrid}>
+            <View style={[styles.bentoCard, { flex: 1 }]}>
+              <View style={styles.bentoIconBg}>
+                <Weight color={colors.accent} size={20} />
+              </View>
+              <Text style={styles.bentoValue} adjustsFontSizeToFit numberOfLines={1}>{totalVolume.toLocaleString()} kg</Text>
+              <Text style={styles.bentoLabel}>VOLUMEN GLOBAL MOVIDO</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <EmptyStateCard icon={Target} text='No hay datos de entrenamiento en este periodo.' colors={colors} styles={styles} />
+      )}
+    </ScrollView>
+  );
+};
+
+
+const EmptyStateCard = ({ icon: Icon, text, colors, styles }: any) => {
+  const { View, Text } = require('react-native');
+  return (
+    <View style={styles.emptyState}>
+      <View style={styles.emptyIconBg}>
+        <Icon color={colors.accent} size={32} />
+      </View>
+      <Text style={styles.emptyText}>{text}</Text>
+    </View>
+  );
+};

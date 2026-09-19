@@ -28,7 +28,6 @@ export default function AjustesScreen() {
 
   // Password change modal
   const [pwModal, setPwModal] = useState(false);
-  const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
@@ -59,14 +58,19 @@ export default function AjustesScreen() {
       return;
     }
     setPwLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPw });
-    setPwLoading(false);
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      Alert.alert('¡Listo!', 'Contraseña actualizada correctamente.');
-      setPwModal(false);
-      setCurrentPw(''); setNewPw('');
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPw });
+      setPwLoading(false);
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('¡Listo!', 'Contraseña actualizada correctamente.');
+        setPwModal(false);
+        setNewPw('');
+      }
+    } catch (e) {
+      setPwLoading(false);
+      Alert.alert('Error', 'Error de red.');
     }
   };
 
@@ -385,9 +389,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     height: 54, borderRadius: 14, overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 10, elevation: 4,
+    boxShadow: '0px 4px 10px rgba(180, 240, 60, 0.2)',
   },
   saveButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   saveButtonText: {

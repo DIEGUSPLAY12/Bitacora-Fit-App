@@ -51,8 +51,8 @@ export default function HistorialScreen() {
     // First 3 exercise names for preview
     const exerciseNames = (item.workout_exercises || [])
       .slice(0, 3)
-      .map((we: any) => we.exercises?.name)
-      .filter(Boolean);
+      .map((we: any) => ({ id: we.id || Math.random().toString(), name: we.exercises?.name }))
+      .filter((ex: any) => ex.name);
     const extraCount = exerciseCount - 3;
 
     return (
@@ -112,9 +112,9 @@ export default function HistorialScreen() {
             {/* Exercise preview list */}
             {exerciseNames.length > 0 && (
               <View style={styles.exerciseList}>
-                {exerciseNames.map((name: string, i: number) => (
-                  <Text key={i} style={styles.exerciseListItem} numberOfLines={1}>
-                    · {name}
+                {exerciseNames.map((ex: any) => (
+                  <Text key={ex.id} style={styles.exerciseListItem} numberOfLines={1}>
+                    · {ex.name}
                   </Text>
                 ))}
                 {extraCount > 0 && (

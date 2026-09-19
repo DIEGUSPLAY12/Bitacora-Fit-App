@@ -83,7 +83,7 @@ function RootLayoutNav() {
       };
       parseDeepLink();
     }
-  }, [url]);
+  }, [url, router]);
 
   useEffect(() => {
     if (isLoading || isProfileLoading) return;
@@ -103,7 +103,7 @@ function RootLayoutNav() {
       // Just logged in → go to tabs
       router.replace('/(tabs)');
     }
-  }, [session, isLoading, isProfileLoading, segments, authEvent]);
+  }, [session, isLoading, isProfileLoading, segments, authEvent, router]);
 
   if (isLoading) {
     return (

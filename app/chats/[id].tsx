@@ -289,45 +289,9 @@ export default function ChatDetailScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft color={colors.textPrimary} size={24} />
-        </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.title} numberOfLines={1}>{chatName}</Text>
-          {isGroup && <Text style={styles.subtitle}>{chat?.chat_members?.length} miembros</Text>}
-          {isDeletedUser && <Text style={styles.subtitle}>Cuenta eliminada</Text>}
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
+      <ChatHeader router={router} insets={insets} chatName={chatName} isGroup={isGroup} isDeletedUser={isDeletedUser} otherLastSeenAt={otherLastSeenAt} />
 
-      {isDeletedUser && (
-        <View style={styles.deletedUserContainer}>
-          <Text style={styles.deletedUserText}>
-            Este usuario ya no existe. No puedes enviarle mensajes.
-          </Text>
-          <TouchableOpacity 
-            style={styles.deleteChatButton}
-            onPress={() => {
-              deleteChat(chatId as string, {
-                onSuccess: () => router.back()
-              });
-            }}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <ActivityIndicator color={colors.destructive} size="small" />
-            ) : (
-              <Text style={styles.deleteChatButtonText}>Borrar chat</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {isLoading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ flex: 1 }} />
-      ) : (
-        <FlatList
+      <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={item => item.id}
@@ -661,3 +625,36 @@ const styles = StyleSheet.create({
     color: colors.destructive,
   }
 });
+
+const ChatHeader = ({ router, insets, chatName, isGroup, isDeletedUser, otherLastSeenAt }: any) => {
+  const { View, Text, TouchableOpacity } = require('react-native');
+  const { ArrowLeft } = require('lucide-react-native');
+  const { formatDistanceToNow } = require('date-fns');
+  const { es } = require('date-fns/locale');
+  const { colors } = require('../../theme/colors');
+  const { typography } = require('../../theme/typography');
+  
+  let subtitle = '';
+  if (!isGroup && !isDeletedUser) {
+    if (otherLastSeenAt) {
+      subtitle = 'Últ. vez ' + formatDistanceToNow(new Date(otherLastSeenAt), { addSuffix: true, locale: es });
+    } else {
+      subtitle = 'Desconectado';
+    }
+  } else if (isGroup) {
+    subtitle = 'Grupo';
+  }
+  
+  return (
+    <View style={[{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingBottom: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }, { paddingTop: insets.top + 16 }]}>
+      <TouchableOpacity style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }} onPress={() => router.back()}>
+        <ArrowLeft color={colors.textPrimary} size={24} />
+      </TouchableOpacity>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={{ fontFamily: typography.fontFamily.semibold, fontSize: 17, color: colors.textPrimary }} numberOfLines={1}>{chatName}</Text>
+        {subtitle ? <Text style={{ fontFamily: typography.fontFamily.regular, fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>{subtitle}</Text> : null}
+      </View>
+      <View style={{ width: 40 }} />
+    </View>
+  );
+};

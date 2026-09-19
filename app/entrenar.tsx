@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { ExerciseHeader, TableHeader } from '../components/ExerciseTableHeaders';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme/colors';
@@ -20,6 +21,22 @@ function formatTime(ms: number) {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+
+const ControlGroup = ({ isCompleted, value, onMinus, onPlus, controlMargin }: any) => {
+  const { colors } = require('../theme/colors');
+  return (
+    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted, { marginHorizontal: controlMargin }]}>
+      <TouchableOpacity onPress={onMinus} style={styles.controlBtn}>
+        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
+      </TouchableOpacity>
+      <Text style={[styles.controlValue, isCompleted && styles.controlValueCompleted]}>{value}</Text>
+      <TouchableOpacity onPress={onPlus} style={styles.controlBtn}>
+        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 export default function EntrenarScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -40,7 +57,7 @@ export default function EntrenarScreen() {
     clearRestTimer 
   } = useWorkoutStore();
 
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   const notifiedRef = useRef(false);
   const reduceMotion = useReduceMotion();
 
@@ -55,25 +72,24 @@ export default function EntrenarScreen() {
     if (restTimerEndsAt) {
       notifiedRef.current = false;
       interval = setInterval(() => {
-        const now = Date.now();
-        const remaining = restTimerEndsAt - now;
+        const currentNow = Date.now();
+        const remaining = restTimerEndsAt - currentNow;
         
         if (remaining <= 0) {
-          setTimeLeft(0);
           clearRestTimer();
           if (!notifiedRef.current) {
             notifiedRef.current = true;
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }
         } else {
-          setTimeLeft(remaining);
+          setNow(currentNow);
         }
       }, 1000);
-    } else {
-      setTimeLeft(0);
     }
     return () => clearInterval(interval);
   }, [restTimerEndsAt, clearRestTimer]);
+
+  const timeLeft = restTimerEndsAt ? Math.max(0, restTimerEndsAt - now) : 0;
 
   const handleFinish = async () => {
     try {
@@ -162,24 +178,9 @@ export default function EntrenarScreen() {
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'spring', delay: index * 100 }}
             >
-              <View style={styles.exerciseHeader}>
-                <View style={styles.titleContainer}>
-                  <View style={styles.indexBadge}>
-                    <Text style={styles.indexText}>{index + 1}</Text>
-                  </View>
-                  <Text style={styles.exerciseTitle} numberOfLines={2}>{ex.exercise.name}</Text>
-                </View>
-                <TouchableOpacity onPress={() => removeExercise(ex.exercise.id)} style={styles.trashButton}>
-                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={17} />
-                </TouchableOpacity>
-              </View>
+              <ExerciseHeader index={index} name={ex.exercise.name} onRemove={() => removeExercise(ex.exercise.id)} />
 
-              <View style={styles.tableHeader}>
-                <Text style={[styles.columnHeader, styles.colSet]}>SET</Text>
-                <Text style={[styles.columnHeader, styles.colKg]}>KG</Text>
-                <Text style={[styles.columnHeader, styles.colReps]}>REPS</Text>
-                <Text style={[styles.columnHeader, styles.colCheck]}>{/* Check */}</Text>
-              </View>
+              <TableHeader />
 
               {ex.sets.map((set, setIndex) => {
                 const isCompleted = set.completed;
@@ -195,25 +196,9 @@ export default function EntrenarScreen() {
                   >
                     <Text style={[styles.setIndex, isCompleted && styles.setIndexCompleted]}>{setIndex + 1}</Text>
                     
-                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted, { marginHorizontal: controlMargin }]}>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', -2.5)} style={styles.controlBtn}>
-                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                      <Text style={[styles.controlValue, isCompleted && styles.controlValueCompleted]}>{set.weight}</Text>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', 2.5)} style={styles.controlBtn}>
-                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                    </View>
+                    <ControlGroup isCompleted={isCompleted} value={set.weight} onMinus={() => updateSet(ex.exercise.id, set.id, 'weight', -2.5)} onPlus={() => updateSet(ex.exercise.id, set.id, 'weight', 2.5)} controlMargin={controlMargin} />
 
-                    <View style={[styles.controlGroup, isCompleted && styles.controlGroupCompleted, { marginHorizontal: controlMargin }]}>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', -1)} style={styles.controlBtn}>
-                        <Minus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                      <Text style={[styles.controlValue, isCompleted && styles.controlValueCompleted]}>{set.reps}</Text>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', 1)} style={styles.controlBtn}>
-                        <Plus color={isCompleted ? colors.textSecondary : colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                    </View>
+                    <ControlGroup isCompleted={isCompleted} value={set.reps} onMinus={() => updateSet(ex.exercise.id, set.id, 'reps', -1)} onPlus={() => updateSet(ex.exercise.id, set.id, 'reps', 1)} controlMargin={controlMargin} />
 
                     <TouchableOpacity 
                       style={[styles.checkbox, isCompleted && styles.checkboxActive]} 
@@ -443,11 +428,7 @@ const styles = StyleSheet.create({
   checkboxActive: {
     backgroundColor: colors.accent,
     borderColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px rgba(180, 240, 60, 0.3)',
   },
 
   addSetButton: {
@@ -493,11 +474,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)',
   },
   finishButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   finishButtonText: {

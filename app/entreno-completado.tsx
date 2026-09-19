@@ -79,94 +79,9 @@ export default function WorkoutCompletedScreen() {
           <Text style={styles.subtitle}>Gran trabajo hoy, revisa y guarda tu progreso.</Text>
         </MotiView>
 
-        {/* Form fields */}
-        <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>NOMBRE DEL ENTRENO</Text>
-            <View style={[styles.inputWrapper, focusedInput === 'name' && styles.inputFocused]}>
-              <TextInput 
-                style={styles.textInput}
-                value={workoutName}
-                onChangeText={setWorkoutName}
-                placeholder="Ej. Día de Pecho"
-                placeholderTextColor={colors.textSecondary}
-                onFocus={() => setFocusedInput('name')}
-                onBlur={() => setFocusedInput(null)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>DURACIÓN (MINUTOS)</Text>
-            <View style={[styles.inputWrapper, focusedInput === 'duration' && styles.inputFocused]}>
-              <TextInput 
-                style={styles.textInput}
-                value={durationStrState}
-                onChangeText={setDurationStrState}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                onFocus={() => setFocusedInput('duration')}
-                onBlur={() => setFocusedInput(null)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>VISIBILIDAD</Text>
-            <View style={styles.visibilitySelector}>
-              <TouchableOpacity
-                style={[styles.visibilityOption, visibility === 'friends' && styles.visibilityOptionActive]}
-                onPress={() => setVisibility('friends')}
-                activeOpacity={0.7}
-              >
-                <Users color={visibility === 'friends' ? colors.accent : colors.textSecondary} size={rs(18)} />
-                <Text style={[styles.visibilityOptionText, visibility === 'friends' && styles.visibilityOptionTextActive]}>Amigos</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.visibilityOption, visibility === 'public' && styles.visibilityOptionActive]}
-                onPress={() => setVisibility('public')}
-                activeOpacity={0.7}
-              >
-                <Globe color={visibility === 'public' ? colors.accent : colors.textSecondary} size={rs(18)} />
-                <Text style={[styles.visibilityOptionText, visibility === 'public' && styles.visibilityOptionTextActive]}>Público</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Stats row — Symmetry style: label top, value bottom, all in a single horizontal strip */}
-        <View style={styles.statsStrip}>
-          <View style={styles.stripStat}>
-            <Text style={styles.stripLabel}>Volumen</Text>
-            <View style={styles.stripValueRow}>
-              <Weight color={colors.accent} size={rs(14)} style={{ marginRight: rs(4) }} />
-              <Text style={styles.stripValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
-            </View>
-          </View>
-
-          <View style={styles.stripDivider} />
-
-          <View style={styles.stripStat}>
-            <Text style={styles.stripLabel}>Series</Text>
-            <View style={styles.stripValueRow}>
-              <Hash color={colors.accent} size={rs(14)} style={{ marginRight: rs(4) }} />
-              <Text style={styles.stripValue}>{sets || '0'}</Text>
-            </View>
-          </View>
-
-          <View style={styles.stripDivider} />
-
-          <View style={[styles.stripStat, styles.stripStatAccent]}>
-            <Text style={[styles.stripLabel, { color: colors.accent }]}>Racha</Text>
-            <View style={styles.stripValueRow}>
-              <Flame color={colors.accent} size={rs(14)} fill={colors.accent} style={{ marginRight: rs(4) }} />
-              <Text style={[styles.stripValue, { color: colors.accent }]}>{streak} días</Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+        <EntrenoForm focusedInput={focusedInput} setFocusedInput={setFocusedInput} workoutName={workoutName} setWorkoutName={setWorkoutName} durationStrState={durationStrState} setDurationStrState={setDurationStrState} visibility={visibility} setVisibility={setVisibility} styles={styles} colors={colors} />
+  <EntrenoStatsStrip volume={volume} sets={sets} streak={streak} styles={styles} colors={colors} />
+  </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + rs(8) : rs(24) }]}>
         <TouchableOpacity 
@@ -336,11 +251,7 @@ const styles = StyleSheet.create({
     height: rs(56),
     borderRadius: rs(16),
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: rs(4) },
-    shadowOpacity: 0.25,
-    shadowRadius: rs(12),
-    elevation: 6,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.25)',
   },
   primaryButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   primaryButtonText: {
@@ -349,3 +260,46 @@ const styles = StyleSheet.create({
     color: colors.background,
   },
 });
+
+const EntrenoForm = ({ focusedInput, setFocusedInput, workoutName, setWorkoutName, durationStrState, setDurationStrState, visibility, setVisibility, styles, colors }: any) => {
+  const { TextInput, View, Text, TouchableOpacity } = require('react-native');
+  const { Users, Globe } = require('lucide-react-native');
+  const { rs } = require('../utils/responsive');
+  return (
+{/* Form fields */}
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>NOMBRE DEL ENTRENO</Text>
+            <View style={[styles.inputWrapper, focusedInput === 'name' && styles.inputFocused]}>
+              <TextInput 
+                style={styles.textInput}
+                value={workoutName}
+                onChangeText={setWorkoutName}
+                placeholder="Ej. Día de Pecho"
+                placeholderTextColor={colors.textSecondary}
+                onFocus={() => setFocusedInput('name')}
+                onBlur={() => setFocusedInput(null)}
+              />
+            </View>
+          </View>
+
+
+);
+};
+
+const EntrenoStatsStrip = ({ volume, sets, streak, styles, colors }: any) => {
+  const { View, Text } = require('react-native');
+  const { Flame, Hash, Weight } = require('lucide-react-native');
+  const { rs } = require('../utils/responsive');
+  return (
+{/* Stats row — Symmetry style: label top, value bottom, all in a single horizontal strip */}
+        <View style={styles.statsStrip}>
+          <View style={styles.stripStat}>
+            <Text style={styles.stripLabel}>Volumen</Text>
+            <View style={styles.stripValueRow}>
+              <Weight color={colors.accent} size={rs(14)} style={{ marginRight: rs(4) }} />
+              <Text style={styles.stripValue} adjustsFontSizeToFit numberOfLines={1}>{volume || '0'} kg</Text>
+            </View>
+
+);
+};

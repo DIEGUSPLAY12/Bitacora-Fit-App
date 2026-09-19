@@ -72,7 +72,7 @@ DROP POLICY IF EXISTS "Creación de chats" ON chats;
 CREATE POLICY "Creación de chats"
 ON chats FOR INSERT
 TO authenticated
-WITH CHECK (true);
+WITH CHECK (created_by = auth.uid());
 
 -- Puedes borrar chats si eres el creador o un miembro
 DROP POLICY IF EXISTS "Borrado de chats" ON chats;
@@ -104,12 +104,18 @@ ON chat_members FOR UPDATE
 TO authenticated
 USING (user_id = auth.uid());
 
--- Permitir inserción al crear el chat
+-- Permitir inserción al crear el chat (solo a uno mismo o si eres el creador del chat)
 DROP POLICY IF EXISTS "Inserción de miembros" ON chat_members;
 CREATE POLICY "Inserción de miembros"
 ON chat_members FOR INSERT
 TO authenticated
-WITH CHECK (true);
+WITH CHECK (
+  user_id = auth.uid() OR
+  EXISTS (
+    SELECT 1 FROM chats 
+    WHERE id = chat_id AND created_by = auth.uid()
+  )
+);
 
 -- ------------------------------------------
 -- Políticas para: CHAT_MESSAGES

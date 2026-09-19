@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ExerciseHeader, TableHeader } from '../../components/ExerciseTableHeaders';
+import { TemplateFooter } from '../../components/TemplateFooter';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
@@ -11,6 +13,22 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { customAlert } from "../../store/alert-store";
+
+
+const ControlGroup = ({ value, onMinus, onPlus, controlMargin }: any) => {
+  const { colors } = require('../../theme/colors');
+  return (
+    <View style={[styles.controlGroup, { marginHorizontal: controlMargin }]}>
+      <TouchableOpacity onPress={onMinus} style={styles.controlBtn}>
+        <Minus color={colors.textPrimary} size={15} />
+      </TouchableOpacity>
+      <Text style={styles.controlValue}>{value}</Text>
+      <TouchableOpacity onPress={onPlus} style={styles.controlBtn}>
+        <Plus color={colors.textPrimary} size={15} />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function CrearPlantillaScreen() {
   const insets = useSafeAreaInsets();
@@ -62,7 +80,11 @@ export default function CrearPlantillaScreen() {
         .select()
         .single();
 
-      if (workoutError) throw workoutError;
+      if (workoutError) {
+        setIsSaving(false);
+        customAlert('Error', 'No se pudo crear la plantilla: ' + workoutError.message);
+        return;
+      }
 
       // 2. Insert workout_exercises
       const workoutExercisesToInsert = exercises.map((ex, idx) => ({
@@ -76,7 +98,11 @@ export default function CrearPlantillaScreen() {
         .insert(workoutExercisesToInsert)
         .select();
 
-      if (weError) throw weError;
+      if (weError) {
+        setIsSaving(false);
+        customAlert('Error', 'Error al guardar los ejercicios: ' + weError.message);
+        return;
+      }
 
       // 3. Insert sets
       const setsToInsert: any[] = [];
@@ -96,17 +122,21 @@ export default function CrearPlantillaScreen() {
         .from('sets')
         .insert(setsToInsert);
 
-      if (setsError) throw setsError;
+      if (setsError) {
+        setIsSaving(false);
+        customAlert('Error', 'Error al guardar las series: ' + setsError.message);
+        return;
+      }
 
       // Success
       queryClient.invalidateQueries({ queryKey: ['templates', user.id] });
+      setIsSaving(false);
       reset();
       router.replace(`/template/${workoutData.id}`);
       
     } catch (error: any) {
-      customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
-    } finally {
       setIsSaving(false);
+      customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
     }
   };
 
@@ -152,23 +182,9 @@ export default function CrearPlantillaScreen() {
               key={ex.exercise.id} 
               style={styles.exerciseCard}
             >
-              <View style={styles.exerciseHeader}>
-                <View style={styles.titleContainer}>
-                  <View style={styles.indexBadge}>
-                    <Text style={styles.indexText}>{index + 1}</Text>
-                  </View>
-                  <Text style={styles.exerciseTitle} numberOfLines={2}>{ex.exercise.name}</Text>
-                </View>
-                <TouchableOpacity onPress={() => removeExercise(ex.exercise.id)} style={styles.trashButton}>
-                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={17} />
-                </TouchableOpacity>
-              </View>
+              <ExerciseHeader index={index} name={ex.exercise.name} onRemove={() => removeExercise(ex.exercise.id)} />
 
-              <View style={styles.tableHeader}>
-                <Text style={[styles.columnHeader, styles.colSet]}>SET</Text>
-                <Text style={[styles.columnHeader, styles.colKg]}>KG</Text>
-                <Text style={[styles.columnHeader, styles.colReps]}>REPS</Text>
-              </View>
+              <TableHeader showCheck={false} />
 
               {ex.sets.map((set, setIndex) => {
                 return (
@@ -178,25 +194,9 @@ export default function CrearPlantillaScreen() {
                   >
                     <Text style={styles.setIndex}>{setIndex + 1}</Text>
                     
-                    <View style={[styles.controlGroup, { marginHorizontal: controlMargin }]}>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', -2.5)} style={styles.controlBtn}>
-                        <Minus color={colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                      <Text style={styles.controlValue}>{set.weight}</Text>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'weight', 2.5)} style={styles.controlBtn}>
-                        <Plus color={colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                    </View>
+                    <ControlGroup value={set.weight} onMinus={() => updateSet(ex.exercise.id, set.id, 'weight', -2.5)} onPlus={() => updateSet(ex.exercise.id, set.id, 'weight', 2.5)} controlMargin={controlMargin} />
 
-                    <View style={[styles.controlGroup, { marginHorizontal: controlMargin }]}>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', -1)} style={styles.controlBtn}>
-                        <Minus color={colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                      <Text style={styles.controlValue}>{set.reps}</Text>
-                      <TouchableOpacity onPress={() => updateSet(ex.exercise.id, set.id, 'reps', 1)} style={styles.controlBtn}>
-                        <Plus color={colors.textPrimary} size={15} />
-                      </TouchableOpacity>
-                    </View>
+                    <ControlGroup value={set.reps} onMinus={() => updateSet(ex.exercise.id, set.id, 'reps', -1)} onPlus={() => updateSet(ex.exercise.id, set.id, 'reps', 1)} controlMargin={controlMargin} />
                     
                     <TouchableOpacity onPress={() => removeSet(ex.exercise.id, set.id)} style={styles.removeSetBtn}>
                         <Trash2 color={colors.textSecondary} size={14} />
@@ -223,30 +223,7 @@ export default function CrearPlantillaScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 24 }]}>
-        <TouchableOpacity 
-          style={styles.finishButton} 
-          onPress={handleSave}
-          activeOpacity={0.9}
-          disabled={isSaving}
-        >
-          <LinearGradient
-            colors={[colors.accent, '#90D41C']}
-            style={styles.finishButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            {isSaving ? (
-              <ActivityIndicator color={colors.background} />
-            ) : (
-              <>
-                <Save color={colors.background} size={20} style={{ marginRight: 8 }} />
-                <Text style={styles.finishButtonText}>Guardar Plantilla</Text>
-              </>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+      <TemplateFooter insets={insets} isSaving={isSaving} onPress={handleSave} />
     </KeyboardAvoidingView>
   );
 }
@@ -458,11 +435,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)',
   },
   finishButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
   finishButtonText: {

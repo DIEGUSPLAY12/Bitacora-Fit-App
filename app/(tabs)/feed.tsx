@@ -30,6 +30,13 @@ function getRelativeTime(dateString: string) {
   return new Date(dateString).toLocaleDateString('es-ES');
 }
 
+
+const TabButton = ({ tabName, label, activeTab, setActiveTab, styles }: any) => (
+  <TouchableOpacity style={[styles.tab, activeTab === tabName && styles.activeTab]} onPress={() => setActiveTab(tabName)}>
+    <Text style={[styles.tabText, activeTab === tabName && styles.activeTabText]}>{label}</Text>
+  </TouchableOpacity>
+);
+
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -84,8 +91,8 @@ export default function FeedScreen() {
     // First 3 exercise names for preview
     const exerciseNames = (item.workout_exercises || [])
       .slice(0, 3)
-      .map((we: any) => we.exercises?.name)
-      .filter(Boolean);
+      .map((we: any) => ({ id: we.id || Math.random().toString(), name: we.exercises?.name }))
+      .filter((ex: any) => ex.name);
     const extraCount = exerciseCount - 3;
 
     return (
@@ -165,9 +172,9 @@ export default function FeedScreen() {
             {/* Exercise preview list */}
             {exerciseNames.length > 0 && (
               <View style={styles.exerciseList}>
-                {exerciseNames.map((name: string, i: number) => (
-                  <Text key={i} style={styles.exerciseListItem} numberOfLines={1}>
-                    · {name}
+                {exerciseNames.map((ex: any) => (
+                  <Text key={ex.id} style={styles.exerciseListItem} numberOfLines={1}>
+                    · {ex.name}
                   </Text>
                 ))}
                 {extraCount > 0 && (
@@ -264,18 +271,8 @@ export default function FeedScreen() {
 
       <View style={styles.tabsContainer}>
         <View style={styles.tabsWrapper}>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'amigos' && styles.activeTab]}
-            onPress={() => setActiveTab('amigos')}
-          >
-            <Text style={[styles.tabText, activeTab === 'amigos' && styles.activeTabText]}>Amigos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'descubrir' && styles.activeTab]}
-            onPress={() => setActiveTab('descubrir')}
-          >
-            <Text style={[styles.tabText, activeTab === 'descubrir' && styles.activeTabText]}>Descubrir</Text>
-          </TouchableOpacity>
+          <TabButton tabName="amigos" label="Amigos" activeTab={activeTab} setActiveTab={setActiveTab} styles={styles} />
+          <TabButton tabName="descubrir" label="Descubrir" activeTab={activeTab} setActiveTab={setActiveTab} styles={styles} />
         </View>
       </View>
 

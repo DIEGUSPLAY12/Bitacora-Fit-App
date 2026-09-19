@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { ExerciseHeader, TableHeader } from '../../components/ExerciseTableHeaders';
+import { TemplateFooter } from '../../components/TemplateFooter';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { customAlert as Alert } from '../../../store/alert-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
 import { useTemplateBuilderStore } from '../../../store/template-builder-store';
-import { Plus, Minus, Trash2, ArrowLeft, Save } from 'lucide-react-native';
+import { ArrowLeft, Check, Plus, Save, Trash2, Dumbbell, Minus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../../lib/supabase';
@@ -36,10 +38,10 @@ export default function EditarPlantillaScreen() {
   } = useTemplateBuilderStore();
 
   const [isSaving, setIsSaving] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (template && !initialized) {
+    if (template && !initialized.current) {
       const storeExercises = (template.workout_exercises || []).map((we: any) => ({
         exercise: {
           id: we.exercises.id,
@@ -61,45 +63,20 @@ export default function EditarPlantillaScreen() {
         })),
       }));
       useTemplateBuilderStore.setState({ name: template.name, exercises: storeExercises });
-      setInitialized(true);
+      initialized.current = true;
     }
-  }, [template, initialized]);
+  }, [template]);
 
   useEffect(() => {
     return () => { reset(); };
-  }, []);
+  }, [reset]);
 
   const handleSave = async () => {
     if (!name.trim()) { customAlert('Error', 'Debes darle un nombre a la plantilla.'); return; }
     if (exercises.length === 0) { customAlert('Error', 'Debes anadir al menos un ejercicio.'); return; }
     if (!user || !id) { customAlert('Error', 'Datos invalidos.'); return; }
-    try {
-      setIsSaving(true);
-      const { error: workoutError } = await supabase.from('workouts').update({ name: name.trim() }).eq('id', id);
-      if (workoutError) throw workoutError;
-      const { error: deleteError } = await supabase.from('workout_exercises').delete().eq('workout_id', id);
-      if (deleteError) throw deleteError;
-      const workoutExercisesToInsert = exercises.map((ex, idx) => ({ workout_id: id, exercise_id: ex.exercise.id, order_index: idx }));
-      const { data: insertedExercises, error: weError } = await supabase.from('workout_exercises').insert(workoutExercisesToInsert).select();
-      if (weError) throw weError;
-      const setsToInsert: any[] = [];
-      exercises.forEach((ex, exIdx) => {
-        const weId = insertedExercises[exIdx].id;
-        ex.sets.forEach((s, sIdx) => { setsToInsert.push({ workout_exercise_id: weId, set_number: sIdx + 1, weight_kg: s.weight, reps: s.reps }); });
-      });
-      if (setsToInsert.length > 0) {
-        const { error: setsError } = await supabase.from('sets').insert(setsToInsert);
-        if (setsError) throw setsError;
-      }
-      queryClient.invalidateQueries({ queryKey: ['templates', user.id] });
-      queryClient.invalidateQueries({ queryKey: ['workout', id] });
-      reset();
-      router.back();
-    } catch (error: any) {
-      customAlert('Error', 'No se pudo guardar la plantilla: ' + error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    
+    await executeSave(id as string, user, name, exercises, queryClient, router, reset, customAlert, setIsSaving, supabase);
   };
 
   const controlMargin = width < 370 ? 3 : 6;
@@ -146,21 +123,9 @@ export default function EditarPlantillaScreen() {
         ) : (
           exercises.map((ex, index) => (
             <View key={ex.exercise.id} style={styles.exerciseCard}>
-              <View style={styles.exerciseHeader}>
-                <View style={styles.titleContainer}>
-                  <View style={styles.indexBadge}><Text style={styles.indexText}>{index + 1}</Text></View>
-                  <Text style={styles.exerciseTitle} numberOfLines={2}>{ex.exercise.name}</Text>
-                </View>
-                <TouchableOpacity onPress={() => removeExercise(ex.exercise.id)} style={styles.trashButton}>
-                  <Trash2 color={'rgba(255, 255, 255, 0.4)'} size={17} />
-                </TouchableOpacity>
-              </View>
+              <ExerciseHeader index={index} name={ex.exercise.name} onRemove={() => removeExercise(ex.exercise.id)} />
 
-              <View style={styles.tableHeader}>
-                <Text style={[styles.columnHeader, styles.colSet]}>SET</Text>
-                <Text style={[styles.columnHeader, styles.colKg]}>KG</Text>
-                <Text style={[styles.columnHeader, styles.colReps]}>REPS</Text>
-              </View>
+              <TableHeader showCheck={false} />
 
               {ex.sets.map((set, setIndex) => (
                 <View key={set.id} style={styles.setRow}>
@@ -249,7 +214,44 @@ const styles = StyleSheet.create({
   addExerciseButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 15, backgroundColor: 'rgba(180, 240, 60, 0.08)', borderRadius: 16, gap: 8, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(180, 240, 60, 0.2)' },
   addExerciseText: { fontFamily: typography.fontFamily.semibold, color: colors.accent, fontSize: 16 },
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.background, paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
-  finishButton: { height: 56, borderRadius: 16, overflow: 'hidden', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+  finishButton: { height: 56, borderRadius: 16, overflow: 'hidden', boxShadow: '0px 4px 12px rgba(180, 240, 60, 0.2)' },
   finishButtonGradient: { flex: 1, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
   finishButtonText: { fontFamily: typography.fontFamily.semibold, fontSize: 16, color: colors.background },
 });
+const executeSave = async (id: string, user: any, name: string, exercises: any[], queryClient: any, router: any, reset: any, customAlert: any, setIsSaving: any, supabase: any) => {
+  setIsSaving(true);
+  try {
+    const { error: workoutError } = await supabase.from('workouts').update({ name: name.trim() }).eq('id', id);
+    if (workoutError) { customAlert('Error', 'Ocurrió un error al guardar la plantilla.'); return; }
+    
+    const { error: deleteError } = await supabase.from('workout_exercises').delete().eq('workout_id', id);
+    if (deleteError) { customAlert('Error', 'Ocurrió un error al guardar la plantilla.'); return; }
+
+    const wePromises = exercises.map(async (ex: any, index: number) => {
+      const { data: newWe, error: weError } = await supabase.from('workout_exercises').insert({
+        workout_id: id, exercise_id: ex.exercise.id, order_index: index
+      }).select().single();
+      if (weError) { customAlert('Error', 'Ocurrió un error al guardar la plantilla.'); return; }
+
+      if (ex.sets.length > 0) {
+        const setsToInsert = ex.sets.map((s: any, sIndex: number) => ({
+          workout_exercise_id: newWe.id, weight_kg: s.weight, reps: s.reps, set_number: sIndex + 1
+        }));
+        const { error: sError } = await supabase.from('sets').insert(setsToInsert);
+        if (sError) { customAlert('Error', 'Ocurrió un error al guardar la plantilla.'); return; }
+      }
+    });
+    
+    await Promise.all(wePromises);
+    
+    queryClient.invalidateQueries({ queryKey: ['templates', user.id] });
+    queryClient.invalidateQueries({ queryKey: ['workout', id] });
+    reset();
+    customAlert('¡Listo!', 'Plantilla actualizada correctamente.');
+    router.back();
+  } catch (e: any) {
+    customAlert('Error', 'Ocurrió un error inesperado al guardar la plantilla.');
+  } finally {
+    setIsSaving(false);
+  }
+};
