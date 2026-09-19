@@ -89,13 +89,17 @@ USING (
 -- ------------------------------------------
 -- Políticas para: CHAT_MEMBERS
 -- ------------------------------------------
--- Permitir lectura de miembros a usuarios autenticados
--- (Evita recursión infinita y es seguro por ser UUID)
+-- Permitir lectura de miembros solo de los chats en los que el usuario participa
+-- (Evita exponer con quién habla cada usuario a otros usuarios de la plataforma)
 DROP POLICY IF EXISTS "Lectura de miembros para miembros" ON chat_members;
 CREATE POLICY "Lectura de miembros para miembros"
 ON chat_members FOR SELECT
 TO authenticated
-USING (true);
+USING (
+  chat_id IN (
+    SELECT chat_id FROM chat_members WHERE user_id = auth.uid()
+  )
+);
 
 -- Permitir actualización de miembros (para last_read_at)
 DROP POLICY IF EXISTS "Actualización de miembros" ON chat_members;

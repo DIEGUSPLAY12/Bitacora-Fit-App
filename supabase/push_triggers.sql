@@ -20,6 +20,7 @@ CREATE OR REPLACE FUNCTION notify_new_message()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_tokens TEXT[];
@@ -32,10 +33,10 @@ BEGIN
   v_supabase_url := current_setting('app.supabase_url', true);
   v_service_role_key := current_setting('app.service_role_key', true);
 
-  -- Si no hay URL configurada, usar directamente la URL hardcodeada
-  -- IMPORTANTE: sustituye esto por tu URL real de Supabase
-  IF v_supabase_url IS NULL OR v_supabase_url = '' THEN
-    v_supabase_url := 'https://semregakfjhhhphkmuab.supabase.co';
+  -- Si no hay URL o key configuradas, salir silenciosamente (no enviar notificación)
+  -- Configurar en Dashboard > Settings > Vault (app.supabase_url y app.service_role_key)
+  IF v_supabase_url IS NULL OR v_supabase_url = '' OR v_service_role_key IS NULL OR v_service_role_key = '' THEN
+    RETURN NEW;
   END IF;
 
   -- Obtener el username del remitente
@@ -94,6 +95,7 @@ CREATE OR REPLACE FUNCTION notify_friend_request()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_tokens TEXT[];
@@ -109,8 +111,9 @@ BEGIN
   v_supabase_url := current_setting('app.supabase_url', true);
   v_service_role_key := current_setting('app.service_role_key', true);
 
-  IF v_supabase_url IS NULL OR v_supabase_url = '' THEN
-    v_supabase_url := 'https://semregakfjhhhphkmuab.supabase.co';
+  -- Si no hay URL o key configuradas, salir silenciosamente
+  IF v_supabase_url IS NULL OR v_supabase_url = '' OR v_service_role_key IS NULL OR v_service_role_key = '' THEN
+    RETURN NEW;
   END IF;
 
   -- Obtener el username del que envía la solicitud

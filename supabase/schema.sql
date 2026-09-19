@@ -74,7 +74,9 @@ BEGIN
   VALUES (new.id, new.email); -- Usamos el email como username provisional
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 -- Trigger disparado "on insert" en auth.users
 CREATE TRIGGER on_auth_user_created
