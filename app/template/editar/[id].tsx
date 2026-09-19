@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ExerciseHeader, TableHeader } from '../../components/ExerciseTableHeaders';
-import { TemplateFooter } from '../../components/TemplateFooter';
+import { ExerciseHeader, TableHeader } from '../../../components/ExerciseTableHeaders';
+import { TemplateFooter } from '../../../components/TemplateFooter';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { customAlert as Alert } from '../../../store/alert-store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
